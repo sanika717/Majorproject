@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Intelligence Assistant | UrbanPulse</title>
-  <meta name="description" content="UrbanPulse is an evidence-based Smart City Transparency and Intelligence Platform for Bengaluru.">
+  <meta name="description" content="UrbanPulse Intelligence Assistant — Ask questions about Bengaluru's civic data.">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
 
   <!-- Google Fonts: Inter & Outfit -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,7 +18,7 @@
 <body class="page-assistant">
 
   <!-- =========================================================================
-       APP HEADER & NAVIGATION  (User role — each item is its own page)
+       APP HEADER & NAVIGATION
        ========================================================================= -->
   <header class="app-header">
     <div class="container header-inner">
@@ -52,9 +53,9 @@
     <section class="section">
       <div class="section-header">
         <div class="section-title-wrap">
-          <span class="section-badge badge-progress">🚧 Frontend Only — AI Backend Pending</span>
+          <span class="section-badge badge-active">🤖 Civic Data Intelligence — Verified Backend</span>
           <h2 class="section-title">🤖 Intelligence Assistant</h2>
-          <p class="section-desc">A conversational interface for asking questions about UrbanPulse data. Answers will be available once an AI backend is connected.</p>
+          <p class="section-desc">Ask questions about Bengaluru's construction works, crime statistics, and police locations. Answers are derived exclusively from verified UrbanPulse datasets via the backend API.</p>
         </div>
       </div>
 
@@ -63,25 +64,39 @@
           <div class="chat-avatar">🤖</div>
           <div>
             <h3>UrbanPulse Intelligence Assistant</h3>
-            <p>Backend integration pending</p>
+            <p id="assistant-status">Connecting to verified data backend…</p>
           </div>
         </div>
 
-        <div id="chat-messages" class="chat-messages" aria-live="polite">
-          <div class="chat-msg assistant">Hello! I'm the UrbanPulse Intelligence Assistant. I'm not connected to a data or AI backend yet, so I can't answer questions right now. This interface will be enabled in a later phase.</div>
+        <div id="chat-messages" class="chat-messages" aria-live="polite" role="log">
+          <div class="chat-msg assistant">
+            👋 Hello! I'm the UrbanPulse Intelligence Assistant. I answer questions exclusively from verified Bengaluru civic datasets — BBMP construction work orders, D47 crime statistics, and Karnataka Police KML locations. No data is fabricated.
+          </div>
         </div>
 
         <div class="chat-suggestions" id="chat-suggestions">
-          <button type="button" class="category-pill" data-q="Which wards have the highest construction investment?">Which wards have the highest construction investment?</button>
-          <button type="button" class="category-pill" data-q="How have crimes against women changed from 2021 to 2023?">How have crimes against women changed from 2021 to 2023?</button>
-          <button type="button" class="category-pill" data-q="Which division has the most reported cyber crime?">Which division has the most reported cyber crime?</button>
-          <button type="button" class="category-pill" data-q="How many police locations are mapped?">How many police locations are mapped?</button>
+          <button type="button" class="category-pill" data-q="What are the total construction work orders and investment?">💰 Total construction investment?</button>
+          <button type="button" class="category-pill" data-q="Which wards have the highest construction investment?">🏗️ Top wards by investment?</button>
+          <button type="button" class="category-pill" data-q="What is the total recorded crime in Bengaluru?">🚨 Total recorded crimes?</button>
+          <button type="button" class="category-pill" data-q="How many police locations are mapped?">🚓 Mapped police locations?</button>
+          <button type="button" class="category-pill" data-q="What is the UrbanPulse risk score?">⚠️ Crime risk score?</button>
+          <button type="button" class="category-pill" data-q="What are the development clusters?">📊 Development clusters?</button>
+          <button type="button" class="category-pill" data-q="Crimes against women in 2023?">👩 Women crimes 2023?</button>
+          <button type="button" class="category-pill" data-q="Crimes against children in 2023?">👶 Children crimes 2023?</button>
         </div>
 
         <form id="chat-form" class="chat-input-row" autocomplete="off">
-          <input id="chat-input" class="form-input" type="text" placeholder="Ask about UrbanPulse data (available after backend integration)" disabled>
-          <button type="submit" id="chat-send" class="btn-primary" disabled>Send</button>
+          <input id="chat-input" class="form-input" type="text" placeholder="Ask about UrbanPulse data…" aria-label="Ask a question">
+          <button type="submit" id="chat-send" class="btn-primary">Send</button>
         </form>
+      </div>
+
+      <div class="transparency-notice-card" style="margin-top: 20px;">
+        <div class="notice-icon">🛡️</div>
+        <div class="notice-content">
+          <h4>Intelligence Assistant Data Transparency Notice</h4>
+          <p>This assistant answers only from verified UrbanPulse datasets stored in the PostgreSQL backend. No language model or generative AI is used. Answers are fact-looked-up from the structured API. For analysis not covered here, visit the <a href="analytics.html" style="color: #38bdf8;">Analytics page</a>.</p>
+        </div>
       </div>
     </section>
   </main>
@@ -104,11 +119,12 @@
         </div>
       </div>
       <div style="font-size: 11px; color: var(--text-muted); border-top: 1px solid var(--border-subtle); padding-top: 16px;">
-        Sources: Bengaluru City Police Annual Reports, Karnataka State Police GIS KML Datasets, Open City Bengaluru Portal, BBMP Open Data. Base map &copy; OpenStreetMap contributors.
+        Sources: Bengaluru City Police Annual Reports, Karnataka State Police GIS KML Datasets, Open City Bengaluru Portal, BBMP Open Data.
       </div>
     </div>
   </footer>
 
+  <script src="js/api.js"></script>
   <script src="js/app.js"></script>
   <script src="js/assistant.js"></script>
 </body>

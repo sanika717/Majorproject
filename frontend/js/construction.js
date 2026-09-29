@@ -19,6 +19,21 @@ class ConstructionAnalytics {
 
     this.initCharts();
     this.render();
+    this.initBackendData();
+  }
+
+  async initBackendData() {
+    if (!window.UrbanPulseAPI) return;
+    try {
+      const liveData = await window.UrbanPulseAPI.getFullConstructionData();
+      if (liveData) {
+        this.data = liveData;
+        window.URBANPULSE_CONSTRUCTION_DATA = liveData;
+        this.render();
+      }
+    } catch (e) {
+      console.warn("[ConstructionAnalytics] Backend fetch failed:", e);
+    }
   }
 
   initCharts() {

@@ -15,20 +15,35 @@ class CrimeAnalytics {
     this.initEventListeners();
     this.initCharts();
     this.render();
+    this.initBackendData();
+  }
+
+  async initBackendData() {
+    if (!window.UrbanPulseAPI) return;
+    try {
+      const full = await window.UrbanPulseAPI.getFullCrimeData();
+      if (full) {
+        this.data = full;
+        window.URBANPULSE_DATA = full;
+        this.render();
+      }
+    } catch (e) {
+      console.warn("[CrimeAnalytics] Backend fetch failed:", e);
+    }
   }
 
   initEventListeners() {
     const yearSelect = document.getElementById("crime-year-select");
     if (yearSelect) {
-      yearSelect.addEventListener("change", (e) => {
+      yearSelect.addEventListener("change", async (e) => {
         this.currentYear = e.target.value;
-        this.render();
+        await this.handleSelectionUpdate();
       });
     }
 
     const categoryPills = document.querySelectorAll(".category-pill[data-category]");
     categoryPills.forEach(pill => {
-      pill.addEventListener("click", (e) => {
+      pill.addEventListener("click", async (e) => {
         const catId = pill.getAttribute("data-category");
         if (pill.classList.contains("disabled")) return;
         
@@ -36,12 +51,27 @@ class CrimeAnalytics {
         pill.classList.add("active");
         
         this.currentCategory = catId;
-        this.render();
         this.syncYearSelectAvailability();
+        await this.handleSelectionUpdate();
       });
     });
 
     this.syncYearSelectAvailability();
+  }
+
+  async handleSelectionUpdate() {
+    // If backend API is reachable, query dynamic analytics endpoint
+    if (window.UrbanPulseAPI) {
+      try {
+        const live = await window.UrbanPulseAPI.getCrimeAnalytics(this.currentCategory, this.currentYear);
+        if (live && live.kpis) {
+          this.liveQueryData = live;
+        }
+      } catch (err) {
+        console.warn("[CrimeAnalytics] Dynamic query error, falling back to local dataset:", err);
+      }
+    }
+    this.render();
   }
 
   // The Year selector only applies to the verified 2021-2023 category

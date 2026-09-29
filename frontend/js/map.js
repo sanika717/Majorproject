@@ -29,13 +29,52 @@ class SmartCityMap {
     });
 
     // OpenStreetMap standard tiles - no API key required.
+    // Use https://tile.openstreetmap.org/{z}/{x}/{y}.png with proper attribution & crossOrigin.
     // The dark look is applied purely with a CSS filter on .leaflet-tile-pane (see style.css).
     L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "&copy; OpenStreetMap contributors",
-      maxZoom: 19
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors',
+      maxZoom: 19,
+      crossOrigin: true
     }).addTo(this.map);
 
     this.markersLayer = L.layerGroup().addTo(this.map);
+
+    // Hydrate data from FastAPI backend if available
+    this.fetchBackendData();
+  }
+
+  async fetchBackendData() {
+    if (!window.UrbanPulseAPI) return;
+    try {
+      const [fullCons, histCrime, policeLocs] = await Promise.all([
+        window.UrbanPulseAPI.getFullConstructionData(),
+        window.UrbanPulseAPI.getCrimeHistorical(),
+        window.UrbanPulseAPI.getPoliceLocations()
+      ]);
+
+      if (fullCons) {
+        this.constructionData = fullCons;
+        window.URBANPULSE_CONSTRUCTION_DATA = fullCons;
+        if (this.currentLayer === "construction") this.updateConstructionPanel();
+      }
+
+      if (histCrime) {
+        if (!this.crimeData) this.crimeData = {};
+        this.crimeData.historical = histCrime;
+        if (this.currentLayer === "crime") this.updateMapStats();
+      }
+
+      if (policeLocs && Array.isArray(policeLocs) && policeLocs.length) {
+        this.locations = policeLocs;
+        window.URBANPULSE_LOCATIONS = policeLocs;
+        if (this.currentLayer === "police") {
+          this.renderPoliceMarkers();
+          this.updatePolicePanel();
+        }
+      }
+    } catch (e) {
+      console.warn("[SmartCityMap] Live backend sync failed, using cached EDA data:", e);
+    }
   }
 
   initEventListeners() {
