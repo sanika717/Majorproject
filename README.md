@@ -1,4 +1,4 @@
-# UrbanPulse — Smart City Transparency Platform
+# Majorproject: UrbanPulse — Smart City Transparency Platform
 
 **UrbanPulse** is an evidence-based Smart City Transparency and Civic Intelligence platform for Bengaluru, integrating real-time geospatial layers, verified municipal statistics, and reproducible EDA.
 
