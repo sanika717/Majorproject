@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard | UrbanPulse</title>
+  <meta name="description" content="UrbanPulse is an evidence-based Smart City Transparency and Intelligence Platform for Bengaluru.">
+
+  <!-- Google Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Leaflet CSS (no API key) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+  <!-- App Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="page-dashboard">
+
+  <!-- =========================================================================
+       APP HEADER & NAVIGATION  (User role — each item is its own page)
+       ========================================================================= -->
+  <header class="app-header">
+    <div class="container header-inner">
+      <a href="dashboard.html" class="brand">
+        <div class="brand-icon">⚡</div>
+        <div class="brand-text">
+          <h1>URBANPULSE</h1>
+          <p>Smart City Transparency Platform</p>
+        </div>
+      </a>
+
+      <nav aria-label="User navigation">
+        <ul class="nav-links">
+          <li><a href="dashboard.html" class="nav-link active" aria-current="page">🏠 Dashboard</a></li>
+          <li><a href="analytics.html" class="nav-link">📊 Analytics</a></li>
+          <li><a href="complaints.html" class="nav-link">📢 Public Complaints</a></li>
+          <li><a href="assistant.html" class="nav-link">🤖 Intelligence Assistant</a></li>
+        </ul>
+      </nav>
+
+      <div class="header-status">
+        <div class="status-pill">
+          <span class="pulse-dot"></span>
+          <span>Bengaluru Live Intelligence</span>
+        </div>
+        <div style="font-size: 12px; color: var(--text-muted); font-weight: 600;" id="live-time-display">--:--:-- IST</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- High-level verified KPIs only (values filled from the verified datasets by js/dashboard.js).
+         Full analytics live on the Analytics page. -->
+    <section id="dashboard-kpis" class="dashboard-kpi-strip" aria-label="Verified headline figures">
+      <div class="kpi-grid">
+        <div class="kpi-card glass-panel">
+          <div class="kpi-header"><span class="kpi-title">Construction Work Orders</span><div class="kpi-icon" style="color: var(--accent-cyan);">🏗️</div></div>
+          <div id="dash-kpi-orders" class="kpi-value">—</div>
+          <div class="kpi-subtext"><span>BBMP 2025-26 ward work orders</span></div>
+        </div>
+        <div class="kpi-card glass-panel">
+          <div class="kpi-header"><span class="kpi-title">Verified Construction Investment</span><div class="kpi-icon" style="color: var(--accent-amber);">💰</div></div>
+          <div id="dash-kpi-amount" class="kpi-value" style="color: var(--accent-amber);">—</div>
+          <div class="kpi-subtext"><span>Sum of work-order amounts</span></div>
+        </div>
+        <div class="kpi-card glass-panel">
+          <div class="kpi-header"><span class="kpi-title">Recorded Crimes</span><div class="kpi-icon" style="color: #ef4444;">🚨</div></div>
+          <div id="dash-kpi-crimes" class="kpi-value" style="color: #ef4444;">—</div>
+          <div class="kpi-subtext"><span id="dash-kpi-crimes-period">D47 city-level total</span></div>
+        </div>
+        <div class="kpi-card glass-panel">
+          <div class="kpi-header"><span class="kpi-title">Mapped Police Locations</span><div class="kpi-icon" style="color: var(--accent-blue);">🚓</div></div>
+          <div id="dash-kpi-police" class="kpi-value" style="color: var(--accent-blue);">—</div>
+          <div class="kpi-subtext"><span>Karnataka Police GIS KML</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ONE centralized Leaflet map (OpenStreetMap tiles, no API key). Construction is the default layer. -->
+    <section id="map-section" class="section map-section">
+      <div class="section-header">
+        <div class="section-title-wrap">
+          <span class="section-badge badge-active">⚡ Interactive Geospatial Core</span>
+          <h2 class="section-title">🗺️ Unified Smart City Map</h2>
+          <p class="section-desc">One centralized interactive map component for all city infrastructure layers. Select any pillar to inspect mapped locations and municipal intelligence.</p>
+        </div>
+
+        <div class="controls-bar">
+          <div class="control-group">
+            <span class="control-label">Explore Layer:</span>
+            <select id="map-layer-selector" class="custom-select" aria-label="Map layer">
+              <option value="construction" selected>🏗️ Construction (Live EDA — Default)</option>
+              <option value="crime">🚨 Crime & Safety (Live EDA Active)</option>
+              <option value="police">🚓 Police Stations (Verified KML)</option>
+              <option value="healthcare">🏥 Hospitals (Data Coming Soon)</option>
+              <option value="parks">🌳 Parks (Data Coming Soon)</option>
+              <option value="education">🏫 Schools (Data Coming Soon)</option>
+              <option value="transport">🚌 Public Transport (Data Coming Soon)</option>
+              <option value="utilities">💧 Water / Utilities (Data Coming Soon)</option>
+              <option value="government">🏛️ Government Services (Data Coming Soon)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="map-container-wrapper">
+        <div class="map-header-bar">
+          <div class="map-layer-selector-wrap">
+            <span class="layer-select-label">Active Geographic View:</span>
+            <span id="map-header-title" style="font-weight: 700; color: #fff; font-size: 14px;">Bengaluru Metropolitan Area</span>
+          </div>
+          <div class="map-status-info">
+            <span id="map-header-source" style="font-size: 12px; color: var(--text-secondary);">Source: BBMP 2025-26 ward work orders</span>
+          </div>
+        </div>
+
+        <!-- Leaflet Map Container -->
+        <div id="urbanpulse-map" class="map-viewport"></div>
+
+        <!-- Floating City Crime Info Box (Folium-Inspired) -->
+        <div id="map-floating-panel" class="map-floating-panel">
+          <h3>
+            <span>🏙️ UrbanPulse Overview</span>
+            <span id="floating-stat-risk" style="font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 700;">—</span>
+          </h3>
+
+          <div class="floating-stat-row">
+            <span class="floating-stat-label">Data Period:</span>
+            <span id="floating-stat-year" class="floating-stat-value">—</span>
+          </div>
+          <div class="floating-stat-row">
+            <span class="floating-stat-label">Total Recorded Crimes:</span>
+            <span id="floating-stat-total" class="floating-stat-value">—</span>
+          </div>
+          <div class="floating-stat-row">
+            <span class="floating-stat-label">Fatal Crimes:</span>
+            <span id="floating-stat-fatal" class="floating-stat-value" style="color: #ef4444;">—</span>
+          </div>
+          <div class="floating-stat-row">
+            <span class="floating-stat-label">Non-Fatal Crimes:</span>
+            <span id="floating-stat-nonfatal" class="floating-stat-value" style="color: #38bdf8;">—</span>
+          </div>
+          <div class="floating-stat-row">
+            <span class="floating-stat-label">Fatal Percentage:</span>
+            <span id="floating-stat-fatalpct" class="floating-stat-value">—</span>
+          </div>
+
+          <div class="floating-disclaimer">
+            <b>📍 Data Attribution Notice:</b>
+            Crime counts are Bengaluru city-level statistics. This layer shows no station pins; switch to Police Stations to see the verified station locations.
+          </div>
+        </div>
+
+        <!-- Floating Police Info Box: counts derived from the KML locations only -->
+        <div id="map-floating-panel-police" class="map-floating-panel" style="display: none;">
+          <h3>
+            <span>🚓 Police Locations</span>
+            <span style="font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 700; background: rgba(59,130,246,0.2); color:#60a5fa;">Verified KML</span>
+          </h3>
+          <div class="floating-stat-row"><span class="floating-stat-label">Mapped Locations:</span><span id="police-panel-total" class="floating-stat-value">—</span></div>
+          <div class="floating-stat-row"><span class="floating-stat-label">🚓 Police Stations:</span><span id="police-panel-stations" class="floating-stat-value">—</span></div>
+          <div class="floating-stat-row"><span class="floating-stat-label">🛡️ Police Outposts:</span><span id="police-panel-outposts" class="floating-stat-value">—</span></div>
+          <div class="floating-stat-row"><span class="floating-stat-label">🚆 Railway Police Stations:</span><span id="police-panel-railway" class="floating-stat-value">—</span></div>
+          <div class="floating-disclaimer">
+            <b>📍 Data Scope:</b> Pins show official station locations only. No station-level crime counts exist in the supplied data, so none are displayed. See the Crime &amp; Safety layer for city-level statistics.
+          </div>
+        </div>
+
+        <!-- Floating Construction Info Box: EDA is verified/complete, but there is
+             no ward-boundary/centroid coordinate dataset to plot markers with, so
+             this panel shows real headline KPIs instead of geocoded ward pins. -->
+        <div id="map-floating-panel-construction" class="map-floating-panel" style="display: none;">
+          <h3>
+            <span>🏗️ Ward Construction Overview</span>
+            <span style="font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 700; background: rgba(245,158,11,0.2); color:#f59e0b;">Live EDA</span>
+          </h3>
+
+          <div class="floating-stat-row">
+            <span class="floating-stat-label">Total Work Orders:</span>
+            <span id="construction-panel-orders" class="floating-stat-value">—</span>
+          </div>
+          <div class="floating-stat-row">
+            <span class="floating-stat-label">Total Verified Investment:</span>
+            <span id="construction-panel-amount" class="floating-stat-value" style="color: #f59e0b;">—</span>
+          </div>
+          <div class="floating-stat-row">
+            <span class="floating-stat-label">Wards Covered:</span>
+            <span id="construction-panel-wards" class="floating-stat-value">—</span>
+          </div>
+          <div class="floating-stat-row">
+            <span class="floating-stat-label">Unique Contractors:</span>
+            <span id="construction-panel-contractors" class="floating-stat-value">—</span>
+          </div>
+          <div class="floating-stat-row">
+            <span class="floating-stat-label">Development Clusters:</span>
+            <span id="construction-panel-clusters" class="floating-stat-value">—</span>
+          </div>
+
+          <div class="floating-disclaimer">
+            <b>🗺️ Geo-Mapping Notice:</b>
+            Ward-level EDA is complete and verified (see the <a href="analytics.html#construction-section" style="color:#38bdf8;">Analytics page</a> for full KPIs, clustering, and charts), but no BBMP ward-boundary or centroid coordinate dataset has been supplied, so ward markers/polygons cannot be plotted on this map yet.
+          </div>
+        </div>
+
+        <!-- Placeholder Overlay for Unready Map Layers -->
+        <div id="map-placeholder-overlay" class="map-layer-placeholder">
+          <div class="placeholder-icon">📊</div>
+          <h3 id="placeholder-layer-title">Data Coming Soon</h3>
+          <p id="placeholder-layer-desc">No verified dataset has been supplied for this layer yet.</p>
+          <button class="category-pill active" style="margin: 0 auto;" onclick="document.getElementById('map-layer-selector').value='construction'; document.getElementById('map-layer-selector').dispatchEvent(new Event('change'));">
+            Return to 🏗️ Construction Layer
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- =========================================================================
+       FOOTER
+       ========================================================================= -->
+  <footer class="app-footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="brand">
+          <div class="brand-icon">⚡</div>
+          <div class="brand-text">
+            <h1 style="font-size: 18px;">URBANPULSE</h1>
+            <p>Smart City Transparency Platform</p>
+          </div>
+        </div>
+        <div class="footer-copy">
+          Bengaluru Urban Transparency Initiative &bull; Verified Data Only &bull; Zero Fabricated Statistics
+        </div>
+      </div>
+      <div style="font-size: 11px; color: var(--text-muted); border-top: 1px solid var(--border-subtle); padding-top: 16px;">
+        Sources: Bengaluru City Police Annual Reports, Karnataka State Police GIS KML Datasets, Open City Bengaluru Portal, BBMP Open Data. Base map &copy; OpenStreetMap contributors.
+      </div>
+    </div>
+  </footer>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <!-- UrbanPulse Application Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/locations.js"></script>
+  <script src="js/construction-data.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>

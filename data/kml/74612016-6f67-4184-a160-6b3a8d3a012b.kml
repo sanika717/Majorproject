@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Document id="root_doc">
+<Schema name="blr_police_output_locs" id="blr_police_output_locs">
+	<SimpleField name="OBJECTID" type="float"></SimpleField>
+	<SimpleField name="KGISCode" type="string"></SimpleField>
+	<SimpleField name="KGISWardID" type="string"></SimpleField>
+	<SimpleField name="DepartmentCode" type="string"></SimpleField>
+	<SimpleField name="KGISVillageID" type="float"></SimpleField>
+	<SimpleField name="KGISPOL_OPSTID" type="int"></SimpleField>
+	<SimpleField name="POL_OPSTName" type="string"></SimpleField>
+</Schema>
+<Folder><name>blr_police_output_locs</name>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#blr_police_output_locs">
+		<SimpleData name="OBJECTID">1</SimpleData>
+		<SimpleData name="KGISCode">29572055428031620000HMPOLPUOFFPOP0001</SimpleData>
+		<SimpleData name="KGISWardID"></SimpleData>
+		<SimpleData name="DepartmentCode">1</SimpleData>
+		<SimpleData name="KGISVillageID">15437</SimpleData>
+		<SimpleData name="KGISPOL_OPSTID">1</SimpleData>
+		<SimpleData name="POL_OPSTName">Police Outpost, APTS Yelahanka</SimpleData>
+	</SchemaData></ExtendedData>
+      <MultiGeometry><Point><coordinates>77.605489000224,13.1236710003015</coordinates></Point></MultiGeometry>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#blr_police_output_locs">
+		<SimpleData name="OBJECTID">10</SimpleData>
+		<SimpleData name="KGISCode">29572055428031620000HMPOLPUOFFPOP0007</SimpleData>
+		<SimpleData name="KGISWardID"></SimpleData>
+		<SimpleData name="DepartmentCode">10</SimpleData>
+		<SimpleData name="KGISVillageID">15140</SimpleData>
+		<SimpleData name="KGISPOL_OPSTID">10</SimpleData>
+		<SimpleData name="POL_OPSTName">Police Outpost, Seshadripuram </SimpleData>
+	</SchemaData></ExtendedData>
+      <MultiGeometry><Point><coordinates>77.5826090002177,12.9955660001983</coordinates></Point></MultiGeometry>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#blr_police_output_locs">
+		<SimpleData name="OBJECTID">11</SimpleData>
+		<SimpleData name="KGISCode">29572055428031620000HMPOLPUOFFPOP0008</SimpleData>
+		<SimpleData name="KGISWardID"></SimpleData>
+		<SimpleData name="DepartmentCode">11</SimpleData>
+		<SimpleData name="KGISVillageID">15128</SimpleData>
+		<SimpleData name="KGISPOL_OPSTID">11</SimpleData>
+		<SimpleData name="POL_OPSTName">Police Outpost, Dattatreya Temple  Hulluchatra</SimpleData>
+	</SchemaData></ExtendedData>
+      <MultiGeometry><Point><coordinates>77.5746466298859,12.9991048101212</coordinates></Point></MultiGeometry>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#blr_police_output_locs">
+		<SimpleData name="OBJECTID">12</SimpleData>
+		<SimpleData name="KGISCode">29572055428031620000HMPOLPUOFFPOP0009</SimpleData>
+		<SimpleData name="KGISWardID"></SimpleData>
+		<SimpleData name="DepartmentCode">12</SimpleData>
+		<SimpleData name="KGISVillageID">30092</SimpleData>
+		<SimpleData name="KGISPOL_OPSTID">12</SimpleData>
+		<SimpleData name="POL_OPSTName">Police Outpost, Bowring Hospital </SimpleData>
+	</SchemaData></ExtendedData>
+      <MultiGeometry><Point><coordinates>77.6254558328565,12.9749077788324</coordinates></Point></MultiGeometry>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#blr_police_output_locs">
+		<SimpleData name="OBJECTID">13</SimpleData>
+		<SimpleData name="KGISCode">29572055428031620000HMPOLPUOFFPOP0010</SimpleData>
+		<SimpleData name="KGISWardID"></SimpleData>
+		<SimpleData name="DepartmentCode">13</SimpleData>
+		<SimpleData name="KGISVillageID">15447</SimpleData>
+		<SimpleData name="KGISPOL_OPSTID">13</SimpleData>
+		<SimpleData name="POL_OPSTName">Police Outpost, Yelahanka </SimpleData>
+	</SchemaData></ExtendedData>
+      <MultiGeometry><Point><coordinates>77.5970329999878,13.0988799999525</coordinates></Point></MultiGeometry>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#blr_police_output_locs">
+		<SimpleData name="OBJECTID">14</SimpleData>
+		<SimpleData name="KGISCode">29572055428031620000HMPOLPUOFFPOP0011</SimpleData>
+		<SimpleData name="KGISWardID"></SimpleData>
+		<SimpleData name="DepartmentCode">14</SimpleData>
+		<SimpleData name="KGISVillageID">30092</SimpleData>
+		<SimpleData name="KGISPOL_OPSTID">14</SimpleData>
+		<SimpleData name="POL_OPSTName">Police Outpost, Upparpet Traffic, Majestic Bus Stand</SimpleData>
+	</SchemaData></ExtendedData>
+      <MultiGeometry><Point><coordinates>77.5736500000652,12.9773430001644</coordinates></Point></MultiGeometry>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#blr_police_output_locs">
+		<SimpleData name="OBJECTID">15</SimpleData>
+		<SimpleData name="KGISCode">29572055428031620000HMPOLPUOFFPOP0012</SimpleData>
+		<SimpleData name="KGISWardID"></SimpleData>
+		<SimpleData name="DepartmentCode">15</SimpleData>
+		<SimpleData name="KGISVillageID">15707</SimpleData>
+		<SimpleData name="KGISPOL_OPSTID">15</SimpleData>
+		<SimpleData name="POL_OPSTName">Police Outpost, Jayanagar Traffic, J.P.Nagar</SimpleData>
+	</SchemaData></ExtendedData>
+      <MultiGeometry><Point><coordinates>77.5876499997462,12.9118799995949</coordinates></Point></MultiGeometry>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#blr_police_output_locs">
+		<SimpleData name="OBJECTID">5</SimpleData>
+		<SimpleData name="KGISCode">29572055428031620000HMPOLPUOFFPOP0002</SimpleData>
+		<SimpleData name="KGISWardID"></SimpleData>
+		<SimpleData name="DepartmentCode">5</SimpleData>
+		<SimpleData name="KGISVillageID">30092</SimpleData>
+		<SimpleData name="KGISPOL_OPSTID">5</SimpleData>
+		<SimpleData name="POL_OPSTName">Police Outpost, M.S. Vidhana Soudha</SimpleData>
+	</SchemaData></ExtendedData>
+      <MultiGeometry><Point><coordinates>77.5886142885905,12.9773209692159</coordinates></Point></MultiGeometry>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#blr_police_output_locs">
+		<SimpleData name="OBJECTID">6</SimpleData>
+		<SimpleData name="KGISCode">29572055428031620000HMPOLPUOFFPOP0003</SimpleData>
+		<SimpleData name="KGISWardID"></SimpleData>
+		<SimpleData name="DepartmentCode">6</SimpleData>
+		<SimpleData name="KGISVillageID">30092</SimpleData>
+		<SimpleData name="KGISPOL_OPSTID">6</SimpleData>
+		<SimpleData name="POL_OPSTName">Police Outpost, L.H. Vidhana Soudha</SimpleData>
+	</SchemaData></ExtendedData>
+      <MultiGeometry><Point><coordinates>77.5888858023174,12.9842559458422</coordinates></Point></MultiGeometry>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#blr_police_output_locs">
+		<SimpleData name="OBJECTID">7</SimpleData>
+		<SimpleData name="KGISCode">29572055428031620000HMPOLPUOFFPOP0004</SimpleData>
+		<SimpleData name="KGISWardID"></SimpleData>
+		<SimpleData name="DepartmentCode">7</SimpleData>
+		<SimpleData name="KGISVillageID">30092</SimpleData>
+		<SimpleData name="KGISPOL_OPSTID">7</SimpleData>
+		<SimpleData name="POL_OPSTName">Police Outpost, City Civil Court</SimpleData>
+	</SchemaData></ExtendedData>
+      <MultiGeometry><Point><coordinates>77.5836130002813,12.9728450001601</coordinates></Point></MultiGeometry>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#blr_police_output_locs">
+		<SimpleData name="OBJECTID">8</SimpleData>
+		<SimpleData name="KGISCode">29572055428031620000HMPOLPUOFFPOP0005</SimpleData>
+		<SimpleData name="KGISWardID"></SimpleData>
+		<SimpleData name="DepartmentCode">8</SimpleData>
+		<SimpleData name="KGISVillageID">15087</SimpleData>
+		<SimpleData name="KGISPOL_OPSTID">8</SimpleData>
+		<SimpleData name="POL_OPSTName">Police Outpost, Vasanthnagara Chowki</SimpleData>
+	</SchemaData></ExtendedData>
+      <MultiGeometry><Point><coordinates>77.5927356756342,12.9924318008119</coordinates></Point></MultiGeometry>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#blr_police_output_locs">
+		<SimpleData name="OBJECTID">9</SimpleData>
+		<SimpleData name="KGISCode">29572055428031620000HMPOLPUOFFPOP0006</SimpleData>
+		<SimpleData name="KGISWardID"></SimpleData>
+		<SimpleData name="DepartmentCode">9</SimpleData>
+		<SimpleData name="KGISVillageID">30092</SimpleData>
+		<SimpleData name="KGISPOL_OPSTID">9</SimpleData>
+		<SimpleData name="POL_OPSTName">Police Outpost, Madhavanagara Chowki</SimpleData>
+	</SchemaData></ExtendedData>
+      <MultiGeometry><Point><coordinates>77.5769080927862,12.9837094873824</coordinates></Point></MultiGeometry>
+  </Placemark>
+</Folder>
+</Document></kml>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Intelligence Assistant | UrbanPulse</title>
+  <meta name="description" content="UrbanPulse is an evidence-based Smart City Transparency and Intelligence Platform for Bengaluru.">
+
+  <!-- Google Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- App Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="page-assistant">
+
+  <!-- =========================================================================
+       APP HEADER & NAVIGATION  (User role — each item is its own page)
+       ========================================================================= -->
+  <header class="app-header">
+    <div class="container header-inner">
+      <a href="dashboard.html" class="brand">
+        <div class="brand-icon">⚡</div>
+        <div class="brand-text">
+          <h1>URBANPULSE</h1>
+          <p>Smart City Transparency Platform</p>
+        </div>
+      </a>
+
+      <nav aria-label="User navigation">
+        <ul class="nav-links">
+          <li><a href="dashboard.html" class="nav-link">🏠 Dashboard</a></li>
+          <li><a href="analytics.html" class="nav-link">📊 Analytics</a></li>
+          <li><a href="complaints.html" class="nav-link">📢 Public Complaints</a></li>
+          <li><a href="assistant.html" class="nav-link active" aria-current="page">🤖 Intelligence Assistant</a></li>
+        </ul>
+      </nav>
+
+      <div class="header-status">
+        <div class="status-pill">
+          <span class="pulse-dot"></span>
+          <span>Bengaluru Live Intelligence</span>
+        </div>
+        <div style="font-size: 12px; color: var(--text-muted); font-weight: 600;" id="live-time-display">--:--:-- IST</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="section">
+      <div class="section-header">
+        <div class="section-title-wrap">
+          <span class="section-badge badge-progress">🚧 Frontend Only — AI Backend Pending</span>
+          <h2 class="section-title">🤖 Intelligence Assistant</h2>
+          <p class="section-desc">A conversational interface for asking questions about UrbanPulse data. Answers will be available once an AI backend is connected.</p>
+        </div>
+      </div>
+
+      <div class="glass-panel chat-shell">
+        <div class="chat-header">
+          <div class="chat-avatar">🤖</div>
+          <div>
+            <h3>UrbanPulse Intelligence Assistant</h3>
+            <p>Backend integration pending</p>
+          </div>
+        </div>
+
+        <div id="chat-messages" class="chat-messages" aria-live="polite">
+          <div class="chat-msg assistant">Hello! I'm the UrbanPulse Intelligence Assistant. I'm not connected to a data or AI backend yet, so I can't answer questions right now. This interface will be enabled in a later phase.</div>
+        </div>
+
+        <div class="chat-suggestions" id="chat-suggestions">
+          <button type="button" class="category-pill" data-q="Which wards have the highest construction investment?">Which wards have the highest construction investment?</button>
+          <button type="button" class="category-pill" data-q="How have crimes against women changed from 2021 to 2023?">How have crimes against women changed from 2021 to 2023?</button>
+          <button type="button" class="category-pill" data-q="Which division has the most reported cyber crime?">Which division has the most reported cyber crime?</button>
+          <button type="button" class="category-pill" data-q="How many police locations are mapped?">How many police locations are mapped?</button>
+        </div>
+
+        <form id="chat-form" class="chat-input-row" autocomplete="off">
+          <input id="chat-input" class="form-input" type="text" placeholder="Ask about UrbanPulse data (available after backend integration)" disabled>
+          <button type="submit" id="chat-send" class="btn-primary" disabled>Send</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <!-- =========================================================================
+       FOOTER
+       ========================================================================= -->
+  <footer class="app-footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="brand">
+          <div class="brand-icon">⚡</div>
+          <div class="brand-text">
+            <h1 style="font-size: 18px;">URBANPULSE</h1>
+            <p>Smart City Transparency Platform</p>
+          </div>
+        </div>
+        <div class="footer-copy">
+          Bengaluru Urban Transparency Initiative &bull; Verified Data Only &bull; Zero Fabricated Statistics
+        </div>
+      </div>
+      <div style="font-size: 11px; color: var(--text-muted); border-top: 1px solid var(--border-subtle); padding-top: 16px;">
+        Sources: Bengaluru City Police Annual Reports, Karnataka State Police GIS KML Datasets, Open City Bengaluru Portal, BBMP Open Data. Base map &copy; OpenStreetMap contributors.
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/app.js"></script>
+  <script src="js/assistant.js"></script>
+</body>
+</html>

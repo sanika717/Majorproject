@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Document id="root_doc">
+<Schema name="blr_railway_police_locs" id="blr_railway_police_locs">
+	<SimpleField name="OBJECTID" type="float"></SimpleField>
+	<SimpleField name="KGISCode" type="string"></SimpleField>
+	<SimpleField name="KGISWardID" type="string"></SimpleField>
+	<SimpleField name="DepartmentCode" type="string"></SimpleField>
+	<SimpleField name="KGISVillageID" type="float"></SimpleField>
+	<SimpleField name="KGISRW_POL_STAID" type="int"></SimpleField>
+	<SimpleField name="RW_POL_STAName" type="string"></SimpleField>
+	<SimpleField name="KGISRW_POL_STACode" type="string"></SimpleField>
+</Schema>
+<Folder><name>blr_railway_police_locs</name>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#blr_railway_police_locs">
+		<SimpleData name="OBJECTID">1</SimpleData>
+		<SimpleData name="KGISCode">29572055428031620000HMPOLPUOFFRPS0001</SimpleData>
+		<SimpleData name="KGISWardID"></SimpleData>
+		<SimpleData name="DepartmentCode">169740241</SimpleData>
+		<SimpleData name="KGISVillageID">15076</SimpleData>
+		<SimpleData name="KGISRW_POL_STAID">1</SimpleData>
+		<SimpleData name="RW_POL_STAName">Bangalore City Railway PS</SimpleData>
+		<SimpleData name="KGISRW_POL_STACode">RWP - 01</SimpleData>
+	</SchemaData></ExtendedData>
+      <MultiGeometry><Point><coordinates>77.569171999661,12.9771270000087</coordinates></Point></MultiGeometry>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#blr_railway_police_locs">
+		<SimpleData name="OBJECTID">2</SimpleData>
+		<SimpleData name="KGISCode">29572055428031620000HMPOLPUOFFRPS0002</SimpleData>
+		<SimpleData name="KGISWardID"></SimpleData>
+		<SimpleData name="DepartmentCode">169740242</SimpleData>
+		<SimpleData name="KGISVillageID">15076</SimpleData>
+		<SimpleData name="KGISRW_POL_STAID">2</SimpleData>
+		<SimpleData name="RW_POL_STAName">Bangalore Rural Railway PS</SimpleData>
+		<SimpleData name="KGISRW_POL_STACode">RWP - 02</SimpleData>
+	</SchemaData></ExtendedData>
+      <MultiGeometry><Point><coordinates>77.5695099998844,12.9794109996888</coordinates></Point></MultiGeometry>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#blr_railway_police_locs">
+		<SimpleData name="OBJECTID">3</SimpleData>
+		<SimpleData name="KGISCode">29572055428031620000HMPOLPUOFFRPS0003</SimpleData>
+		<SimpleData name="KGISWardID"></SimpleData>
+		<SimpleData name="DepartmentCode">169740245</SimpleData>
+		<SimpleData name="KGISVillageID">30092</SimpleData>
+		<SimpleData name="KGISRW_POL_STAID">3</SimpleData>
+		<SimpleData name="RW_POL_STAName">Bangalore Contonment Railway PS</SimpleData>
+		<SimpleData name="KGISRW_POL_STACode">RWP - 03</SimpleData>
+	</SchemaData></ExtendedData>
+      <MultiGeometry><Point><coordinates>77.5978789997818,12.9937459998746</coordinates></Point></MultiGeometry>
+  </Placemark>
+  <Placemark>
+	<ExtendedData><SchemaData schemaUrl="#blr_railway_police_locs">
+		<SimpleData name="OBJECTID">5</SimpleData>
+		<SimpleData name="KGISCode">29572055428031620000HMPOLPUOFFRPS0004</SimpleData>
+		<SimpleData name="KGISWardID"></SimpleData>
+		<SimpleData name="DepartmentCode">169740247</SimpleData>
+		<SimpleData name="KGISVillageID">21406</SimpleData>
+		<SimpleData name="KGISRW_POL_STAID">5</SimpleData>
+		<SimpleData name="RW_POL_STAName">Byappanahalli Railway PS</SimpleData>
+		<SimpleData name="KGISRW_POL_STACode">RWP - 05</SimpleData>
+	</SchemaData></ExtendedData>
+      <MultiGeometry><Point><coordinates>77.6435709998957,12.9916090002948</coordinates></Point></MultiGeometry>
+  </Placemark>
+</Folder>
+</Document></kml>

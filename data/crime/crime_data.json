@@ -1,0 +1,735 @@
+{
+  "metadata": {
+    "source": "Bengaluru City Police Annual Reports & D47 Crime Statistics",
+    "jurisdiction": "Bengaluru City Police Commissionerate",
+    "scope": "City-level & Division-level aggregates",
+    "police_locations_count": 150,
+    "historical_overview": {
+      "total_recorded_crimes": 35971,
+      "total_fatal_crimes": 5437,
+      "total_non_fatal_crimes": 30534,
+      "overall_fatal_percentage": 15.11,
+      "highest_risk_year": 2016,
+      "highest_risk_score": 71.7,
+      "highest_risk_level": "High Risk",
+      "period_label": "2014 \u2013 2021 (Up to Dec)"
+    }
+  },
+  "risk_formula": {
+    "description": "UrbanPulse City Crime Risk Score = (0.60 * Crime Volume Score) + (0.40 * Severity Score)",
+    "volume_weight": 0.6,
+    "severity_weight": 0.4,
+    "thresholds": {
+      "high": 70,
+      "medium": 40,
+      "low": 0
+    }
+  },
+  "categories": {
+    "women": {
+      "title": "Crimes Against Women",
+      "unit": "Cases",
+      "years": {
+        "2023": {
+          "items": [
+            {
+              "crime": "Rape",
+              "reported": 176,
+              "detected": 176,
+              "detection_pct": 100.0
+            },
+            {
+              "crime": "Molestation",
+              "reported": 1135,
+              "detected": 1004,
+              "detection_pct": 88.46
+            },
+            {
+              "crime": "Insulting Modesty of Women",
+              "reported": 60,
+              "detected": 52,
+              "detection_pct": 86.67
+            },
+            {
+              "crime": "Dowry Death",
+              "reported": 25,
+              "detected": 25,
+              "detection_pct": 100.0
+            },
+            {
+              "crime": "Cruelty by Husband/Relatives",
+              "reported": 696,
+              "detected": 696,
+              "detection_pct": 100.0
+            },
+            {
+              "crime": "Immoral Trafficking Act",
+              "reported": 161,
+              "detected": 161,
+              "detection_pct": 100.0
+            },
+            {
+              "crime": "Indecent Representation of Women",
+              "reported": 0,
+              "detected": 0,
+              "detection_pct": 0.0
+            },
+            {
+              "crime": "Dowry Prohibition Act",
+              "reported": 1007,
+              "detected": 1007,
+              "detection_pct": 100.0
+            }
+          ],
+          "total_reported": 3259,
+          "total_detected": 3121,
+          "overall_detection_pct": 95.77,
+          "highest_reported_crime": "Molestation",
+          "highest_reported_count": 1135
+        },
+        "2022": {
+          "items": [
+            {
+              "crime": "Rape",
+              "reported": 152,
+              "detected": 151,
+              "detection_pct": 99.34
+            },
+            {
+              "crime": "Molestation",
+              "reported": 731,
+              "detected": 688,
+              "detection_pct": 94.12
+            },
+            {
+              "crime": "Insulting Modesty of Women",
+              "reported": 29,
+              "detected": 24,
+              "detection_pct": 82.76
+            },
+            {
+              "crime": "Dowry Death",
+              "reported": 29,
+              "detected": 29,
+              "detection_pct": 100.0
+            },
+            {
+              "crime": "Cruelty by Husband/Relatives",
+              "reported": 580,
+              "detected": 573,
+              "detection_pct": 98.79
+            },
+            {
+              "crime": "Immoral Trafficking Act",
+              "reported": 155,
+              "detected": 155,
+              "detection_pct": 100.0
+            },
+            {
+              "crime": "Indecent Representation of Women",
+              "reported": 0,
+              "detected": 0,
+              "detection_pct": 0.0
+            },
+            {
+              "crime": "Dowry Prohibition Act",
+              "reported": 954,
+              "detected": 925,
+              "detection_pct": 96.96
+            }
+          ],
+          "total_reported": 2630,
+          "total_detected": 2545,
+          "overall_detection_pct": 96.77,
+          "highest_reported_crime": "Dowry Prohibition Act",
+          "highest_reported_count": 954
+        },
+        "2021": {
+          "items": [
+            {
+              "crime": "Rape",
+              "reported": 116,
+              "detected": 116,
+              "detection_pct": 100.0
+            },
+            {
+              "crime": "Molestation",
+              "reported": 573,
+              "detected": 559,
+              "detection_pct": 97.56
+            },
+            {
+              "crime": "Insulting Modesty of Women",
+              "reported": 19,
+              "detected": 17,
+              "detection_pct": 89.47
+            },
+            {
+              "crime": "Dowry Death",
+              "reported": 26,
+              "detected": 26,
+              "detection_pct": 100.0
+            },
+            {
+              "crime": "Cruelty by Husband/Relatives",
+              "reported": 422,
+              "detected": 420,
+              "detection_pct": 99.53
+            },
+            {
+              "crime": "Immoral Trafficking Act",
+              "reported": 129,
+              "detected": 129,
+              "detection_pct": 100.0
+            },
+            {
+              "crime": "Indecent Representation of Women",
+              "reported": 0,
+              "detected": 0,
+              "detection_pct": 0.0
+            },
+            {
+              "crime": "Dowry Prohibition Act",
+              "reported": 735,
+              "detected": 724,
+              "detection_pct": 98.5
+            }
+          ],
+          "total_reported": 2020,
+          "total_detected": 1991,
+          "overall_detection_pct": 98.56,
+          "highest_reported_crime": "Dowry Prohibition Act",
+          "highest_reported_count": 735
+        }
+      }
+    },
+    "children": {
+      "title": "Crimes Against Children",
+      "unit": "Cases",
+      "years": {
+        "2023": {
+          "items": [
+            {
+              "crime": "Exposure and Abandonment",
+              "reported": 10,
+              "detected": 0,
+              "detection_pct": 0.0
+            },
+            {
+              "crime": "Concealment of Birth",
+              "reported": 11,
+              "detected": 0,
+              "detection_pct": 0.0
+            },
+            {
+              "crime": "Juvenile Justice Act",
+              "reported": 40,
+              "detected": 40,
+              "detection_pct": 100.0
+            },
+            {
+              "crime": "Child Labour Act",
+              "reported": 4,
+              "detected": 4,
+              "detection_pct": 100.0
+            },
+            {
+              "crime": "Child Marriage Restraint Act",
+              "reported": 6,
+              "detected": 6,
+              "detection_pct": 100.0
+            },
+            {
+              "crime": "POCSO Act",
+              "reported": 560,
+              "detected": 538,
+              "detection_pct": 96.07
+            },
+            {
+              "crime": "Bonded Labour Act",
+              "reported": 0,
+              "detected": 0,
+              "detection_pct": 0.0
+            }
+          ],
+          "total_reported": 631,
+          "total_detected": 588,
+          "overall_detection_pct": 93.19,
+          "highest_reported_crime": "POCSO Act",
+          "highest_reported_count": 560
+        },
+        "2022": {
+          "items": [
+            {
+              "crime": "Exposure and Abandonment",
+              "reported": 12,
+              "detected": 3,
+              "detection_pct": 25.0
+            },
+            {
+              "crime": "Concealment of Birth",
+              "reported": 12,
+              "detected": 0,
+              "detection_pct": 0.0
+            },
+            {
+              "crime": "Juvenile Justice Act",
+              "reported": 37,
+              "detected": 37,
+              "detection_pct": 100.0
+            },
+            {
+              "crime": "Child Labour Act",
+              "reported": 9,
+              "detected": 9,
+              "detection_pct": 100.0
+            },
+            {
+              "crime": "Child Marriage Restraint Act",
+              "reported": 11,
+              "detected": 11,
+              "detection_pct": 100.0
+            },
+            {
+              "crime": "POCSO Act",
+              "reported": 480,
+              "detected": 477,
+              "detection_pct": 99.38
+            },
+            {
+              "crime": "Bonded Labour Act",
+              "reported": 0,
+              "detected": 0,
+              "detection_pct": 0.0
+            }
+          ],
+          "total_reported": 571,
+          "total_detected": 537,
+          "overall_detection_pct": 94.05,
+          "highest_reported_crime": "POCSO Act",
+          "highest_reported_count": 480
+        },
+        "2021": {
+          "items": [
+            {
+              "crime": "Exposure and Abandonment",
+              "reported": 16,
+              "detected": 3,
+              "detection_pct": 18.75
+            },
+            {
+              "crime": "Concealment of Birth",
+              "reported": 4,
+              "detected": 1,
+              "detection_pct": 25.0
+            },
+            {
+              "crime": "Juvenile Justice Act",
+              "reported": 33,
+              "detected": 33,
+              "detection_pct": 100.0
+            },
+            {
+              "crime": "Child Labour Act",
+              "reported": 9,
+              "detected": 9,
+              "detection_pct": 100.0
+            },
+            {
+              "crime": "Child Marriage Restraint Act",
+              "reported": 14,
+              "detected": 14,
+              "detection_pct": 100.0
+            },
+            {
+              "crime": "POCSO Act",
+              "reported": 403,
+              "detected": 401,
+              "detection_pct": 99.5
+            },
+            {
+              "crime": "Bonded Labour Act",
+              "reported": 0,
+              "detected": 0,
+              "detection_pct": 0.0
+            }
+          ],
+          "total_reported": 479,
+          "total_detected": 461,
+          "overall_detection_pct": 96.24,
+          "highest_reported_crime": "POCSO Act",
+          "highest_reported_count": 403
+        }
+      }
+    },
+    "cyber": {
+      "title": "Cyber Crime (Division-Wise)",
+      "unit": "Cases",
+      "scope": "Police Division Level",
+      "years": {
+        "2023": {
+          "items": [
+            {
+              "division": "CENTRAL",
+              "reported": 1126,
+              "detected": 69,
+              "ui": 753,
+              "detection_pct": 6.13
+            },
+            {
+              "division": "WEST",
+              "reported": 1941,
+              "detected": 47,
+              "ui": 1487,
+              "detection_pct": 2.42
+            },
+            {
+              "division": "NORTH",
+              "reported": 3260,
+              "detected": 238,
+              "ui": 2809,
+              "detection_pct": 7.3
+            },
+            {
+              "division": "SOUTH",
+              "reported": 2094,
+              "detected": 224,
+              "ui": 1351,
+              "detection_pct": 10.7
+            },
+            {
+              "division": "EAST",
+              "reported": 1994,
+              "detected": 129,
+              "ui": 1750,
+              "detection_pct": 6.47
+            },
+            {
+              "division": "NORTH EAST",
+              "reported": 1917,
+              "detected": 201,
+              "ui": 1371,
+              "detection_pct": 10.49
+            },
+            {
+              "division": "SOUTH EAST",
+              "reported": 2674,
+              "detected": 298,
+              "ui": 2319,
+              "detection_pct": 11.14
+            },
+            {
+              "division": "WHITE FIELD",
+              "reported": 2562,
+              "detected": 55,
+              "ui": 2394,
+              "detection_pct": 2.15
+            },
+            {
+              "division": "CYBER PS. COP",
+              "reported": 55,
+              "detected": 10,
+              "ui": 51,
+              "detection_pct": 18.18
+            }
+          ],
+          "total_reported": 17623,
+          "total_detected": 1071,
+          "overall_detection_pct": 6.08,
+          "highest_reporting_division": "NORTH",
+          "highest_reporting_count": 3260
+        },
+        "2022": {
+          "items": [
+            {
+              "division": "CENTRAL",
+              "reported": 989,
+              "detected": 173,
+              "ui": 36,
+              "detection_pct": 17.49
+            },
+            {
+              "division": "WEST",
+              "reported": 1384,
+              "detected": 182,
+              "ui": 81,
+              "detection_pct": 13.15
+            },
+            {
+              "division": "NORTH",
+              "reported": 1300,
+              "detected": 242,
+              "ui": 597,
+              "detection_pct": 18.62
+            },
+            {
+              "division": "SOUTH",
+              "reported": 1360,
+              "detected": 578,
+              "ui": 184,
+              "detection_pct": 42.5
+            },
+            {
+              "division": "EAST",
+              "reported": 937,
+              "detected": 129,
+              "ui": 99,
+              "detection_pct": 13.77
+            },
+            {
+              "division": "NORTH EAST",
+              "reported": 1550,
+              "detected": 196,
+              "ui": 5,
+              "detection_pct": 12.65
+            },
+            {
+              "division": "SOUTH EAST",
+              "reported": 1329,
+              "detected": 621,
+              "ui": 281,
+              "detection_pct": 46.73
+            },
+            {
+              "division": "WHITE FIELD",
+              "reported": 1055,
+              "detected": 303,
+              "ui": 519,
+              "detection_pct": 28.72
+            },
+            {
+              "division": "CYBER PS. COP",
+              "reported": 36,
+              "detected": 7,
+              "ui": 27,
+              "detection_pct": 19.44
+            }
+          ],
+          "total_reported": 9940,
+          "total_detected": 2431,
+          "overall_detection_pct": 24.46,
+          "highest_reporting_division": "NORTH EAST",
+          "highest_reporting_count": 1550
+        },
+        "2021": {
+          "items": [
+            {
+              "division": "CENTRAL",
+              "reported": 660,
+              "detected": 166,
+              "ui": 3,
+              "detection_pct": 25.15
+            },
+            {
+              "division": "WEST",
+              "reported": 1148,
+              "detected": 223,
+              "ui": 2,
+              "detection_pct": 19.43
+            },
+            {
+              "division": "NORTH",
+              "reported": 618,
+              "detected": 319,
+              "ui": 28,
+              "detection_pct": 51.62
+            },
+            {
+              "division": "SOUTH",
+              "reported": 942,
+              "detected": 285,
+              "ui": 29,
+              "detection_pct": 30.25
+            },
+            {
+              "division": "EAST",
+              "reported": 602,
+              "detected": 198,
+              "ui": 3,
+              "detection_pct": 32.89
+            },
+            {
+              "division": "NORTH EAST",
+              "reported": 832,
+              "detected": 130,
+              "ui": 2,
+              "detection_pct": 15.62
+            },
+            {
+              "division": "SOUTH EAST",
+              "reported": 735,
+              "detected": 278,
+              "ui": 13,
+              "detection_pct": 37.82
+            },
+            {
+              "division": "WHITE FIELD",
+              "reported": 869,
+              "detected": 653,
+              "ui": 102,
+              "detection_pct": 75.14
+            },
+            {
+              "division": "CYBER PS. COP",
+              "reported": 16,
+              "detected": 5,
+              "ui": 10,
+              "detection_pct": 31.25
+            }
+          ],
+          "total_reported": 6422,
+          "total_detected": 2257,
+          "overall_detection_pct": 35.14,
+          "highest_reporting_division": "WEST",
+          "highest_reporting_count": 1148
+        }
+      }
+    },
+    "accidental": {
+      "title": "Accidental Deaths",
+      "unit": "Fatalities",
+      "years": {
+        "2023": {
+          "items": [
+            {
+              "cause": "Electrocution",
+              "male": 28,
+              "female": 5,
+              "total": 33
+            },
+            {
+              "cause": "Drowning",
+              "male": 51,
+              "female": 18,
+              "total": 69
+            },
+            {
+              "cause": "Burning",
+              "male": 53,
+              "female": 65,
+              "total": 118
+            },
+            {
+              "cause": "Fall from Height",
+              "male": 186,
+              "female": 37,
+              "total": 223
+            },
+            {
+              "cause": "Poisoning",
+              "male": 24,
+              "female": 18,
+              "total": 42
+            },
+            {
+              "cause": "Others",
+              "male": 2574,
+              "female": 431,
+              "total": 3005
+            }
+          ],
+          "total_male": 2916,
+          "total_female": 574,
+          "total_accidental_deaths": 3490,
+          "highest_cause": "Fall from Height (Non-Others)",
+          "highest_cause_count": 223
+        },
+        "2022": {
+          "items": [
+            {
+              "cause": "Electrocution",
+              "male": 43,
+              "female": 11,
+              "total": 54
+            },
+            {
+              "cause": "Drowning",
+              "male": 50,
+              "female": 7,
+              "total": 57
+            },
+            {
+              "cause": "Burning",
+              "male": 40,
+              "female": 44,
+              "total": 84
+            },
+            {
+              "cause": "Fall from Height",
+              "male": 228,
+              "female": 32,
+              "total": 260
+            },
+            {
+              "cause": "Poisoning",
+              "male": 30,
+              "female": 20,
+              "total": 50
+            },
+            {
+              "cause": "Others",
+              "male": 2434,
+              "female": 421,
+              "total": 2855
+            }
+          ],
+          "total_male": 2825,
+          "total_female": 535,
+          "total_accidental_deaths": 3360,
+          "highest_cause": "Fall from Height (Non-Others)",
+          "highest_cause_count": 260
+        },
+        "2021": {
+          "items": [
+            {
+              "cause": "Electrocution",
+              "male": 40,
+              "female": 9,
+              "total": 49
+            },
+            {
+              "cause": "Drowning",
+              "male": 36,
+              "female": 14,
+              "total": 50
+            },
+            {
+              "cause": "Burning",
+              "male": 40,
+              "female": 49,
+              "total": 89
+            },
+            {
+              "cause": "Fall from Height",
+              "male": 155,
+              "female": 35,
+              "total": 190
+            },
+            {
+              "cause": "Poisoning",
+              "male": 31,
+              "female": 5,
+              "total": 36
+            },
+            {
+              "cause": "Others",
+              "male": 2181,
+              "female": 364,
+              "total": 2545
+            }
+          ],
+          "total_male": 2483,
+          "total_female": 476,
+          "total_accidental_deaths": 2959,
+          "highest_cause": "Fall from Height (Non-Others)",
+          "highest_cause_count": 190
+        }
+      }
+    }
+  },
+  "annual_city_totals_status": {
+    "has_real_data": false,
+    "status": "EDA In Progress",
+    "note": "Year-by-year (2021-2023) overall city crime totals are not yet in the verified EDA notebook. Removed a previously fabricated per-year annual_city_totals block that did not match the D47 CSV, Crime Press Note PDF, or notebooks/crime/UrbanPulse_Crime_EDA.ipynb. Only the historical_overview (2014-2021, Up to Dec) aggregate in metadata is verified. The 'categories' below (women, children, cyber, accidental) DO have verified 2021-2023 breakdowns, matching the Bengaluru City Police Press Note."
+  }
+}

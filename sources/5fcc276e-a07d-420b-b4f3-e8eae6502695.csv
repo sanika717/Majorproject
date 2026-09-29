@@ -1,0 +1,20 @@
+﻿Type,Cause,2021 male,2021 female,2022 male,2022 female,2023 male,2023 female
+Suicides,Drowning,12,8,13,13,12,4
+Suicides,Hanging,1402,580,1441,560,1466,574
+Suicides,Poisoning,134,49,123,48,141,37
+Suicides,Run over by train,0,0,0,0,0,0
+Suicides,Burning,21,10,13,17,17,9
+Suicides,Use of fire arms,5,0,2,0,0,0
+Suicides,Others,56,15,53,16,64,34
+Suicides,SUB TOTAL,1630,662,1645,654,1700,658
+Suicides,TOTAL SUICIDES (M+F),2292,,2299,,2358,
+,,,,,,,
+Accidental Deaths,Electrocution,40,9,43,11,28,5
+Accidental Deaths,Drowning,36,14,50,7,51,18
+Accidental Deaths,Burning,40,49,40,44,53,65
+Accidental Deaths,Fall from Height,155,35,228,32,186,37
+Accidental Deaths,Poisoning,31,5,30,20,24,18
+Accidental Deaths,Others,2181,364,2434,421,2574,431
+Accidental Deaths,SUB TOTAL,2483,476,2825,535,2916,574
+Accidental Deaths,TOTAL ACCIDENTAL DEATHS (M+F),2959,,3360,,3490,
+,GRAND TOTAL (Accidents + Suicides),5251,,5659,,5848,

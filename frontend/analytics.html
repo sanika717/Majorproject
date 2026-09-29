@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics | UrbanPulse</title>
+  <meta name="description" content="UrbanPulse is an evidence-based Smart City Transparency and Intelligence Platform for Bengaluru.">
+
+  <!-- Google Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- App Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="page-analytics">
+
+  <!-- =========================================================================
+       APP HEADER & NAVIGATION  (User role — each item is its own page)
+       ========================================================================= -->
+  <header class="app-header">
+    <div class="container header-inner">
+      <a href="dashboard.html" class="brand">
+        <div class="brand-icon">⚡</div>
+        <div class="brand-text">
+          <h1>URBANPULSE</h1>
+          <p>Smart City Transparency Platform</p>
+        </div>
+      </a>
+
+      <nav aria-label="User navigation">
+        <ul class="nav-links">
+          <li><a href="dashboard.html" class="nav-link">🏠 Dashboard</a></li>
+          <li><a href="analytics.html" class="nav-link active" aria-current="page">📊 Analytics</a></li>
+          <li><a href="complaints.html" class="nav-link">📢 Public Complaints</a></li>
+          <li><a href="assistant.html" class="nav-link">🤖 Intelligence Assistant</a></li>
+        </ul>
+      </nav>
+
+      <div class="header-status">
+        <div class="status-pill">
+          <span class="pulse-dot"></span>
+          <span>Bengaluru Live Intelligence</span>
+        </div>
+        <div style="font-size: 12px; color: var(--text-muted); font-weight: 600;" id="live-time-display">--:--:-- IST</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- Moved verbatim from the Phase 3 single page (ids, classes and JS bindings unchanged). -->
+    <section id="analytics-dashboard" class="analytics-dashboard-wrapper">
+
+    <div class="section" style="padding-bottom: 0;">
+      <div class="section-title-wrap">
+        <span class="section-badge badge-active">📊 Verified EDA Results Only</span>
+        <h2 class="section-title">📊 Analytics</h2>
+        <p class="section-desc">Detailed analysis built only from the verified UrbanPulse datasets. Choose a topic below. Anything the source data does not contain is shown as “Data Not Available”.</p>
+      </div>
+      <div class="category-pills-wrap analytics-tabs" role="tablist" aria-label="Analytics sections" style="margin: 16px 0 0;">
+        <button class="category-pill active" role="tab" data-tab="construction">🏗️ Construction</button>
+        <button class="category-pill" role="tab" data-tab="crime">🚨 Crime &amp; Safety</button>
+        <button class="category-pill" role="tab" data-tab="police">🚓 Police</button>
+      </div>
+    </div>
+
+    <div id="tab-construction" class="analytics-tab-panel active">
+
+    <section id="construction-section" class="section">
+      <div class="section-header">
+        <div class="section-title-wrap">
+          <span class="section-badge badge-active">📊 Live Verified EDA Analysis</span>
+          <h2 class="section-title">🏗️ Ward-Level Infrastructure & Construction</h2>
+          <p class="section-desc">Ward-level BBMP civil works — work orders, expenditure, contractors, and K-Means development clustering — from the 2025-26 ward work-order dataset (4,729 records, 209 wards).</p>
+        </div>
+      </div>
+
+      <!-- Real KPI Cards Grid -->
+      <div class="kpi-grid">
+        <div class="kpi-card glass-panel">
+          <div class="kpi-header">
+            <span class="kpi-title">Total Work Orders</span>
+            <div class="kpi-icon" style="color: var(--accent-cyan);">📁</div>
+          </div>
+          <div id="construction-kpi-orders" class="kpi-value">4,729</div>
+          <div class="kpi-subtext">
+            <span>Verified BBMP Records</span>
+          </div>
+        </div>
+
+        <div class="kpi-card glass-panel">
+          <div class="kpi-header">
+            <span class="kpi-title">Total Verified Investment</span>
+            <div class="kpi-icon" style="color: var(--accent-amber);">💰</div>
+          </div>
+          <div id="construction-kpi-amount" class="kpi-value" style="color: var(--accent-amber);">₹3,169.06 Cr</div>
+          <div class="kpi-subtext">
+            <span>Sum of Work Order Amounts</span>
+          </div>
+        </div>
+
+        <div class="kpi-card glass-panel">
+          <div class="kpi-header">
+            <span class="kpi-title">Ward Coverage</span>
+            <div class="kpi-icon" style="color: var(--accent-emerald);">🏢</div>
+          </div>
+          <div id="construction-kpi-wards" class="kpi-value" style="font-size: 22px; color: var(--accent-emerald);">198 / 198</div>
+          <div class="kpi-subtext">
+            <span>Official BBMP Wards Represented</span>
+          </div>
+        </div>
+
+        <div class="kpi-card glass-panel">
+          <div class="kpi-header">
+            <span class="kpi-title">Unique Contractors</span>
+            <div class="kpi-icon" style="color: var(--accent-purple);">👷</div>
+          </div>
+          <div id="construction-kpi-contractors" class="kpi-value" style="color: var(--accent-purple);">1,603</div>
+          <div class="kpi-subtext">
+            <span>Distinct Contractor Records</span>
+          </div>
+        </div>
+
+        <div class="kpi-card glass-panel">
+          <div class="kpi-header">
+            <span class="kpi-title">Avg Deduction Rate</span>
+            <div class="kpi-icon" style="color: var(--accent-rose);">📉</div>
+          </div>
+          <div id="construction-kpi-deduction" class="kpi-value">10.08%</div>
+          <div class="kpi-subtext">
+            <span>Deduction ÷ Amount, per Work Order</span>
+          </div>
+        </div>
+
+        <div class="kpi-card glass-panel">
+          <div class="kpi-header">
+            <span class="kpi-title">Non-Standard Ward Codes</span>
+            <div class="kpi-icon" style="color: var(--text-muted);">❔</div>
+          </div>
+          <div id="construction-kpi-nonstandard" class="kpi-value" style="font-size: 22px;">11</div>
+          <div class="kpi-subtext">
+            <span>e.g. "o001" — meaning not specified in source data</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- K-Means Development Cluster Cards -->
+      <div class="risk-overview-grid">
+        <div class="risk-card glass-panel">
+          <div class="risk-card-header">
+            <h3>🏗️ High Development / High Expenditure</h3>
+            <p>K-Means++ Cluster 0 (of 2)</p>
+          </div>
+          <div class="floating-stat-row">
+            <span class="floating-stat-label">Wards in Cluster:</span>
+            <span id="cluster-high-count" class="floating-stat-value" style="color: #f59e0b;">75</span>
+          </div>
+          <div class="floating-stat-row">
+            <span class="floating-stat-label">Avg Work Orders / Ward:</span>
+            <span id="cluster-high-orders" class="floating-stat-value">36.1</span>
+          </div>
+          <div class="floating-stat-row">
+            <span class="floating-stat-label">Avg Investment / Ward:</span>
+            <span id="cluster-high-amount" class="floating-stat-value" style="color: #f59e0b;">₹29.13 Cr</span>
+          </div>
+          <div class="floating-stat-row">
+            <span class="floating-stat-label">Avg Contractors / Ward:</span>
+            <span id="cluster-high-contractors" class="floating-stat-value">21.8</span>
+          </div>
+        </div>
+
+        <div class="risk-card glass-panel">
+          <div class="risk-card-header">
+            <h3>🏘️ Low Development / Low Expenditure</h3>
+            <p>K-Means++ Cluster 1 (of 2)</p>
+          </div>
+          <div class="floating-stat-row">
+            <span class="floating-stat-label">Wards in Cluster:</span>
+            <span id="cluster-low-count" class="floating-stat-value" style="color: #38bdf8;">134</span>
+          </div>
+          <div class="floating-stat-row">
+            <span class="floating-stat-label">Avg Work Orders / Ward:</span>
+            <span id="cluster-low-orders" class="floating-stat-value">15.1</span>
+          </div>
+          <div class="floating-stat-row">
+            <span class="floating-stat-label">Avg Investment / Ward:</span>
+            <span id="cluster-low-amount" class="floating-stat-value" style="color: #38bdf8;">₹7.34 Cr</span>
+          </div>
+          <div class="floating-stat-row">
+            <span class="floating-stat-label">Avg Contractors / Ward:</span>
+            <span id="cluster-low-contractors" class="floating-stat-value">10.9</span>
+          </div>
+          <div class="risk-formula-box">
+            <b>Cluster Selection:</b> K=2 chosen by highest silhouette score across K=2–8 tested.
+            <div style="margin-top: 4px;">Silhouette Score (K=2): <b id="cluster-silhouette">0.3919</b></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Grid -->
+      <div class="charts-grid">
+        <div class="chart-card glass-panel">
+          <div class="chart-card-header">
+            <h3>💰 Top 10 Wards by Verified Investment</h3>
+            <span style="font-size: 12px; color: var(--text-muted);">Sum of Work Order Amounts</span>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="construction-investment-chart"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card glass-panel">
+          <div class="chart-card-header">
+            <h3>📊 Cluster Comparison — Avg Work Orders / Ward</h3>
+            <span style="font-size: 12px; color: var(--text-muted);">K-Means++ Clustering</span>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="construction-cluster-chart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-card glass-panel" style="grid-column: 1 / -1;">
+          <div class="chart-card-header">
+            <h3>🏷️ Work-Order Category Tags (Citywide)</h3>
+            <span style="font-size: 12px; color: var(--text-muted);">Keyword Match on Work Descriptions — Not Mutually Exclusive</span>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="construction-category-chart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Wards Table -->
+      <div class="table-card glass-panel">
+        <div class="table-header-wrap">
+          <h3>Top 15 Wards by Verified Investment</h3>
+        </div>
+        <div style="overflow-x: auto;">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Ward</th>
+                <th>Development Cluster</th>
+                <th>Work Orders</th>
+                <th>Total Investment</th>
+                <th>Net Expenditure</th>
+                <th>Contractors</th>
+              </tr>
+            </thead>
+            <tbody id="construction-data-table-body">
+              <!-- Dynamically injected rows -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Data Transparency & Scope Notice -->
+      <div class="transparency-notice-card">
+        <div class="notice-icon">🛡️</div>
+        <div class="notice-content">
+          <h4>UrbanPulse Construction Data Transparency & Verification Standard</h4>
+          <p>
+            All figures above are computed directly from <code>bbmp-2025-26-198-wards-work-orders.csv</code> (4,729 work-order records) using the
+            cleaning, aggregation, and K-Means++ clustering logic in <code>notebooks/construction/urbanpulse__edaipynb.py</code>. Nothing is invented,
+            estimated, or backfilled. The dataset's unrelated Bangalore-traffic/kagglehub sections were out of scope for this integration and were not run.
+            All 198 official BBMP wards are represented, plus 11 additional non-standard ward codes present in the raw data (e.g. "o001") whose meaning is
+            not specified in the source and is not guessed at here. Work-order category tags (drain, road, maintenance, development, water) are keyword
+            matches on free-text descriptions, so a single work order can be tagged more than once — these do not sum to the total work order count.
+            No BBMP ward-boundary or centroid coordinate dataset has been supplied, so ward markers/polygons are not plotted on the Smart City Map;
+            see the floating panel on the Construction map layer above for the same verified overview figures.
+          </p>
+        </div>
+      </div>
+    </section>
+
+      <!-- Extra verified construction analytics -->
+      <section class="section" style="padding-top: 0;">
+        <div class="kpi-grid">
+          <div class="kpi-card glass-panel"><div class="kpi-header"><span class="kpi-title">Net Expenditure</span><div class="kpi-icon">💵</div></div><div id="cx-kpi-net" class="kpi-value" style="color: var(--accent-emerald);">—</div><div class="kpi-subtext"><span>After deductions</span></div></div>
+          <div class="kpi-card glass-panel"><div class="kpi-header"><span class="kpi-title">Total Deductions</span><div class="kpi-icon">➖</div></div><div id="cx-kpi-ded" class="kpi-value" style="color: var(--accent-rose);">—</div><div class="kpi-subtext"><span>Sum of work-order deductions</span></div></div>
+          <div class="kpi-card glass-panel"><div class="kpi-header"><span class="kpi-title">Avg Amount / Work Order</span><div class="kpi-icon">📐</div></div><div id="cx-kpi-avg" class="kpi-value" style="color: var(--accent-amber);">—</div><div class="kpi-subtext"><span>Total amount ÷ work orders</span></div></div>
+        </div>
+        <div class="charts-grid">
+          <div class="chart-card glass-panel">
+            <div class="chart-card-header"><h3>🍩 Budget: Net vs Deductions</h3><span style="font-size: 12px; color: var(--text-muted);">Share of total amount</span></div>
+            <div class="chart-wrapper"><canvas id="cx-budget-donut"></canvas></div>
+          </div>
+          <div class="chart-card glass-panel">
+            <div class="chart-card-header"><h3>🍩 Wards per Development Cluster</h3><span style="font-size: 12px; color: var(--text-muted);">K-Means++ (K=2)</span></div>
+            <div class="chart-wrapper"><canvas id="cx-cluster-donut"></canvas></div>
+          </div>
+        </div>
+        <div class="charts-grid">
+          <div class="chart-card glass-panel">
+            <div class="chart-card-header"><h3>📈 Top 10 Wards by Work Orders</h3><span style="font-size: 12px; color: var(--text-muted);">Count of work orders</span></div>
+            <div class="chart-wrapper"><canvas id="cx-top-orders"></canvas></div>
+          </div>
+          <div class="chart-card glass-panel">
+            <div class="chart-card-header"><h3>📊 Wards by Work-Order Volume</h3><span style="font-size: 12px; color: var(--text-muted);">Binned from ward-level data (209 ward codes)</span></div>
+            <div class="chart-wrapper"><canvas id="cx-ward-hist"></canvas></div>
+          </div>
+        </div>
+        <div class="glass-panel na-card">
+          <h3>📋 Project Status Analysis</h3>
+          <p><b>Data Not Available.</b> The BBMP work-order file has no status column (fields: slno, id, ward, wodetails, contractor, brnumber, amount, nett, deduction), so completed / ongoing status cannot be analysed.</p>
+        </div>
+      </section>
+    </div><!-- /tab-construction -->
+
+    <div id="tab-crime" class="analytics-tab-panel">
+    <section id="crime-section" class="section">
+      <div class="section-header">
+        <div class="section-title-wrap">
+          <span class="section-badge badge-active">📊 Live Verified EDA Analysis</span>
+          <h2 class="section-title">🚨 Crime & Safety Intelligence</h2>
+          <p class="section-desc">Empirical crime data, year-over-year trends, severity indexing, and category breakdown for Bengaluru City.</p>
+        </div>
+
+        <div class="controls-bar">
+          <div class="control-group">
+            <span class="control-label">Year (Category Tabs):</span>
+            <select id="crime-year-select" class="custom-select">
+              <option value="2023" selected>2023 (Latest)</option>
+              <option value="2022">2022</option>
+              <option value="2021">2021</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category Filter Pills -->
+      <div class="category-pills-wrap">
+        <button class="category-pill active" data-category="all">⚡ All Recorded Crimes</button>
+        <button class="category-pill" data-category="women">👩 Crimes Against Women</button>
+        <button class="category-pill" data-category="children">👶 Crimes Against Children</button>
+        <button class="category-pill" data-category="cyber">💻 Cyber Crime (Division-Wise)</button>
+        <button class="category-pill" data-category="suicides">🕊️ Suicides</button>
+        <button class="category-pill" data-category="accidental">⚠️ Accidental Deaths</button>
+        
+        <!-- Placeholders for uncompleted categories -->
+        <button class="category-pill disabled" title="EDA In Progress">
+          <span>🔍 Missing Persons</span>
+          <span class="pill-badge">EDA In Progress</span>
+        </button>
+        <button class="category-pill disabled" title="EDA In Progress">
+          <span>🛑 Kidnapping</span>
+          <span class="pill-badge">EDA In Progress</span>
+        </button>
+        <button class="category-pill disabled" title="EDA In Progress">
+          <span>💼 Robbery & Dacoity</span>
+          <span class="pill-badge">EDA In Progress</span>
+        </button>
+        <button class="category-pill disabled" title="EDA In Progress">
+          <span>⛓️ Chain Snatching</span>
+          <span class="pill-badge">EDA In Progress</span>
+        </button>
+      </div>
+
+      <!-- Source & methodology for the currently selected category -->
+      <div id="crime-source-note" class="floating-disclaimer" style="margin: 0 0 16px; font-size: 12px;"></div>
+
+      <!-- Real KPI Cards Grid -->
+      <div class="kpi-grid">
+        <div class="kpi-card glass-panel">
+          <div class="kpi-header">
+            <span id="kpi-label-total" class="kpi-title">Total Crimes (2014 – 2021)</span>
+            <div class="kpi-icon" style="color: var(--accent-cyan);">📁</div>
+          </div>
+          <div id="kpi-total-crimes" class="kpi-value">35,971</div>
+          <div class="kpi-subtext">
+            <span>Official Recorded Cases</span>
+          </div>
+        </div>
+
+        <div class="kpi-card glass-panel">
+          <div class="kpi-header">
+            <span id="kpi-label-fatal" class="kpi-title">Fatal Crimes</span>
+            <div class="kpi-icon" style="color: #ef4444;">⚠️</div>
+          </div>
+          <div id="kpi-fatal-crimes" class="kpi-value" style="color: #ef4444;">5,437</div>
+          <div class="kpi-subtext">
+            <span>High Severity Incidents</span>
+          </div>
+        </div>
+
+        <div class="kpi-card glass-panel">
+          <div class="kpi-header">
+            <span id="kpi-label-nonfatal" class="kpi-title">Non-Fatal Crimes</span>
+            <div class="kpi-icon" style="color: var(--accent-cyan);">🛡️</div>
+          </div>
+          <div id="kpi-nonfatal-crimes" class="kpi-value" style="color: var(--accent-cyan);">30,534</div>
+          <div class="kpi-subtext">
+            <span>Non-Fatal Case Volume</span>
+          </div>
+        </div>
+
+        <div class="kpi-card glass-panel">
+          <div class="kpi-header">
+            <span id="kpi-label-rate" class="kpi-title">Fatal Severity %</span>
+            <div class="kpi-icon" style="color: var(--accent-amber);">📈</div>
+          </div>
+          <div id="kpi-detection-rate" class="kpi-value" style="color: var(--accent-amber);">15.11%</div>
+          <div class="kpi-subtext">
+            <span>Severity Ratio</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Risk Score & Algorithm Overview Grid -->
+      <div class="risk-overview-grid">
+        <div class="risk-card glass-panel">
+          <div class="risk-card-header">
+            <h3>UrbanPulse Risk Score</h3>
+            <p>Empirical City Crime Risk Index</p>
+          </div>
+
+          <div class="risk-gauge-container">
+            <div class="gauge-svg-wrap">
+              <svg width="160" height="90" viewBox="0 0 160 90">
+                <path d="M 20 80 A 60 60 0 0 1 140 80" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="12" stroke-linecap="round"/>
+                <path id="risk-gauge-arc" d="M 20 80 A 60 60 0 0 1 140 80" fill="none" stroke="#ef4444" stroke-width="12" stroke-linecap="round" stroke-dasharray="220" stroke-dashoffset="48"/>
+              </svg>
+              <div class="gauge-score-display">
+                <div id="risk-score-value" class="gauge-score-num">71.7</div>
+                <div class="gauge-score-max">/ 100</div>
+              </div>
+            </div>
+            <div id="risk-level-badge" class="risk-badge-tag">High Risk (2016)</div>
+          </div>
+
+          <div class="risk-formula-box">
+            <b>UrbanPulse Algorithm Formula:</b><br>
+            <code>60% Volume Score + 40% Severity Score</code>
+            <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 11px;">
+              <span>Volume Score: <b id="risk-volume-score">100.0/100</b></span>
+              <span>Severity: <b id="risk-severity-score">29.26/100</b></span>
+            </div>
+            <div style="margin-top: 6px; font-size: 10px; color: var(--text-muted);">
+              Peak verified risk year within the 2014-2021 D47 series. Annual 2021-2023 risk scoring is EDA In Progress.
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-card glass-panel">
+          <div class="chart-card-header">
+            <h3>📊 Overall Crime Totals (Fatal vs Non-Fatal)</h3>
+            <span style="font-size: 12px; color: var(--text-muted);">2014 – 2021 City Statistics (Verified D47 EDA)</span>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="crime-trend-chart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Breakdown Chart & Interactive Table Grid -->
+      <div class="charts-grid">
+        <div class="chart-card glass-panel">
+          <div class="chart-card-header">
+            <h3 id="crime-chart-heading">📊 Category / Division Case Distribution</h3>
+            <span style="font-size: 12px; color: var(--text-muted);">Real Verified Data</span>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="crime-category-chart"></canvas>
+          </div>
+        </div>
+
+        <div class="table-card glass-panel">
+          <div class="table-header-wrap">
+            <h3 id="crime-table-title">Bengaluru City-Wide Crime Totals (Verified D47 EDA)</h3>
+          </div>
+          <div style="overflow-x: auto;">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th id="table-col-1">Crime Type</th>
+                  <th id="table-col-2">Reported Cases</th>
+                  <th id="table-col-3">Detected / Fatal</th>
+                  <th id="table-col-4">Detection Rate / %</th>
+                </tr>
+              </thead>
+              <tbody id="crime-data-table-body">
+                <!-- Dynamically injected rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data Transparency & Scope Notice -->
+      <div class="transparency-notice-card">
+        <div class="notice-icon">🛡️</div>
+        <div class="notice-content">
+          <h4>UrbanPulse Data Transparency & Verification Standard</h4>
+          <p>
+            The crime numbers presented above are sourced directly from the official Bengaluru City Police Annual Reports, the verified D47 crime statistics series, and the Bengaluru City Police Press Note (2021-2023).
+            The "All Recorded Crimes" overview reflects the verified 2014-2021 (Up to Dec) D47 historical aggregate; a year-by-year 2021-2023 breakdown of that overall total is EDA In Progress.
+            The Women, Children, Cyber Crime, Suicides, and Accidental Deaths tabs DO have verified 2021-2023 annual breakdowns. All statistics reflect city-level or police-division-level aggregates. Mapped markers represent official station locations and outposts (150 locations) and are not falsely assigned localized crime figures.
+          </p>
+        </div>
+      </div>
+    </section>
+
+
+      <section class="section" style="padding-top: 0;">
+        <div class="section-title-wrap" style="margin-bottom: 16px;">
+          <h2 class="section-title" style="font-size: 20px;">📅 2021–2023 Category Comparison</h2>
+          <p class="section-desc">Verified annual totals from the Bengaluru City Police Press Note. Overall city-wide totals for 2021–2023 are Data Not Available.</p>
+        </div>
+        <div class="charts-grid">
+          <div class="chart-card glass-panel">
+            <div class="chart-card-header"><h3>📈 Reported Cases by Year</h3><span style="font-size: 12px; color: var(--text-muted);">Women · Children · Cyber</span></div>
+            <div class="chart-wrapper"><canvas id="cx-crime-cases-line"></canvas></div>
+          </div>
+          <div class="chart-card glass-panel">
+            <div class="chart-card-header"><h3>📈 Deaths by Year</h3><span style="font-size: 12px; color: var(--text-muted);">Suicides · Accidental Deaths</span></div>
+            <div class="chart-wrapper"><canvas id="cx-crime-deaths-bar"></canvas></div>
+          </div>
+        </div>
+        <div class="charts-grid">
+          <div class="chart-card glass-panel">
+            <div class="chart-card-header"><h3>🍩 Fatal vs Non-Fatal (2014–2021)</h3><span style="font-size: 12px; color: var(--text-muted);">D47 city-level series</span></div>
+            <div class="chart-wrapper"><canvas id="cx-crime-fatal-donut"></canvas></div>
+          </div>
+          <div class="chart-card glass-panel">
+            <div class="chart-card-header"><h3>🍩 Cyber Crime by Division (2023)</h3><span style="font-size: 12px; color: var(--text-muted);">Reported cases</span></div>
+            <div class="chart-wrapper"><canvas id="cx-crime-cyber-donut"></canvas></div>
+          </div>
+        </div>
+        <div class="table-card glass-panel">
+          <div class="table-header-wrap"><h3>Year-by-Year Totals (Verified)</h3></div>
+          <div style="overflow-x: auto;">
+            <table class="custom-table">
+              <thead><tr><th>Category</th><th>2021</th><th>2022</th><th>2023</th><th>Measure</th></tr></thead>
+              <tbody id="cx-crime-year-table"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="glass-panel na-card">
+          <h3>🔍 Missing Persons · Kidnapping · Robbery · Chain Snatching</h3>
+          <p><b>Data Not Available.</b> These categories have no completed EDA in the verified notebook yet.</p>
+        </div>
+      </section>
+    </div><!-- /tab-crime -->
+
+    <div id="tab-police" class="analytics-tab-panel">
+      <section class="section">
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <span class="section-badge badge-active">🚓 Verified KML Locations</span>
+            <h2 class="section-title">🚓 Police Locations</h2>
+            <p class="section-desc">Official station and outpost locations extracted from the Karnataka State Police KML files.</p>
+          </div>
+        </div>
+        <div class="kpi-grid" id="cx-police-kpis"></div>
+        <div class="charts-grid">
+          <div class="chart-card glass-panel">
+            <div class="chart-card-header"><h3>🍩 Locations by Type</h3><span style="font-size: 12px; color: var(--text-muted);">Count per category</span></div>
+            <div class="chart-wrapper"><canvas id="cx-police-donut"></canvas></div>
+          </div>
+          <div class="table-card glass-panel" style="margin-bottom: 0;">
+            <div class="table-header-wrap"><h3>Location Types &amp; Sources</h3></div>
+            <div style="overflow-x: auto;">
+              <table class="custom-table">
+                <thead><tr><th>Type</th><th>Locations</th><th>Source KML</th></tr></thead>
+                <tbody id="cx-police-table"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="glass-panel na-card">
+          <h3>📍 Station-Level Crime Counts</h3>
+          <p><b>Data Not Available.</b> Crime statistics are city / division-level only. Police locations are not assigned crime figures.</p>
+        </div>
+      </section>
+    </div><!-- /tab-police -->
+
+    </section>
+
+  </main>
+
+  <!-- =========================================================================
+       FOOTER
+       ========================================================================= -->
+  <footer class="app-footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="brand">
+          <div class="brand-icon">⚡</div>
+          <div class="brand-text">
+            <h1 style="font-size: 18px;">URBANPULSE</h1>
+            <p>Smart City Transparency Platform</p>
+          </div>
+        </div>
+        <div class="footer-copy">
+          Bengaluru Urban Transparency Initiative &bull; Verified Data Only &bull; Zero Fabricated Statistics
+        </div>
+      </div>
+      <div style="font-size: 11px; color: var(--text-muted); border-top: 1px solid var(--border-subtle); padding-top: 16px;">
+        Sources: Bengaluru City Police Annual Reports, Karnataka State Police GIS KML Datasets, Open City Bengaluru Portal, BBMP Open Data. Base map &copy; OpenStreetMap contributors.
+      </div>
+    </div>
+  </footer>
+
+  <!-- UrbanPulse Application Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/construction-data.js"></script>
+  <script src="js/crime.js"></script>
+  <script src="js/construction.js"></script>
+  <script src="js/locations.js"></script>
+  <script src="js/analytics-extra.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>
