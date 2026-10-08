@@ -1,0 +1,7234 @@
+{
+ "source": {
+  "code": "KSPCB_MINARS_2020_21",
+  "title": "Water quality of lakes/tanks in Bangalore during 2020-2021 (MINARS)",
+  "publisher": "Karnataka State Pollution Control Board",
+  "url": "https://karnataka.data.gov.in/resource/water-quality-lakestanks-bangalore-during-2020-2021",
+  "period": "Apr 2020 - Mar 2021",
+  "note": "WQI status S = Satisfactory, US = Unsatisfactory (DO>=4, BOD<=3 mg/L, FC<=2500, TC<=5000 per source legend). * = not monitored. Supplied as CSV by the project owner."
+ },
+ "months": [
+  "Apr-20",
+  "May-20",
+  "Jun-20",
+  "Jul-20",
+  "Aug-20",
+  "Sep-20",
+  "Oct-20",
+  "Nov-20",
+  "Dec-20",
+  "Jan-21",
+  "Feb-21",
+  "Mar-21"
+ ],
+ "stations": [
+  {
+   "code": "3589",
+   "name": "Madiwala Lake",
+   "district": "Bangalore Urban (Bommanahalli)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3602",
+   "name": "Bellandur lake",
+   "district": "Bangalore Urban (Bommanahalli)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Sep-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "E",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3609",
+   "name": "Ibblur Lake",
+   "district": "Bangalore Urban (Bommanahalli)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3611",
+   "name": "Kaikondanahalli Lake",
+   "district": "Bangalore Urban (Bommanahalli)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "E",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3612",
+   "name": "Agaram lake",
+   "district": "Bangalore Urban (Bommanahalli)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3613",
+   "name": "Gottegre lake",
+   "district": "Bangalore Urban (Bommanahalli)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jul-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Aug-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Sep-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Oct-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Nov-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3614",
+   "name": "Puttenahalli lake (s)",
+   "district": "Bangalore Urban (Bommanahalli)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Feb-21",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Mar-21",
+     "class": null,
+     "wqi": null
+    }
+   ]
+  },
+  {
+   "code": "3615",
+   "name": "Arakere lake",
+   "district": "Bangalore Urban (Bommanahalli)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Mar-21",
+     "class": null,
+     "wqi": null
+    }
+   ]
+  },
+  {
+   "code": "3616",
+   "name": "Kalena agrahara lake",
+   "district": "Bangalore Urban (Bommanahalli)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3617",
+   "name": "Hulimavu lake",
+   "district": "Bangalore Urban (Bommanahalli)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3618",
+   "name": "Singasandra lake",
+   "district": "Bangalore Urban (Bommanahalli)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "E",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3619",
+   "name": "Begur tank",
+   "district": "Bangalore Urban (Bommanahalli)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3620",
+   "name": "Parappana agrahara lake",
+   "district": "Bangalore Urban (Bommanahalli)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3621",
+   "name": "Harlur Lake",
+   "district": "Bangalore Urban (Bommanahalli)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "E",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3622",
+   "name": "Somasundra palya lake",
+   "district": "Bangalore Urban (Bommanahalli)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jun-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jul-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Aug-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Sep-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Oct-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Nov-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Dec-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jan-21",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "4542",
+   "name": "Basavanapura Lake",
+   "district": "Bangalore Urban (Bommanahalli)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "4543",
+   "name": "Kodi singasandra Lake",
+   "district": "Bangalore Urban (Bommanahalli)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "4544",
+   "name": "Kothunuru Lake",
+   "district": "Bangalore Urban (Bommanahalli)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jul-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "4545",
+   "name": "Jungu Kere Lake",
+   "district": "Bangalore Urban (Bommanahalli)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "May-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jun-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jul-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Aug-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Sep-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Oct-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Nov-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Dec-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jan-21",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Feb-21",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Mar-21",
+     "class": null,
+     "wqi": null
+    }
+   ]
+  },
+  {
+   "code": "4546",
+   "name": "Jakksandra Lake",
+   "district": "Bangalore Urban (Bommanahalli)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "May-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jun-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jul-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Aug-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Sep-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Oct-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Nov-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Dec-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": null,
+     "wqi": null
+    }
+   ]
+  },
+  {
+   "code": "4547",
+   "name": "Sawarana kunte Lake",
+   "district": "Bangalore Urban (Bommanahalli)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "May-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jun-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jul-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Aug-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3603",
+   "name": "Vengaihnakere Tank",
+   "district": "Bangalore Urban (Mahadevapura)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3604",
+   "name": "Doddanakundi tank",
+   "district": "Bangalore Urban (Mahadevapura)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jul-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Aug-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Sep-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3605",
+   "name": "Yellamallappa tank",
+   "district": "Bangalore Urban (Mahadevapura)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3607",
+   "name": "Kalkere tank",
+   "district": "Bangalore Urban (Mahadevapura)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3608",
+   "name": "Varthur lake",
+   "district": "Bangalore Urban (Mahadevapura)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "E",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3610",
+   "name": "Tubrahalli Lake",
+   "district": "Bangalore Urban (Mahadevapura)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "E",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3643",
+   "name": "Beenniganahalli tank",
+   "district": "Bangalore Urban (Mahadevapura)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "E",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "4514",
+   "name": "Sadramangala lake",
+   "district": "Bangalore Urban (Mahadevapura)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "4515",
+   "name": "Battarahalli Lake",
+   "district": "Bangalore Urban (Mahadevapura)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "4516",
+   "name": "Kundalahalli Lake",
+   "district": "Bangalore Urban (Mahadevapura)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "4517",
+   "name": "Kowdhenahalli Lake",
+   "district": "Bangalore Urban (Mahadevapura)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "4518",
+   "name": "Garudacharpalya Lake",
+   "district": "Bangalore Urban (Mahadevapura)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "4519",
+   "name": "Rampura Lake",
+   "district": "Bangalore Urban (Mahadevapura)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jun-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Feb-21",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Mar-21",
+     "class": "E",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "4520",
+   "name": "Chinnapanhalli Lake",
+   "district": "Bangalore Urban (Mahadevapura)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "A",
+     "wqi": "S"
+    }
+   ]
+  },
+  {
+   "code": "4521",
+   "name": "Devarabeesanahalli Lake",
+   "district": "Bangalore Urban (Mahadevapura)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "4522",
+   "name": "Vibhuthipura Lake",
+   "district": "Bangalore Urban (Mahadevapura)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Aug-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Sep-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Oct-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Nov-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Dec-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jan-21",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Feb-21",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Mar-21",
+     "class": null,
+     "wqi": null
+    }
+   ]
+  },
+  {
+   "code": "4523",
+   "name": "Nallurahalli Lake",
+   "district": "Bangalore Urban (Mahadevapura)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Aug-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Sep-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Oct-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Nov-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Dec-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jan-21",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": null,
+     "wqi": null
+    }
+   ]
+  },
+  {
+   "code": "4524",
+   "name": "Pattandur agarahara",
+   "district": "Bangalore Urban (Mahadevapura)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "E",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "4525",
+   "name": "Seetharam palya Lake",
+   "district": "Bangalore Urban (Mahadevapura)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "E",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "4526",
+   "name": "Dyavasandra Tank",
+   "district": "Bangalore Urban (Mahadevapura)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "A",
+     "wqi": "S"
+    }
+   ]
+  },
+  {
+   "code": "4527",
+   "name": "Whitefield kere Lake",
+   "district": "Bangalore Urban (Mahadevapura)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "May-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jun-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jul-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Aug-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Sep-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Oct-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Nov-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Dec-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jan-21",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "4528",
+   "name": "Doddakannehalli Lake",
+   "district": "Bangalore Urban (Mahadevapura)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "May-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jun-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jul-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Aug-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Sep-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Oct-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Nov-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Dec-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jan-21",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Feb-21",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Mar-21",
+     "class": null,
+     "wqi": null
+    }
+   ]
+  },
+  {
+   "code": "4529",
+   "name": "Kasavanahalli Lake",
+   "district": "Bangalore Urban (Mahadevapura)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Feb-21",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3631",
+   "name": "Nagarakere tank",
+   "district": "Bangalore Urban (Sarjapura)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "May-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jun-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jul-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Aug-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Sep-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Oct-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Nov-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Dec-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jan-21",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Feb-21",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Mar-21",
+     "class": null,
+     "wqi": null
+    }
+   ]
+  },
+  {
+   "code": "4530",
+   "name": "Kammasandra Tank",
+   "district": "Bangalore Urban (Sarjapura)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "E",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "4531",
+   "name": "Rayasandra Tank",
+   "district": "Bangalore Urban (Sarjapura)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "4532",
+   "name": "ChandapuraTank",
+   "district": "Bangalore Urban (Sarjapura)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "E",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3590",
+   "name": "Lalbagh tank",
+   "district": "Bangalore Urban (BNG-City South)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3591",
+   "name": "Kempambudhi lake",
+   "district": "Bangalore Urban (BNG-City South)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3592",
+   "name": "Yediyur lake",
+   "district": "Bangalore Urban (BNG-City South)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3638",
+   "name": "Annaiappa Tank",
+   "district": "Bangalore Urban (BNG-City South)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "4504",
+   "name": "Sarakki Lake",
+   "district": "Bangalore Urban (BNG-City South)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "1388",
+   "name": "Ulsoor LakeTraining Centre of Fish Breeding",
+   "district": "Bangalore Urban (BNG-City East)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "E",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3593",
+   "name": "Ulsoor Lake near Temple",
+   "district": "Bangalore Urban (BNG-City East)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "E",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3595",
+   "name": "Byrasandra tank",
+   "district": "Bangalore Urban (BNG-City East)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Mar-21",
+     "class": null,
+     "wqi": null
+    }
+   ]
+  },
+  {
+   "code": "3594",
+   "name": "Sankey Tank",
+   "district": "Bangalore Urban (BNG-City - West)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "C",
+     "wqi": "S"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "2779",
+   "name": "Hesaraghatta Reservoir",
+   "district": "Bangalore Urban (Dasarahalli)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3597",
+   "name": "Hesaraghatta Tank",
+   "district": "Bangalore Urban (Dasarahalli)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3598",
+   "name": "Herohalli Tank",
+   "district": "Bangalore Urban (Dasarahalli)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3599",
+   "name": "Madavara Tank",
+   "district": "Bangalore Urban (Dasarahalli)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3606",
+   "name": "Dasarahalli Tank",
+   "district": "Bangalore Urban (Dasarahalli)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "4094",
+   "name": "Gangondana Halli Lake",
+   "district": "Bangalore Urban (Dasarahalli)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "E",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "4095",
+   "name": "Chikkabanvara Lake",
+   "district": "Bangalore Urban (Dasarahalli)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "4096",
+   "name": "Andhrahalli Lake",
+   "district": "Bangalore Urban (Dasarahalli)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "E",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "4097",
+   "name": "Kachohalli Lake",
+   "district": "Bangalore Urban (Dasarahalli)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "E",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "4512",
+   "name": "Viswaneedam Lake",
+   "district": "Bangalore Urban (Dasarahalli)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "E",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "4538",
+   "name": "Machohalli Lake",
+   "district": "Bangalore Urban (Dasarahalli)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "E",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "4539",
+   "name": "Doddabidarakallu Lake",
+   "district": "Bangalore Urban (Dasarahalli)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "4540",
+   "name": "Kammgondanahalli Lake",
+   "district": "Bangalore Urban (Dasarahalli)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "4541",
+   "name": "Alur Kere",
+   "district": "Bangalore Urban (Dasarahalli)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "May-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jun-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jul-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Aug-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "2778",
+   "name": "T.G. Halli Reservoir",
+   "district": "Bangalore Urban (Rajarajeswarinagara)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "E",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3596",
+   "name": "Nayandanahalli Tank",
+   "district": "Bangalore Urban (Rajarajeswarinagara)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3633",
+   "name": "Subramanyapura Tank",
+   "district": "Bangalore Urban (Rajarajeswarinagara)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Dec-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jan-21",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Feb-21",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Mar-21",
+     "class": null,
+     "wqi": null
+    }
+   ]
+  },
+  {
+   "code": "3634",
+   "name": "Devarakere Tank",
+   "district": "Bangalore Urban (Rajarajeswarinagara)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3635",
+   "name": "Malathahalli Tank",
+   "district": "Bangalore Urban (Rajarajeswarinagara)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "E",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3636",
+   "name": "Bandematta Tank",
+   "district": "Bangalore Urban (Rajarajeswarinagara)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Dec-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jan-21",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Feb-21",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Mar-21",
+     "class": null,
+     "wqi": null
+    }
+   ]
+  },
+  {
+   "code": "3639",
+   "name": "Kengeri Tank",
+   "district": "Bangalore Urban (Rajarajeswarinagara)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "May-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "E",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3640",
+   "name": "Uttarahalli Doraikere",
+   "district": "Bangalore Urban (Rajarajeswarinagara)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "E",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3641",
+   "name": "Dhorekere",
+   "district": "Bangalore Urban (Rajarajeswarinagara)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "E",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "4533",
+   "name": "Ullal Lake",
+   "district": "Bangalore Urban (Rajarajeswarinagara)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "E",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "4534",
+   "name": "Sompura Lake",
+   "district": "Bangalore Urban (Rajarajeswarinagara)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "4535",
+   "name": "Gubbalal kere",
+   "district": "Bangalore Urban (Rajarajeswarinagara)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Dec-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jan-21",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Feb-21",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Mar-21",
+     "class": null,
+     "wqi": null
+    }
+   ]
+  },
+  {
+   "code": "4536",
+   "name": "Hosakerehalli Lake",
+   "district": "Bangalore Urban (Rajarajeswarinagara)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "E",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "4537",
+   "name": "Chinnakurchi kere",
+   "district": "Bangalore Urban (Rajarajeswarinagara)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3600",
+   "name": "Shivapura tank",
+   "district": "Bangalore Urban (Peenya)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "E",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3601",
+   "name": "Karihobanahalli lake",
+   "district": "Bangalore Urban (Peenya)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "E",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3624",
+   "name": "Puttnehalli Lake",
+   "district": "Bangalore Urban (Yelahanka)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3625",
+   "name": "Hebbal Lake",
+   "district": "Bangalore Urban (Yelahanka)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3626",
+   "name": "Nagawara Tank",
+   "district": "Bangalore Urban (Yelahanka)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3627",
+   "name": "Jakkur Lake",
+   "district": "Bangalore Urban (Yelahanka)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3628",
+   "name": "Amruthahalli Lake",
+   "district": "Bangalore Urban (Yelahanka)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jul-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3629",
+   "name": "Allasandra Tank",
+   "district": "Bangalore Urban (Yelahanka)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3630",
+   "name": "Yelahanka Tank",
+   "district": "Bangalore Urban (Yelahanka)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "4506",
+   "name": "Abbigere Lake",
+   "district": "Bangalore Urban (Yelahanka)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "4507",
+   "name": "Chelekere Lake",
+   "district": "Bangalore Urban (Yelahanka)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "C",
+     "wqi": "S"
+    },
+    {
+     "m": "Jul-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "4508",
+   "name": "Singapura Lake",
+   "district": "Bangalore Urban (Yelahanka)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "4509",
+   "name": "Narasipura Lake",
+   "district": "Bangalore Urban (Yelahanka)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "4510",
+   "name": "Rachenahalli Lke",
+   "district": "Bangalore Urban (Yelahanka)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "4511",
+   "name": "Kogilu kere",
+   "district": "Bangalore Urban (Yelahanka)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "May-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jun-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jul-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Aug-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Sep-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Oct-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Nov-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Dec-20",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Jan-21",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3632",
+   "name": "Veerapura Tank",
+   "district": "Bangalore Rural (Doddaballpura)",
+   "region": "Bangalore Rural",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": null,
+     "wqi": null
+    }
+   ]
+  },
+  {
+   "code": "4503",
+   "name": "Madhure Tank",
+   "district": "Bangalore Rural (Doddaballpura)",
+   "region": "Bangalore Rural",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Mar-21",
+     "class": null,
+     "wqi": null
+    }
+   ]
+  },
+  {
+   "code": "4505",
+   "name": "Nelamangala Lake",
+   "district": "Bangalore Rural (Nelamangala)",
+   "region": "Bangalore Rural",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "E",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "4513",
+   "name": "Arashinakunte Kere",
+   "district": "Bangalore Rural (Nelamangala)",
+   "region": "Bangalore Rural",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": null,
+     "wqi": null
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "E",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3623",
+   "name": "Anekal Doddakere Tank",
+   "district": "Bangalore Urban (Anekal)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "E",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  },
+  {
+   "code": "3642",
+   "name": "Jigani tank",
+   "district": "Bangalore Urban (Anekal)",
+   "region": "Bangalore Urban",
+   "months": [
+    {
+     "m": "Apr-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "May-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jun-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jul-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Aug-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Sep-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Oct-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Nov-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Dec-20",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Jan-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Feb-21",
+     "class": "D",
+     "wqi": "US"
+    },
+    {
+     "m": "Mar-21",
+     "class": "D",
+     "wqi": "US"
+    }
+   ]
+  }
+ ]
+}

@@ -1,32 +1,8 @@
-# OS files
-.DS_Store
-.AppleDouble
-.LSOverride
-
-# Editor files
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Local environment and secrets
-.env
-.env.*
-!.env.example
-
-# Python and Jupyter
-__pycache__/
-*.py[cod]
+x.env
+*.env
 .venv/
 venv/
-env/
-ENV/
-.ipynb_checkpoints/
-
-# Node and build output
-node_modules/
-dist/
-build/
-
-# Logs
-*.log
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store

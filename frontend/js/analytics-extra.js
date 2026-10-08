@@ -1,124 +1,190 @@
 /**
- * UrbanPulse - Analytics page extras (Phase 4B)
- * Tabs + additional charts. Reads ONLY existing verified datasets:
- *   URBANPULSE_CONSTRUCTION_DATA, URBANPULSE_DATA, URBANPULSE_LOCATIONS.
- * Nothing is invented; missing data renders as "Data Not Available".
+ * UrbanPulse – Analytics Extra Charts
+ * Renders the 2021–2023 crime comparison charts and year-table.
+ * All values from window.UP_CRIME (set by data.js).
+ * Also handles analytics tab switching and ESG demo year-wise data injection.
  */
-document.addEventListener("DOMContentLoaded", () => {
-  const NA = "Data Not Available";
-  const PALETTE = ["#38bdf8", "#f59e0b", "#10b981", "#a855f7", "#f43f5e", "#6366f1", "#14b8a6", "#eab308", "#94a3b8"];
-  const $ = (id) => document.getElementById(id);
-  const setText = (id, v) => { const el = $(id); if (el) el.textContent = v; };
-  const cr = (n) => `₹${(n / 1e7).toFixed(2)} Cr`;
+(function () {
+  "use strict";
 
-  // ---------- Tabs ----------
-  const tabs = document.querySelectorAll(".analytics-tabs [data-tab]");
-  function showTab(name) {
-    if (!$("tab-" + name)) name = "construction";
-    document.querySelectorAll(".analytics-tab-panel").forEach(p => p.classList.toggle("active", p.id === "tab-" + name));
-    tabs.forEach(t => t.classList.toggle("active", t.dataset.tab === name));
-    if (history.replaceState) history.replaceState(null, "", "#" + name);
-    if (window.Chart) Object.values(Chart.instances).forEach(c => c.resize());
-  }
-  tabs.forEach(t => t.addEventListener("click", () => showTab(t.dataset.tab)));
-  showTab((location.hash || "").replace("#", "") || "construction");
+  var COLORS = {
+    women:      "#f43f5e",
+    children:   "#f59e0b",
+    cyber:      "#6366f1",
+    suicides:   "#8b5cf6",
+    accidental: "#38bdf8"
+  };
 
-  // ---------- Chart helpers ----------
-  const tick = "#94a3b8";
-  const tooltip = { backgroundColor: "rgba(15,23,42,0.95)", titleColor: "#fff", bodyColor: tick, borderColor: "rgba(56,189,248,0.3)", borderWidth: 1 };
-  const axes = { x: { grid: { color: "rgba(255,255,255,0.05)" }, ticks: { color: tick } }, y: { grid: { color: "rgba(255,255,255,0.05)" }, ticks: { color: tick }, beginAtZero: true } };
-  const legend = { labels: { color: tick, font: { family: "Inter", size: 12 } } };
-  function chart(id, type, labels, datasets, extra = {}) {
-    const c = $(id);
-    if (!c || !window.Chart) return;
-    const donut = type === "doughnut";
-    new Chart(c.getContext("2d"), {
-      type, data: { labels, datasets },
-      options: Object.assign({ responsive: true, maintainAspectRatio: false, plugins: { legend: donut ? { position: "right", ...legend } : legend, tooltip }, scales: donut ? {} : axes }, extra)
+  var CHART_DEFAULTS = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { labels: { color: "#e2e8f0", font: { family: "Inter, sans-serif", size: 12 } } } },
+    scales: {
+      x: { ticks: { color: "#94a3b8", font: { size: 11 } }, grid: { color: "rgba(255,255,255,0.06)" } },
+      y: { ticks: { color: "#94a3b8", font: { size: 11 } }, grid: { color: "rgba(255,255,255,0.06)" } }
+    }
+  };
+
+  function $ (id) { return document.getElementById(id); }
+
+  // ─── Analytics Tab Switch ──────────────────────────────────────────────────
+  function initTabSwitcher() {
+    var tabs = document.querySelectorAll(".analytics-tabs .category-pill");
+    var panels = document.querySelectorAll(".analytics-tab-panel");
+    tabs.forEach(function (tab) {
+      tab.addEventListener("click", function () {
+        tabs.forEach(function (t) { t.classList.remove("active"); t.setAttribute("aria-selected", "false"); });
+        panels.forEach(function (p) { p.classList.remove("active"); });
+        tab.classList.add("active");
+        tab.setAttribute("aria-selected", "true");
+        var targetId = "tab-" + tab.getAttribute("data-tab");
+        var panel = document.getElementById(targetId);
+        if (panel) panel.classList.add("active");
+      });
     });
   }
-  const donutDs = (data) => [{ data, backgroundColor: PALETTE.slice(0, data.length).map(c => c + "cc"), borderColor: "#0a0e17", borderWidth: 2 }];
-  const showNA = (canvasId, msg = NA) => {
-    const c = $(canvasId); if (!c) return;
-    c.parentElement.innerHTML = `<div class="empty-state">${msg}</div>`;
-  };
 
-  // ---------- Construction extras ----------
-  const cons = window.URBANPULSE_CONSTRUCTION_DATA;
-  if (cons && cons.overview) {
-    const ov = cons.overview;
-    setText("cx-kpi-net", cr(ov.total_net_expenditure));
-    setText("cx-kpi-ded", cr(ov.total_deduction));
-    setText("cx-kpi-avg", `₹${(ov.total_amount / ov.total_work_orders / 1e5).toFixed(2)} L`);
-    chart("cx-budget-donut", "doughnut", ["Net Expenditure", "Deductions"], donutDs([ov.total_net_expenditure, ov.total_deduction]));
-    const cl = cons.clustering.clusters;
-    chart("cx-cluster-donut", "doughnut", cl.map(c => c.cluster_name), donutDs(cl.map(c => c.ward_count)));
-    const top = (cons.top_wards_by_work_orders || []).slice(0, 10);
-    if (top.length) {
-      chart("cx-top-orders", "bar", top.map(w => `Ward ${w.ward}`),
-        [{ label: "Work Orders", data: top.map(w => w.total_work_orders), backgroundColor: "rgba(56,189,248,0.6)", borderColor: "#38bdf8", borderWidth: 1, borderRadius: 6 }]);
-    } else showNA("cx-top-orders");
-    const wd = cons.ward_level_data || [];
-    if (wd.length) {
-      const bins = [[0, 10], [11, 20], [21, 30], [31, 40], [41, 50], [51, Infinity]];
-      const counts = bins.map(([a, b]) => wd.filter(w => w.total_work_orders >= a && w.total_work_orders <= b).length);
-      chart("cx-ward-hist", "bar", bins.map(([a, b]) => b === Infinity ? `${a}+` : `${a}–${b}`),
-        [{ label: "Number of Ward Codes", data: counts, backgroundColor: "rgba(16,185,129,0.6)", borderColor: "#10b981", borderWidth: 1, borderRadius: 6 }]);
-    } else showNA("cx-ward-hist");
-  } else {
-    ["cx-budget-donut", "cx-cluster-donut", "cx-top-orders", "cx-ward-hist"].forEach(id => showNA(id));
+  // ─── 2021–2023 Comparison Charts ──────────────────────────────────────────
+  function renderCasesLine() {
+    var canvas = $("cx-crime-cases-line");
+    if (!canvas || typeof Chart === "undefined") return;
+    var crime = window.UP_CRIME || {};
+    var cats = crime.categories || {};
+    var years = [2021, 2022, 2023];
+    var women     = cats.women     && cats.women.by_year     || [];
+    var children  = cats.children  && cats.children.by_year  || [];
+    var cyber     = cats.cyber     && cats.cyber.by_year     || [];
+
+    function byYr(arr, field) {
+      return years.map(function (y) { var r = arr.find(function (x) { return x.year === y; }); return r ? r[field || "cases"] : null; });
+    }
+
+    new Chart(canvas, {
+      type: "line",
+      data: {
+        labels: years,
+        datasets: [
+          { label: "Women Crimes", data: byYr(women, "cases"), borderColor: COLORS.women, backgroundColor: "rgba(244,63,94,0.1)", tension: 0.4, fill: true, pointRadius: 5 },
+          { label: "Children Crimes", data: byYr(children, "cases"), borderColor: COLORS.children, backgroundColor: "rgba(245,158,11,0.1)", tension: 0.4, fill: true, pointRadius: 5 },
+          { label: "Cyber Crimes", data: byYr(cyber, "cases"), borderColor: COLORS.cyber, backgroundColor: "rgba(99,102,241,0.1)", tension: 0.4, fill: true, pointRadius: 5 }
+        ]
+      },
+      options: Object.assign({}, CHART_DEFAULTS, {
+        plugins: Object.assign({}, CHART_DEFAULTS.plugins, { legend: { position: "bottom", labels: { color: "#e2e8f0" } } })
+      })
+    });
   }
 
-  // ---------- Crime extras ----------
-  const D = window.URBANPULSE_DATA;
-  const YEARS = ["2021", "2022", "2023"];
-  const yr = (cat, y) => D && D.categories && D.categories[cat] && D.categories[cat].years && D.categories[cat].years[y];
-  const sum = (arr, k) => arr.reduce((a, r) => a + (r[k] || 0), 0);
-  // Verified per-year totals, taken from the stored total or summed from verified rows.
-  const totals = {
-    women: y => yr("women", y) ? yr("women", y).total_reported : null,
-    children: y => yr("children", y) ? yr("children", y).total_reported : null,
-    cyber: y => yr("cyber", y) ? yr("cyber", y).total_reported : null,
-    suicides: y => yr("suicides", y) ? (yr("suicides", y).total_suicides ?? sum(yr("suicides", y).items, "total")) : null,
-    accidental: y => yr("accidental", y) ? yr("accidental", y).total_accidental_deaths : null
-  };
-  const series = (key) => YEARS.map(y => totals[key](y));
-  if (D) {
-    const line = (label, key, color) => ({ label, data: series(key), borderColor: color, backgroundColor: color + "55", tension: 0.3, pointRadius: 5, spanGaps: false });
-    chart("cx-crime-cases-line", "line", YEARS, [
-      line("Women", "women", "#f43f5e"), line("Children", "children", "#f59e0b"), line("Cyber Crime", "cyber", "#38bdf8")]);
-    chart("cx-crime-deaths-bar", "bar", YEARS, [
-      { label: "Suicides", data: series("suicides"), backgroundColor: "rgba(168,85,247,0.6)", borderRadius: 6 },
-      { label: "Accidental Deaths", data: series("accidental"), backgroundColor: "rgba(245,158,11,0.6)", borderRadius: 6 }]);
-    const h = D.historical;
-    if (h) chart("cx-crime-fatal-donut", "doughnut", ["Fatal", "Non-Fatal"], donutDs([h.fatal_crimes, h.non_fatal_crimes]));
-    else showNA("cx-crime-fatal-donut");
-    const cy = yr("cyber", "2023");
-    if (cy) chart("cx-crime-cyber-donut", "doughnut", cy.items.map(i => i.division), donutDs(cy.items.map(i => i.reported)));
-    else showNA("cx-crime-cyber-donut");
+  function renderDeathsBar() {
+    var canvas = $("cx-crime-deaths-bar");
+    if (!canvas || typeof Chart === "undefined") return;
+    var crime = window.UP_CRIME || {};
+    var cats = crime.categories || {};
+    var years = [2021, 2022, 2023];
+    var suicides   = cats.suicides   && cats.suicides.by_year   || [];
+    var accidental = cats.accidental && cats.accidental.by_year || [];
 
-    const rows = [["Crimes Against Women", "women", "Reported cases"], ["Crimes Against Children", "children", "Reported cases"],
-      ["Cyber Crime", "cyber", "Reported cases"], ["Suicides", "suicides", "Deaths"], ["Accidental Deaths", "accidental", "Deaths"]];
-    const body = $("cx-crime-year-table");
-    if (body) body.innerHTML = rows.map(([name, key, unit]) =>
-      `<tr><td style="font-weight:700;color:#fff;">${name}</td>${YEARS.map(y => { const v = totals[key](y); return `<td>${v == null ? NA : Number(v).toLocaleString()}</td>`; }).join("")}<td>${unit}</td></tr>`).join("");
-  } else {
-    ["cx-crime-cases-line", "cx-crime-deaths-bar", "cx-crime-fatal-donut", "cx-crime-cyber-donut"].forEach(id => showNA(id));
+    function byYr(arr, field) {
+      return years.map(function (y) { var r = arr.find(function (x) { return x.year === y; }); return r ? r[field || "deaths"] : null; });
+    }
+
+    new Chart(canvas, {
+      type: "bar",
+      data: {
+        labels: years,
+        datasets: [
+          { label: "Suicides", data: byYr(suicides, "deaths"), backgroundColor: COLORS.suicides, borderRadius: 4 },
+          { label: "Accidental Deaths", data: byYr(accidental, "deaths"), backgroundColor: COLORS.accidental, borderRadius: 4 }
+        ]
+      },
+      options: Object.assign({}, CHART_DEFAULTS, {
+        plugins: Object.assign({}, CHART_DEFAULTS.plugins, { legend: { position: "bottom", labels: { color: "#e2e8f0" } } })
+      })
+    });
   }
 
-  // ---------- Police ----------
-  const locs = window.URBANPULSE_LOCATIONS;
-  if (Array.isArray(locs) && locs.length) {
-    const by = {};
-    locs.forEach(l => { (by[l.category] = by[l.category] || { n: 0, src: l.source }).n++; });
-    const cats = Object.keys(by);
-    const kpi = $("cx-police-kpis");
-    if (kpi) kpi.innerHTML = `<div class="kpi-card glass-panel"><div class="kpi-header"><span class="kpi-title">Mapped Locations</span><div class="kpi-icon">📍</div></div><div class="kpi-value">${locs.length}</div><div class="kpi-subtext"><span>Verified KML coordinates</span></div></div>` +
-      cats.map(c => `<div class="kpi-card glass-panel"><div class="kpi-header"><span class="kpi-title">${c}</span><div class="kpi-icon">🚓</div></div><div class="kpi-value" style="color: var(--accent-cyan);">${by[c].n}</div><div class="kpi-subtext"><span>Locations</span></div></div>`).join("");
-    chart("cx-police-donut", "doughnut", cats, donutDs(cats.map(c => by[c].n)));
-    const tb = $("cx-police-table");
-    if (tb) tb.innerHTML = cats.map(c => `<tr><td style="font-weight:700;color:#fff;">${c}</td><td>${by[c].n}</td><td style="font-size:11px;">${by[c].src}</td></tr>`).join("");
-  } else {
-    showNA("cx-police-donut");
+  function renderFatalDonut() {
+    var canvas = $("cx-crime-fatal-donut");
+    if (!canvas || typeof Chart === "undefined") return;
+    var overall = (window.UP_CRIME || {}).overall || {};
+    new Chart(canvas, {
+      type: "doughnut",
+      data: {
+        labels: ["Non-Fatal", "Fatal"],
+        datasets: [{
+          data: [overall.non_fatal || 0, overall.fatal || 0],
+          backgroundColor: ["#38bdf8", "#ef4444"],
+          borderColor: "#0a0e17",
+          borderWidth: 3,
+          hoverOffset: 10
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, cutout: "65%",
+        plugins: { legend: { position: "bottom", labels: { color: "#e2e8f0", font: { size: 12 } } } }
+      }
+    });
   }
-});
+
+  function renderCyberDonut() {
+    var canvas = $("cx-crime-cyber-donut");
+    if (!canvas || typeof Chart === "undefined") return;
+    var cyber = (((window.UP_CRIME || {}).categories || {}).cyber || {});
+    var divs = cyber.by_division_2023 || [];
+    new Chart(canvas, {
+      type: "doughnut",
+      data: {
+        labels: divs.map(function (d) { return d.division; }),
+        datasets: [{
+          data: divs.map(function (d) { return d.cases; }),
+          backgroundColor: ["#6366f1", "#38bdf8", "#10b981", "#f59e0b", "#f43f5e"],
+          borderColor: "#0a0e17",
+          borderWidth: 3,
+          hoverOffset: 10
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, cutout: "65%",
+        plugins: { legend: { position: "bottom", labels: { color: "#e2e8f0", font: { size: 12 } } } }
+      }
+    });
+  }
+
+  function renderYearTable() {
+    var tbody = $("cx-crime-year-table");
+    if (!tbody) return;
+    var crime = window.UP_CRIME || {};
+    var cats = crime.categories || {};
+    var years = [2021, 2022, 2023];
+
+    function val(arr, yr, field) {
+      var r = (arr || []).find(function (x) { return x.year === yr; });
+      return r ? (r[field] != null ? r[field].toLocaleString("en-IN") : "—") : "—";
+    }
+
+    var rows = [
+      { label: "Women Crimes",      arr: (cats.women || {}).by_year || [],      field: "cases",  measure: "Reported Cases" },
+      { label: "Children Crimes",   arr: (cats.children || {}).by_year || [],    field: "cases",  measure: "Reported Cases" },
+      { label: "Cyber Crimes",      arr: (cats.cyber || {}).by_year || [],       field: "cases",  measure: "Reported Cases" },
+      { label: "Suicides",          arr: (cats.suicides || {}).by_year || [],    field: "deaths", measure: "Deaths" },
+      { label: "Accidental Deaths", arr: (cats.accidental || {}).by_year || [],  field: "deaths", measure: "Deaths" }
+    ];
+
+    tbody.innerHTML = rows.map(function (row) {
+      return "<tr><td>" + row.label + "</td>" +
+        years.map(function (y) { return "<td>" + val(row.arr, y, row.field) + "</td>"; }).join("") +
+        "<td><em>" + row.measure + "</em></td></tr>";
+    }).join("");
+  }
+
+  // ─── Run ───────────────────────────────────────────────────────────────────
+  document.addEventListener("DOMContentLoaded", function () {
+    initTabSwitcher();
+    try { renderCasesLine(); }    catch(e) { console.error("[AnalyticsExtra] Cases line:", e); }
+    try { renderDeathsBar(); }    catch(e) { console.error("[AnalyticsExtra] Deaths bar:", e); }
+    try { renderFatalDonut(); }   catch(e) { console.error("[AnalyticsExtra] Fatal donut:", e); }
+    try { renderCyberDonut(); }   catch(e) { console.error("[AnalyticsExtra] Cyber donut:", e); }
+    try { renderYearTable(); }    catch(e) { console.error("[AnalyticsExtra] Year table:", e); }
+  });
+
+})();

@@ -1,0 +1,33 @@
+{
+ "source_code": "BCAP_2019",
+ "unit": "million metric tonnes CO2e",
+ "boundary": "BBMP area",
+ "protocol": "GPC BASIC (stationary energy, transport, waste)",
+ "series": [
+  {
+   "year": 2019,
+   "sector": "Total",
+   "mmt_co2e": 18.73,
+   "share_pct": 100.0
+  },
+  {
+   "year": 2019,
+   "sector": "Stationary energy (buildings and electricity)",
+   "mmt_co2e": null,
+   "share_pct": 68.0
+  },
+  {
+   "year": 2019,
+   "sector": "Transportation",
+   "mmt_co2e": null,
+   "share_pct": 21.0
+  },
+  {
+   "year": 2019,
+   "sector": "Waste",
+   "mmt_co2e": null,
+   "share_pct": 11.0
+  }
+ ],
+ "note": "The source reports one official inventory year (2019 base year), a total inventory, and sector shares. Sector emissions tonnes are not inferred from shares."
+}

@@ -579,6 +579,26 @@ body {
   z-index: 1000 !important;
 }
 
+.civic-marker {
+  display: grid;
+  place-items: center;
+  border: 2px solid rgba(255, 255, 255, 0.92);
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  color: #fff;
+  font-size: 17px;
+  line-height: 1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.65);
+}
+
+.civic-marker-healthcare { background: #c2413b; }
+.civic-marker-parks { background: #23835a; }
+.civic-marker-education { background: #b47717; }
+.civic-marker-transport { background: #2868a8; }
+.civic-marker-utilities { background: #087d86; }
+.civic-marker-government { background: #545b65; }
+.civic-marker-police { background: #2868a8; }
+
 .pin-police {
   background: linear-gradient(135deg, #3b82f6, #1d4ed8);
   border: 2px solid #60a5fa;
@@ -643,6 +663,30 @@ body {
 .popup-table td:last-child {
   text-align: right;
   font-weight: 600;
+}
+
+.civic-popup .popup-table th {
+  padding: 3px 12px 3px 0;
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-align: left;
+  vertical-align: top;
+}
+
+.civic-popup .popup-table td {
+  overflow-wrap: anywhere;
+  vertical-align: top;
+}
+
+.civic-popup .popup-table a,
+.civic-popup-source {
+  color: #65c6e8;
+}
+
+.civic-popup-source {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 11px;
 }
 
 .popup-badge {
@@ -1244,3 +1288,30 @@ textarea.form-input { min-height: 120px; resize: vertical; }
 .chat-suggestions .category-pill { font-size: 12px; padding: 6px 12px; }
 .chat-input-row { display: flex; gap: 10px; padding: 14px 20px; border-top: 1px solid var(--border-subtle); }
 .chat-input-row .form-input { flex: 1; }
+
+/* =========================================================================
+   ESG SCORING PAGE (esg.html) - isolated additions
+   ========================================================================= */
+.esg-of { font-size: 16px; color: var(--text-muted); font-weight: 600; }
+.esg-na { font-size: 16px; color: var(--text-muted); }
+.esg-band { display: inline-block; padding: 2px 10px; border: 1px solid var(--border-subtle); border-radius: 999px; font-weight: 700; font-size: 13px; }
+.esg-disclaimer { margin-top: 16px; font-size: 12px; color: var(--text-muted); }
+.esg-formula { padding: 20px; line-height: 1.7; font-size: 14px; color: var(--text-secondary); }
+.esg-formula p { margin-bottom: 8px; }
+.esg-formula h3 { margin-bottom: 12px; color: var(--text-primary); }
+.esg-formula ul { padding-left: 18px; }
+.esg-formula code { color: var(--accent-cyan); word-break: break-word; }
+.esg-method { margin-bottom: 20px; }
+.esg-tag { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; border: 1px solid var(--border-subtle); }
+.esg-tag-ok { color: var(--accent-emerald); border-color: var(--accent-emerald); }
+.esg-tag-na { color: var(--accent-amber); border-color: var(--accent-amber); }
+.esg-tag-ext { color: var(--accent-purple); border-color: var(--accent-purple); }
+.esg-cov-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border-subtle); }
+.esg-na-box { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-muted); }
+.esg-map { height: 440px; width: 100%; border-radius: 12px; overflow: hidden; }
+.esg-detail { padding: 16px 20px; font-size: 13px; color: var(--text-secondary); line-height: 1.6; overflow-x: auto; }
+.esg-detail h4 { color: var(--text-primary); margin-bottom: 4px; }
+.esg-src { font-size: 12px; color: var(--text-muted); margin-top: 6px; line-height: 1.5; }
+.esg-src a, .esg-detail a { color: var(--accent-cyan); }
+.esg-pad { padding: 8px 20px 16px; font-size: 13px; color: var(--text-secondary); }
+@media (max-width: 640px) { .esg-formula { padding: 14px; font-size: 13px; } .esg-map { height: 320px; } }

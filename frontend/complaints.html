@@ -34,6 +34,7 @@
         <ul class="nav-links">
           <li><a href="dashboard.html" class="nav-link">🏠 Dashboard</a></li>
           <li><a href="analytics.html" class="nav-link">📊 Analytics</a></li>
+          <li><a href="esg.html" class="nav-link">🌍 ESG Scoring</a></li>
           <li><a href="complaints.html" class="nav-link active" aria-current="page">📢 Public Complaints</a></li>
           <li><a href="assistant.html" class="nav-link">🤖 Intelligence Assistant</a></li>
         </ul>
@@ -93,7 +94,8 @@
             <b style="color:#10b981;">✅ Complaint Submitted!</b>
             <p style="margin: 6px 0 0; font-size: 13px; color: var(--text-secondary);">
               Your Ticket ID: <b id="c-ticket-id" style="color:#38bdf8; font-size: 16px; letter-spacing: 1px;">—</b><br>
-              <span style="font-size: 12px; color: var(--text-muted);">Keep this ID to check your complaint status below.</span>
+              Your Tracking Secret: <b id="c-secret-code" style="color:#f59e0b; font-size: 15px; letter-spacing: 1px; word-break: break-all;">—</b><br>
+              <span style="font-size: 12px; color: #ef4444; font-weight: 600;">⚠️ Save this secret code now! For privacy, it is never shown again. Both Ticket ID and Secret Code are required to track status.</span>
             </p>
           </div>
 
@@ -119,33 +121,44 @@
               </select>
             </div>
             <div class="form-field">
-              <label for="c-desc">Description <span style="color:#ef4444;">*</span></label>
-              <textarea id="c-desc" class="form-input" placeholder="Describe the issue clearly…" required rows="4"></textarea>
+              <label for="c-desc">Description <span style="color:#ef4444;">*</span> (max 2000 chars)</label>
+              <textarea id="c-desc" class="form-input" maxlength="2000" placeholder="Describe the issue clearly…" required rows="4"></textarea>
             </div>
             <div class="form-field">
               <label for="c-location">Location / Ward</label>
-              <input id="c-location" class="form-input" type="text" placeholder="Street, landmark or ward number">
+              <input id="c-location" class="form-input" type="text" maxlength="300" placeholder="Street, landmark or ward number">
             </div>
             <div class="form-field">
               <label for="c-name">Your Name (optional)</label>
-              <input id="c-name" class="form-input" type="text" placeholder="Anonymous if blank">
+              <input id="c-name" class="form-input" type="text" maxlength="100" placeholder="Anonymous if blank">
             </div>
             <div class="form-field">
               <label for="c-contact">Contact (optional)</label>
-              <input id="c-contact" class="form-input" type="text" placeholder="Email or phone for follow-up">
+              <input id="c-contact" class="form-input" type="text" maxlength="100" placeholder="Email or phone for follow-up">
+            </div>
+            <div class="form-field" style="margin-bottom: 14px;">
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px;">
+                <input id="c-hide-identity" type="checkbox" style="width: 16px; height: 16px; cursor: pointer;">
+                <span><b>Hide my identity</b> (Admins will only see a randomized pseudonym)</span>
+              </label>
             </div>
             <button type="submit" id="c-submit" class="btn-primary">Submit Complaint</button>
-            <p class="form-note">Fields marked <span style="color:#ef4444;">*</span> are required. No personally identifiable information is shared publicly.</p>
+            <p class="form-note">Fields marked <span style="color:#ef4444;">*</span> are required. No IP address or device identifiers are recorded.</p>
           </form>
         </div>
 
         <!-- Track / My Complaints -->
         <div class="glass-panel form-card">
           <h3>📂 Track Your Complaint</h3>
-          <div class="form-field" style="margin-bottom: 12px;">
+          <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Enter your Ticket ID and Secret Code issued when the complaint was submitted.</p>
+          <div class="form-field" style="margin-bottom: 10px;">
             <label for="c-track-id">Ticket ID</label>
+            <input id="c-track-id" class="form-input" type="text" placeholder="e.g. UP-2026-AB12CD">
+          </div>
+          <div class="form-field" style="margin-bottom: 12px;">
+            <label for="c-track-secret">Secret Code</label>
             <div style="display: flex; gap: 8px;">
-              <input id="c-track-id" class="form-input" type="text" placeholder="e.g. UP-2026-AB12CD" style="flex: 1;">
+              <input id="c-track-secret" class="form-input" type="password" placeholder="Paste your 24-char secret code" style="flex: 1;">
               <button id="c-track-btn" class="btn-primary" style="white-space: nowrap; padding: 0 18px;">Track</button>
             </div>
           </div>
@@ -154,7 +167,7 @@
 
           <hr style="border: none; border-top: 1px solid var(--border-subtle); margin: 20px 0;">
 
-          <h3 style="margin-bottom: 12px;">📋 Recent Complaints</h3>
+          <h3 style="margin-bottom: 12px;">📋 Public Complaint Feed</h3>
           <div id="my-complaints-list">
             <div class="empty-state">
               <div class="empty-icon">📭</div>
@@ -189,6 +202,7 @@
     </div>
   </footer>
 
+  <script src="js/config.js"></script>
   <script src="js/api.js"></script>
   <script src="js/app.js"></script>
   <script src="js/complaints.js"></script>

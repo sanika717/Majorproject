@@ -12,8 +12,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Chart.js (Pinned with Subresource Integrity) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.js" integrity="sha384-sitkSLEO56SJYRloHWybrHos3JVvByQSlOZYJ1HiExytjxUlVOernDbpQcOgwtW8" crossorigin="anonymous"></script>
 
   <!-- App Stylesheet -->
   <link rel="stylesheet" href="css/style.css">
@@ -37,6 +37,7 @@
         <ul class="nav-links">
           <li><a href="dashboard.html" class="nav-link">🏠 Dashboard</a></li>
           <li><a href="analytics.html" class="nav-link active" aria-current="page">📊 Analytics</a></li>
+          <li><a href="esg.html" class="nav-link">🌍 ESG Scoring</a></li>
           <li><a href="complaints.html" class="nav-link">📢 Public Complaints</a></li>
           <li><a href="assistant.html" class="nav-link">🤖 Intelligence Assistant</a></li>
         </ul>
@@ -610,6 +611,7 @@
   </footer>
 
   <!-- UrbanPulse Application Scripts -->
+  <script src="js/config.js"></script>
   <script src="js/api.js"></script>
   <script src="js/data.js"></script>
   <script src="js/construction-data.js"></script>

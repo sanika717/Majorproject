@@ -15,9 +15,14 @@ document.addEventListener("DOMContentLoaded", () => {
     window.initUrbanPulseCrimeAnalytics();
   }
 
-  // 2b. Construction Analytics (Analytics page only)
+  // 2b. Construction Analytics (Analytics page only) — waits for data promise
   if (document.getElementById("construction-investment-chart") && typeof window.initUrbanPulseConstructionAnalytics === "function") {
-    window.initUrbanPulseConstructionAnalytics();
+    var conReady = window.URBANPULSE_CONSTRUCTION_READY;
+    if (conReady && typeof conReady.then === "function") {
+      conReady.then(function () { window.initUrbanPulseConstructionAnalytics(); }).catch(function () { window.initUrbanPulseConstructionAnalytics(); });
+    } else {
+      window.initUrbanPulseConstructionAnalytics();
+    }
   }
 
   // 3. Update Live Clock (all pages)

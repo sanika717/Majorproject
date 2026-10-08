@@ -1,0 +1,7 @@
+{
+ "available": false,
+ "rows": [],
+ "reason": "No genuine area-wise (zone/industrial/data-centre) electricity data could be retrieved. The BESCOM city-level category dataset exists on data.gov.in but could not be downloaded automatically.",
+ "reference_source_code": "BESCOM_OGD",
+ "how_to_add": "Add rows {area,category,year,value_lakh_units,source_code} to this file; the backend loads them on reseed."
+}

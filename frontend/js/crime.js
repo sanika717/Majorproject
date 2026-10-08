@@ -1,595 +1,278 @@
 /**
- * UrbanPulse - Crime & Safety Analytics Module
- * Real Data-Driven Analytics for Bengaluru Crime Statistics
+ * UrbanPulse – Crime Analytics Renderer
+ * Reads from window.UP_CRIME (set by data.js).
+ * Renders all crime charts, tables, risk gauge for analytics.html.
  */
+(function () {
+  "use strict";
 
-class CrimeAnalytics {
-  constructor() {
-    this.data = window.URBANPULSE_DATA;
-    this.currentYear = "2023";
-    this.currentCategory = "all";
-    
-    this.trendChart = null;
-    this.categoryChart = null;
+  var COLORS = {
+    red:    "#ef4444",
+    amber:  "#f59e0b",
+    cyan:   "#38bdf8",
+    emerald:"#10b981",
+    purple: "#8b5cf6",
+    rose:   "#f43f5e",
+    indigo: "#6366f1"
+  };
 
-    this.initEventListeners();
-    this.initCharts();
-    this.render();
-    this.initBackendData();
-  }
-
-  async initBackendData() {
-    if (!window.UrbanPulseAPI) return;
-    try {
-      const full = await window.UrbanPulseAPI.getFullCrimeData();
-      if (full) {
-        this.data = full;
-        window.URBANPULSE_DATA = full;
-        this.render();
-      }
-    } catch (e) {
-      console.warn("[CrimeAnalytics] Backend fetch failed:", e);
+  var CHART_DEFAULTS = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { labels: { color: "#e2e8f0", font: { family: "Inter, sans-serif", size: 12 } } } },
+    scales: {
+      x: { ticks: { color: "#94a3b8", font: { size: 11 } }, grid: { color: "rgba(255,255,255,0.06)" } },
+      y: { ticks: { color: "#94a3b8", font: { size: 11 } }, grid: { color: "rgba(255,255,255,0.06)" } }
     }
+  };
+
+  function $ (id) { return document.getElementById(id); }
+  function setText(id, val) { var el = $(id); if (el) el.textContent = val; }
+  function fmt(n) { return typeof n === "number" ? n.toLocaleString("en-IN") : "—"; }
+
+  var _charts = {};
+
+  function destroyChart(id) {
+    if (_charts[id]) { try { _charts[id].destroy(); } catch(e) {} delete _charts[id]; }
   }
 
-  initEventListeners() {
-    const yearSelect = document.getElementById("crime-year-select");
-    if (yearSelect) {
-      yearSelect.addEventListener("change", async (e) => {
-        this.currentYear = e.target.value;
-        await this.handleSelectionUpdate();
+  function makeChart(id, config) {
+    destroyChart(id);
+    var canvas = $(id);
+    if (!canvas || typeof Chart === "undefined") return;
+    _charts[id] = new Chart(canvas, config);
+  }
+
+  // Render the annual D47 trend chart
+  function renderTrendChart() {
+    var rows = (window.UP_CRIME && window.UP_CRIME.d47_annual) || [];
+    makeChart("crime-trend-chart", {
+      type: "bar",
+      data: {
+        labels: rows.map(function (r) { return r.year; }),
+        datasets: [
+          {
+            label: "Non-Fatal Crimes",
+            data: rows.map(function (r) { return r.total - r.fatal; }),
+            backgroundColor: COLORS.cyan,
+            borderRadius: 4
+          },
+          {
+            label: "Fatal Crimes",
+            data: rows.map(function (r) { return r.fatal; }),
+            backgroundColor: COLORS.red,
+            borderRadius: 4
+          }
+        ]
+      },
+      options: Object.assign({}, CHART_DEFAULTS, {
+        scales: Object.assign({}, CHART_DEFAULTS.scales, {
+          x: Object.assign({}, CHART_DEFAULTS.scales.x),
+          y: Object.assign({}, CHART_DEFAULTS.scales.y, { stacked: false })
+        }),
+        plugins: Object.assign({}, CHART_DEFAULTS.plugins, { legend: { position: "bottom", labels: { color: "#e2e8f0", font: { size: 12 } } } })
+      })
+    });
+  }
+
+  // Render category breakdown chart and table for a given category + year
+  function renderCategoryView(category, year) {
+    var crime = window.UP_CRIME || {};
+    var cats = crime.categories || {};
+    var note = $("crime-source-note");
+    var chartTitle = $("crime-chart-heading");
+    var tableTitle = $("crime-table-title");
+
+    if (category === "all") {
+      var rows = cats.all || [];
+      setText("kpi-label-total", "Total Crimes (2014–2021)");
+      setText("kpi-label-fatal", "Fatal Crimes");
+      setText("kpi-label-nonfatal", "Non-Fatal Crimes");
+      setText("kpi-label-rate", "Fatal Severity %");
+      setText("kpi-total-crimes", fmt((crime.overall || {}).total));
+      setText("kpi-fatal-crimes", fmt((crime.overall || {}).fatal));
+      setText("kpi-nonfatal-crimes", fmt((crime.overall || {}).non_fatal));
+      setText("kpi-detection-rate", ((crime.overall || {}).fatal_pct || 0).toFixed(2) + "%");
+      if (note) note.textContent = "Source: Bengaluru City Police D47 Series (2014–2021). Verified EDA only.";
+      if (chartTitle) chartTitle.textContent = "📊 Crime Type Distribution (2014–2021 Total)";
+      if (tableTitle) tableTitle.textContent = "Bengaluru City-Wide Crime Totals (Verified D47 EDA)";
+
+      makeChart("crime-category-chart", {
+        type: "bar",
+        data: {
+          labels: rows.map(function (r) { return r.crime_type; }),
+          datasets: [{
+            label: "Reported Cases",
+            data: rows.map(function (r) { return r.reported; }),
+            backgroundColor: COLORS.cyan,
+            borderRadius: 4
+          }]
+        },
+        options: Object.assign({}, CHART_DEFAULTS, {
+          indexAxis: "y",
+          plugins: Object.assign({}, CHART_DEFAULTS.plugins, { legend: { display: false } })
+        })
+      });
+
+      var tbody = $("crime-data-table-body");
+      if (tbody) {
+        var col1 = $("table-col-1"), col2 = $("table-col-2"), col3 = $("table-col-3"), col4 = $("table-col-4");
+        if (col1) col1.textContent = "Crime Type";
+        if (col2) col2.textContent = "Reported Cases";
+        if (col3) col3.textContent = "Fatal";
+        if (col4) col4.textContent = "Fatal Rate";
+        tbody.innerHTML = rows.map(function (r) {
+          return "<tr><td>" + r.crime_type + "</td><td>" + fmt(r.reported) + "</td><td>" +
+            (r.detected_fatal != null ? fmt(r.detected_fatal) : "<em>n/a</em>") + "</td><td>" +
+            (r.rate_pct != null ? r.rate_pct.toFixed(1) + "%" : "<em>n/a</em>") + "</td></tr>";
+        }).join("") || "<tr><td colspan='4'>No data.</td></tr>";
+      }
+
+    } else if (category === "women" || category === "children") {
+      var cat = cats[category] || {};
+      var byYear = cat.by_year || [];
+      var subtypes = category === "women" ? (cat.subtypes_2023 || []) : (cat.subtypes_2023 || []);
+      var label = category === "women" ? "Crimes Against Women" : "Crimes Against Children";
+
+      setText("kpi-label-total", label + " Total (2021-23)");
+      setText("kpi-label-fatal", "2023 Cases");
+      setText("kpi-label-nonfatal", "2022 Cases");
+      setText("kpi-label-rate", "YoY Change");
+      var total = byYear.reduce(function (s, r) { return s + r.cases; }, 0);
+      var yr2023 = (byYear.find(function (r) { return r.year === 2023; }) || {}).cases || 0;
+      var yr2022 = (byYear.find(function (r) { return r.year === 2022; }) || {}).cases || 0;
+      var yr2021 = (byYear.find(function (r) { return r.year === 2021; }) || {}).cases || 0;
+      var yoy = yr2022 ? (((yr2023 - yr2022) / yr2022) * 100).toFixed(1) + "%" : "—";
+      setText("kpi-total-crimes", fmt(total));
+      setText("kpi-fatal-crimes", fmt(yr2023));
+      setText("kpi-nonfatal-crimes", fmt(yr2022));
+      setText("kpi-detection-rate", yoy);
+      if (note) note.textContent = "Source: " + cat.source + ". Year: " + year;
+      if (chartTitle) chartTitle.textContent = "📊 " + label + " — Sub-type Breakdown (2023)";
+
+      makeChart("crime-category-chart", {
+        type: "bar",
+        data: {
+          labels: subtypes.map(function (s) { return s.type; }),
+          datasets: [{
+            label: "2023 Cases",
+            data: subtypes.map(function (s) { return s.cases; }),
+            backgroundColor: category === "women" ? COLORS.rose : COLORS.amber,
+            borderRadius: 4
+          }]
+        },
+        options: Object.assign({}, CHART_DEFAULTS, {
+          indexAxis: "y",
+          plugins: Object.assign({}, CHART_DEFAULTS.plugins, { legend: { display: false } })
+        })
+      });
+
+      var tbody2 = $("crime-data-table-body");
+      if (tbody2) {
+        var col1b = $("table-col-1"), col2b = $("table-col-2"), col3b = $("table-col-3"), col4b = $("table-col-4");
+        if (col1b) col1b.textContent = "Year";
+        if (col2b) col2b.textContent = "Cases";
+        if (col3b) col3b.textContent = "—";
+        if (col4b) col4b.textContent = "—";
+        tbody2.innerHTML = byYear.map(function (r) {
+          return "<tr><td>" + r.year + "</td><td>" + fmt(r.cases) + "</td><td>—</td><td>—</td></tr>";
+        }).join("");
+      }
+
+    } else if (category === "cyber") {
+      var cat2 = cats.cyber || {};
+      var byYear2 = cat2.by_year || [];
+      var byDiv = cat2.by_division_2023 || [];
+      var yr2023b = (byYear2.find(function (r) { return r.year === 2023; }) || {}).cases || 0;
+      var yr2022b = (byYear2.find(function (r) { return r.year === 2022; }) || {}).cases || 0;
+      var yoy2 = yr2022b ? (((yr2023b - yr2022b) / yr2022b) * 100).toFixed(1) + "%" : "—";
+      setText("kpi-label-total", "Cyber Crimes Total (2021-23)");
+      setText("kpi-label-fatal", "2023 Cases");
+      setText("kpi-label-nonfatal", "2022 Cases");
+      setText("kpi-label-rate", "YoY Change (22→23)");
+      setText("kpi-total-crimes", fmt(byYear2.reduce(function (s, r) { return s + r.cases; }, 0)));
+      setText("kpi-fatal-crimes", fmt(yr2023b));
+      setText("kpi-nonfatal-crimes", fmt(yr2022b));
+      setText("kpi-detection-rate", yoy2);
+      if (note) note.textContent = "Source: " + cat2.source + ".";
+      if (chartTitle) chartTitle.textContent = "📊 Cyber Crime by Division (2023)";
+      makeChart("crime-category-chart", {
+        type: "bar",
+        data: {
+          labels: byDiv.map(function (d) { return d.division; }),
+          datasets: [{
+            label: "2023 Cases",
+            data: byDiv.map(function (d) { return d.cases; }),
+            backgroundColor: COLORS.indigo,
+            borderRadius: 4
+          }]
+        },
+        options: Object.assign({}, CHART_DEFAULTS, {
+          plugins: Object.assign({}, CHART_DEFAULTS.plugins, { legend: { display: false } })
+        })
+      });
+
+    } else if (category === "suicides" || category === "accidental") {
+      var cat3 = cats[category] || {};
+      var byYear3 = cat3.by_year || [];
+      var key = category === "suicides" ? "deaths" : "deaths";
+      var label3 = category === "suicides" ? "Suicides" : "Accidental Deaths";
+      setText("kpi-label-total", label3 + " Total (2021-23)");
+      setText("kpi-label-fatal", "2023");
+      setText("kpi-label-nonfatal", "2022");
+      setText("kpi-label-rate", "YoY 22→23");
+      var y23 = (byYear3.find(function (r) { return r.year === 2023; }) || {})[key] || 0;
+      var y22 = (byYear3.find(function (r) { return r.year === 2022; }) || {})[key] || 0;
+      var yoyD = y22 ? (((y23 - y22) / y22) * 100).toFixed(1) + "%" : "—";
+      setText("kpi-total-crimes", fmt(byYear3.reduce(function (s, r) { return s + (r[key] || 0); }, 0)));
+      setText("kpi-fatal-crimes", fmt(y23));
+      setText("kpi-nonfatal-crimes", fmt(y22));
+      setText("kpi-detection-rate", yoyD);
+      if (note) note.textContent = "Source: " + cat3.source + ".";
+      if (chartTitle) chartTitle.textContent = "📊 " + label3 + " by Year";
+      makeChart("crime-category-chart", {
+        type: "bar",
+        data: {
+          labels: byYear3.map(function (r) { return r.year; }),
+          datasets: [{
+            label: label3,
+            data: byYear3.map(function (r) { return r[key]; }),
+            backgroundColor: COLORS.rose,
+            borderRadius: 4
+          }]
+        },
+        options: Object.assign({}, CHART_DEFAULTS, {
+          plugins: Object.assign({}, CHART_DEFAULTS.plugins, { legend: { display: false } })
+        })
       });
     }
+  }
 
-    const categoryPills = document.querySelectorAll(".category-pill[data-category]");
-    categoryPills.forEach(pill => {
-      pill.addEventListener("click", async (e) => {
-        const catId = pill.getAttribute("data-category");
-        if (pill.classList.contains("disabled")) return;
-        
-        categoryPills.forEach(p => p.classList.remove("active"));
+  function init() {
+    renderTrendChart();
+    renderCategoryView("all", "2023");
+
+    // Tab pill interactions for crime categories
+    var pills = document.querySelectorAll(".analytics-tab-panel#tab-crime .category-pill:not(.disabled)");
+    pills.forEach(function (pill) {
+      pill.addEventListener("click", function () {
+        pills.forEach(function (p) { p.classList.remove("active"); });
         pill.classList.add("active");
-        
-        this.currentCategory = catId;
-        this.syncYearSelectAvailability();
-        await this.handleSelectionUpdate();
+        var cat = pill.getAttribute("data-category") || "all";
+        var yearSel = $("crime-year-select");
+        renderCategoryView(cat, yearSel ? yearSel.value : "2023");
       });
     });
 
-    this.syncYearSelectAvailability();
-  }
-
-  async handleSelectionUpdate() {
-    // If backend API is reachable, query dynamic analytics endpoint
-    if (window.UrbanPulseAPI) {
-      try {
-        const live = await window.UrbanPulseAPI.getCrimeAnalytics(this.currentCategory, this.currentYear);
-        if (live && live.kpis) {
-          this.liveQueryData = live;
-        }
-      } catch (err) {
-        console.warn("[CrimeAnalytics] Dynamic query error, falling back to local dataset:", err);
-      }
-    }
-    this.render();
-  }
-
-  // The Year selector only applies to the verified 2021-2023 category
-  // breakdowns (women/children/cyber/accidental). "All Recorded Crimes" shows
-  // a fixed verified historical figure, so the selector is disabled for it
-  // rather than left implying it changes a number it doesn't affect.
-  syncYearSelectAvailability() {
-    const yearSelect = document.getElementById("crime-year-select");
-    if (!yearSelect) return;
-    const applies = this.currentCategory !== "all";
-    yearSelect.disabled = !applies;
-    yearSelect.title = applies ? "" : "Year selector applies to the category tabs above — 'All Recorded Crimes' shows the verified 2014-2021 historical total.";
-  }
-
-  initCharts() {
-    // Chart 1: Trend Chart
-    const trendCtx = document.getElementById("crime-trend-chart")?.getContext("2d");
-    if (trendCtx) {
-      // "All Recorded Crimes" only has one verified overall data point today —
-      // the 2014-2021 (Up to Dec) historical aggregate — so the trend chart
-      // shows that single verified bar/point rather than inventing a
-      // year-over-year 2021-2023 line that isn't backed by the EDA notebook.
-      const hist = this.data.historical || {};
-      this.trendChart = new Chart(trendCtx, {
-        type: "bar",
-        data: {
-          labels: [hist.period_label || "2014 – 2021"],
-          datasets: [
-            {
-              label: "Fatal Cases",
-              data: [hist.fatal_crimes || 0],
-              backgroundColor: "rgba(239, 68, 68, 0.6)",
-              borderColor: "#ef4444",
-              borderWidth: 1,
-              borderRadius: 6
-            },
-            {
-              label: "Non-Fatal Cases",
-              data: [hist.non_fatal_crimes || 0],
-              backgroundColor: "rgba(56, 189, 248, 0.6)",
-              borderColor: "#38bdf8",
-              borderWidth: 1,
-              borderRadius: 6
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              labels: { color: "#94a3b8", font: { family: "Inter", size: 12 } }
-            },
-            tooltip: {
-              backgroundColor: "rgba(15, 23, 42, 0.95)",
-              titleColor: "#fff",
-              bodyColor: "#94a3b8",
-              borderColor: "rgba(56, 189, 248, 0.3)",
-              borderWidth: 1
-            }
-          },
-          scales: {
-            x: {
-              grid: { color: "rgba(255, 255, 255, 0.05)" },
-              ticks: { color: "#94a3b8" }
-            },
-            y: {
-              grid: { color: "rgba(255, 255, 255, 0.05)" },
-              ticks: { color: "#94a3b8" }
-            }
-          }
-        }
-      });
-    }
-
-    // Chart 2: Category / Division Breakdown Chart
-    const catCtx = document.getElementById("crime-category-chart")?.getContext("2d");
-    if (catCtx) {
-      this.categoryChart = new Chart(catCtx, {
-        type: "bar",
-        data: {
-          labels: [],
-          datasets: [{
-            label: "Reported Cases",
-            data: [],
-            backgroundColor: "rgba(56, 189, 248, 0.6)",
-            borderColor: "#38bdf8",
-            borderWidth: 1,
-            borderRadius: 6
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              labels: { color: "#94a3b8", font: { family: "Inter", size: 12 } }
-            },
-            tooltip: {
-              backgroundColor: "rgba(15, 23, 42, 0.95)",
-              titleColor: "#fff",
-              bodyColor: "#94a3b8",
-              borderColor: "rgba(56, 189, 248, 0.3)",
-              borderWidth: 1
-            }
-          },
-          scales: {
-            x: {
-              grid: { color: "rgba(255, 255, 255, 0.05)" },
-              ticks: { color: "#94a3b8", maxRotation: 45, minRotation: 0 }
-            },
-            y: {
-              grid: { color: "rgba(255, 255, 255, 0.05)" },
-              ticks: { color: "#94a3b8" }
-            }
-          }
-        }
+    var yearSel = $("crime-year-select");
+    if (yearSel) {
+      yearSel.addEventListener("change", function () {
+        var activeP = document.querySelector(".analytics-tab-panel#tab-crime .category-pill.active:not(.disabled)");
+        renderCategoryView(activeP ? (activeP.getAttribute("data-category") || "all") : "all", yearSel.value);
       });
     }
   }
 
-  // Source + methodology shown for whatever is currently displayed.
-  static SOURCES = {
-    all: { src: "D47 City-level Crime Statistics series (Fatal / Non-Fatal, Bangalore City, 2014–2021 up to Dec).", method: "Totals summed across years; Fatal % = fatal ÷ total. UrbanPulse Risk Score = 60% Volume + 40% Severity, shown for the peak year. Overall 2021–2023 totals are EDA In Progress, so the year selector does not apply." },
-    women: { src: "Bengaluru City Police Press Note — Crimes Against Women, 2021–2023.", method: "Reported and detected counts transcribed as published; Detection % = detected ÷ reported. City-level, not station-level." },
-    children: { src: "Bengaluru City Police Press Note — Crimes Against Children, 2021–2023.", method: "Reported and detected counts as published; Detection % = detected ÷ reported. City-level, not station-level." },
-    cyber: { src: "Bengaluru City Police Press Note — Cyber Crime by Police Division, 2021–2023.", method: "Division-wise reported/detected counts as published; Pending = reported − detected. Divisions are administrative, not individual stations." },
-    suicides: { src: "Bengaluru City Police Press Note — Suicides & Accidental Deaths, 2021–2023.", method: "Male/female counts by method as published; per-year method rows sum to the published total. City-level." },
-    accidental: { src: "Bengaluru City Police Press Note — Suicides & Accidental Deaths, 2021–2023.", method: "Male/female counts by cause as published; per-year cause rows sum to the published total. City-level." }
-  };
+  window.initUrbanPulseCrimeAnalytics = init;
 
-  renderSource() {
-    const el = document.getElementById("crime-source-note");
-    if (!el) return;
-    const info = CrimeAnalytics.SOURCES[this.currentCategory];
-    if (!info) return;
-    el.innerHTML = `<b>Source:</b> ${info.src}<br><b>Methodology:</b> ${info.method}`;
-  }
-
-  render() {
-    this.renderSource();
-    this.renderKPIs();
-    this.renderRiskScore();
-    this.renderCharts();
-    this.renderTable();
-  }
-
-  renderKPIs() {
-    const kpiTotal = document.getElementById("kpi-total-crimes");
-    const kpiFatal = document.getElementById("kpi-fatal-crimes");
-    const kpiNonFatal = document.getElementById("kpi-nonfatal-crimes");
-    const kpiRate = document.getElementById("kpi-detection-rate");
-
-    const labelTotal = document.getElementById("kpi-label-total");
-    const labelFatal = document.getElementById("kpi-label-fatal");
-    const labelNonFatal = document.getElementById("kpi-label-nonfatal");
-    const labelRate = document.getElementById("kpi-label-rate");
-
-    if (this.currentCategory === "all") {
-      // Verified historical aggregate (2014-2021, Up to Dec) — the only
-      // overall city-wide crime result completed in the EDA notebook.
-      // Year-by-year 2021-2023 overall totals are not yet verified, so the
-      // shared Year selector does not apply to this card (see disclaimer below it).
-      const hist = this.data.historical || {};
-      if (kpiTotal) kpiTotal.textContent = (hist.total_crimes || 0).toLocaleString();
-      if (kpiFatal) kpiFatal.textContent = (hist.fatal_crimes || 0).toLocaleString();
-      if (kpiNonFatal) kpiNonFatal.textContent = (hist.non_fatal_crimes || 0).toLocaleString();
-      if (kpiRate) kpiRate.textContent = `${hist.fatal_percentage || 0}%`;
-
-      if (labelTotal) labelTotal.textContent = `Total Crimes (${hist.period_label || "Historical"})`;
-      if (labelFatal) labelFatal.textContent = `Fatal Crimes`;
-      if (labelNonFatal) labelNonFatal.textContent = `Non-Fatal Crimes`;
-      if (labelRate) labelRate.textContent = `Fatal Severity %`;
-    } else if (this.currentCategory === "women") {
-      const catData = this.data.categories.women.years[this.currentYear];
-      if (kpiTotal) kpiTotal.textContent = catData.total_reported.toLocaleString();
-      if (kpiFatal) kpiFatal.textContent = catData.total_detected.toLocaleString();
-      if (kpiNonFatal) kpiNonFatal.textContent = (catData.total_reported - catData.total_detected).toLocaleString();
-      if (kpiRate) kpiRate.textContent = `${catData.overall_detection_pct}%`;
-
-      if (labelTotal) labelTotal.textContent = `Reported Women Crimes`;
-      if (labelFatal) labelFatal.textContent = `Detected / Solved`;
-      if (labelNonFatal) labelNonFatal.textContent = `Pending Cases`;
-      if (labelRate) labelRate.textContent = `Detection Rate`;
-    } else if (this.currentCategory === "children") {
-      const catData = this.data.categories.children.years[this.currentYear];
-      if (kpiTotal) kpiTotal.textContent = catData.total_reported.toLocaleString();
-      if (kpiFatal) kpiFatal.textContent = catData.total_detected.toLocaleString();
-      if (kpiNonFatal) kpiNonFatal.textContent = (catData.total_reported - catData.total_detected).toLocaleString();
-      if (kpiRate) kpiRate.textContent = `${catData.overall_detection_pct}%`;
-
-      if (labelTotal) labelTotal.textContent = `Crimes Against Children`;
-      if (labelFatal) labelFatal.textContent = `Detected Cases`;
-      if (labelNonFatal) labelNonFatal.textContent = `Under Investigation`;
-      if (labelRate) labelRate.textContent = `Detection Rate`;
-    } else if (this.currentCategory === "cyber") {
-      const catData = this.data.categories.cyber.years[this.currentYear];
-      if (kpiTotal) kpiTotal.textContent = catData.total_reported.toLocaleString();
-      if (kpiFatal) kpiFatal.textContent = catData.total_detected.toLocaleString();
-      if (kpiNonFatal) kpiNonFatal.textContent = (catData.total_reported - catData.total_detected).toLocaleString();
-      if (kpiRate) kpiRate.textContent = `${catData.overall_detection_pct}%`;
-
-      if (labelTotal) labelTotal.textContent = `Reported Cyber Crimes`;
-      if (labelFatal) labelFatal.textContent = `Detected Cyber Cases`;
-      if (labelNonFatal) labelNonFatal.textContent = `Pending / UI Cases`;
-      if (labelRate) labelRate.textContent = `Detection Rate`;
-    } else if (this.currentCategory === "suicides") {
-      const catData = this.data.categories.suicides.years[this.currentYear];
-      if (kpiTotal) kpiTotal.textContent = catData.total_suicides.toLocaleString();
-      if (kpiFatal) kpiFatal.textContent = catData.total_male.toLocaleString();
-      if (kpiNonFatal) kpiNonFatal.textContent = catData.total_female.toLocaleString();
-      if (kpiRate) kpiRate.textContent = `${((catData.total_male / catData.total_suicides) * 100).toFixed(1)}%`;
-
-      if (labelTotal) labelTotal.textContent = `Total Suicides`;
-      if (labelFatal) labelFatal.textContent = `Male`;
-      if (labelNonFatal) labelNonFatal.textContent = `Female`;
-      if (labelRate) labelRate.textContent = `Male Share %`;
-    } else if (this.currentCategory === "accidental") {
-      const catData = this.data.categories.accidental.years[this.currentYear];
-      if (kpiTotal) kpiTotal.textContent = catData.total_accidental_deaths.toLocaleString();
-      if (kpiFatal) kpiFatal.textContent = catData.total_male.toLocaleString();
-      if (kpiNonFatal) kpiNonFatal.textContent = catData.total_female.toLocaleString();
-      if (kpiRate) kpiRate.textContent = `${((catData.total_male / catData.total_accidental_deaths) * 100).toFixed(1)}%`;
-
-      if (labelTotal) labelTotal.textContent = `Total Accidental Deaths`;
-      if (labelFatal) labelFatal.textContent = `Male Fatalities`;
-      if (labelNonFatal) labelNonFatal.textContent = `Female Fatalities`;
-      if (labelRate) labelRate.textContent = `Male Ratio %`;
-    }
-  }
-
-  renderRiskScore() {
-    // The UrbanPulse Risk Score gauge always reflects the verified historical
-    // peak (2016, within the 2014-2021 D47 series) — it does not change with
-    // the category/year selectors below, since no other verified risk score
-    // currently exists. No hardcoded fallback numbers are used: if `historical`
-    // is missing, the gauge shows "N/A" rather than a guessed figure.
-    const hist = this.data.historical || null;
-    const riskScoreEl = document.getElementById("risk-score-value");
-    const riskBadgeEl = document.getElementById("risk-level-badge");
-    const riskArcEl = document.getElementById("risk-gauge-arc");
-    const volumeScoreEl = document.getElementById("risk-volume-score");
-    const severityScoreEl = document.getElementById("risk-severity-score");
-
-    if (!hist) {
-      if (riskScoreEl) riskScoreEl.textContent = "N/A";
-      if (volumeScoreEl) volumeScoreEl.textContent = "N/A";
-      if (severityScoreEl) severityScoreEl.textContent = "N/A";
-      if (riskBadgeEl) riskBadgeEl.textContent = "Data Unavailable";
-      return;
-    }
-
-    const score = hist.highest_risk_score;
-    const level = hist.highest_risk_level;
-
-    if (riskScoreEl) riskScoreEl.textContent = score.toFixed(1);
-    if (volumeScoreEl) volumeScoreEl.textContent = `${hist.highest_risk_volume_score}/100`;
-    if (severityScoreEl) severityScoreEl.textContent = `${hist.highest_risk_severity_score}/100`;
-
-    if (riskBadgeEl) {
-      riskBadgeEl.textContent = `${level} (${hist.highest_risk_year})`;
-      if (level === "High Risk") {
-        riskBadgeEl.style.backgroundColor = "rgba(239, 68, 68, 0.2)";
-        riskBadgeEl.style.color = "#ef4444";
-        riskBadgeEl.style.border = "1px solid rgba(239, 68, 68, 0.4)";
-      } else {
-        riskBadgeEl.style.backgroundColor = "rgba(245, 158, 11, 0.2)";
-        riskBadgeEl.style.color = "#f59e0b";
-        riskBadgeEl.style.border = "1px solid rgba(245, 158, 11, 0.4)";
-      }
-    }
-
-    // Gauge arc update (circumference ~ 220 for a semicircle)
-    if (riskArcEl) {
-      const strokeDashoffset = 220 - (220 * (score / 100));
-      riskArcEl.style.strokeDashoffset = strokeDashoffset;
-      riskArcEl.style.stroke = level === "High Risk" ? "#ef4444" : "#f59e0b";
-    }
-  }
-
-  renderCharts() {
-    if (!this.categoryChart) return;
-
-    if (this.currentCategory === "all") {
-      this.categoryChart.data.labels = ["Fatal", "Non-Fatal"];
-      const hist = this.data.historical || { fatal_crimes: 0, non_fatal_crimes: 0 };
-      this.categoryChart.data.datasets = [{
-        label: "Cases",
-        data: [hist.fatal_crimes, hist.non_fatal_crimes],
-        backgroundColor: ["rgba(239, 68, 68, 0.6)", "rgba(56, 189, 248, 0.6)"],
-        borderColor: ["#ef4444", "#38bdf8"],
-        borderWidth: 1,
-        borderRadius: 6
-      }];
-    } else if (this.currentCategory === "women") {
-      const items = this.data.categories.women.years[this.currentYear].items;
-      this.categoryChart.data.labels = items.map(i => i.crime);
-      this.categoryChart.data.datasets = [
-        {
-          label: "Reported Cases",
-          data: items.map(i => i.reported),
-          backgroundColor: "rgba(244, 63, 94, 0.6)",
-          borderColor: "#f43f5e",
-          borderWidth: 1,
-          borderRadius: 6
-        },
-        {
-          label: "Detected Cases",
-          data: items.map(i => i.detected),
-          backgroundColor: "rgba(16, 185, 129, 0.6)",
-          borderColor: "#10b981",
-          borderWidth: 1,
-          borderRadius: 6
-        }
-      ];
-    } else if (this.currentCategory === "children") {
-      const items = this.data.categories.children.years[this.currentYear].items;
-      this.categoryChart.data.labels = items.map(i => i.crime);
-      this.categoryChart.data.datasets = [
-        {
-          label: "Reported Cases",
-          data: items.map(i => i.reported),
-          backgroundColor: "rgba(168, 85, 247, 0.6)",
-          borderColor: "#a855f7",
-          borderWidth: 1,
-          borderRadius: 6
-        },
-        {
-          label: "Detected Cases",
-          data: items.map(i => i.detected),
-          backgroundColor: "rgba(16, 185, 129, 0.6)",
-          borderColor: "#10b981",
-          borderWidth: 1,
-          borderRadius: 6
-        }
-      ];
-    } else if (this.currentCategory === "cyber") {
-      const items = this.data.categories.cyber.years[this.currentYear].items;
-      this.categoryChart.data.labels = items.map(i => i.division);
-      this.categoryChart.data.datasets = [
-        {
-          label: "Reported Cases",
-          data: items.map(i => i.reported),
-          backgroundColor: "rgba(56, 189, 248, 0.6)",
-          borderColor: "#38bdf8",
-          borderWidth: 1,
-          borderRadius: 6
-        },
-        {
-          label: "Detected Cases",
-          data: items.map(i => i.detected),
-          backgroundColor: "rgba(16, 185, 129, 0.6)",
-          borderColor: "#10b981",
-          borderWidth: 1,
-          borderRadius: 6
-        }
-      ];
-    } else if (this.currentCategory === "suicides") {
-      const items = this.data.categories.suicides.years[this.currentYear].items;
-      this.categoryChart.data.labels = items.map(i => i.cause);
-      this.categoryChart.data.datasets = [
-        { label: "Male", data: items.map(i => i.male), backgroundColor: "rgba(59, 130, 246, 0.6)", borderColor: "#3b82f6", borderWidth: 1, borderRadius: 6 },
-        { label: "Female", data: items.map(i => i.female), backgroundColor: "rgba(236, 72, 153, 0.6)", borderColor: "#ec4899", borderWidth: 1, borderRadius: 6 }
-      ];
-    } else if (this.currentCategory === "accidental") {
-      const items = this.data.categories.accidental.years[this.currentYear].items;
-      this.categoryChart.data.labels = items.map(i => i.cause);
-      this.categoryChart.data.datasets = [
-        {
-          label: "Male Fatalities",
-          data: items.map(i => i.male),
-          backgroundColor: "rgba(59, 130, 246, 0.6)",
-          borderColor: "#3b82f6",
-          borderWidth: 1,
-          borderRadius: 6
-        },
-        {
-          label: "Female Fatalities",
-          data: items.map(i => i.female),
-          backgroundColor: "rgba(236, 72, 153, 0.6)",
-          borderColor: "#ec4899",
-          borderWidth: 1,
-          borderRadius: 6
-        }
-      ];
-    }
-
-    this.categoryChart.update();
-  }
-
-  renderTable() {
-    const tableBody = document.getElementById("crime-data-table-body");
-    const tableTitle = document.getElementById("crime-table-title");
-    const col1 = document.getElementById("table-col-1");
-    const col2 = document.getElementById("table-col-2");
-    const col3 = document.getElementById("table-col-3");
-    const col4 = document.getElementById("table-col-4");
-
-    if (!tableBody) return;
-    tableBody.innerHTML = "";
-
-    if (this.currentCategory === "all") {
-      if (tableTitle) tableTitle.textContent = `Bengaluru City-Wide Crime Totals (Verified D47 EDA)`;
-      if (col1) col1.textContent = "Period";
-      if (col2) col2.textContent = "Total Recorded";
-      if (col3) col3.textContent = "Fatal Cases";
-      if (col4) col4.textContent = "Fatal Severity %";
-
-      const hist = this.data.historical;
-      if (hist) {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td style="font-weight: 700; color: #fff;">${hist.period_label}</td>
-          <td><b>${hist.total_crimes.toLocaleString()}</b></td>
-          <td style="color: #ef4444;">${hist.fatal_crimes.toLocaleString()}</td>
-          <td>
-            <div class="progress-bar-container">
-              <div class="progress-bar-fill" style="width: ${hist.fatal_percentage}%; background: #ef4444;"></div>
-            </div>
-            <span>${hist.fatal_percentage}%</span>
-          </td>
-        `;
-        tableBody.appendChild(row);
-
-        const noteRow = document.createElement("tr");
-        noteRow.innerHTML = `<td colspan="4" style="font-size: 11px; color: var(--text-muted); text-align: center; padding-top: 10px;">
-          Year-by-year (2021-2023) breakdown of overall city-wide totals is EDA In Progress. See the verified category tabs above for real 2021-2023 data.
-        </td>`;
-        tableBody.appendChild(noteRow);
-      }
-    } else if (this.currentCategory === "women" || this.currentCategory === "children") {
-      const catConfig = this.currentCategory === "women" ? this.data.categories.women : this.data.categories.children;
-      const catData = catConfig.years[this.currentYear];
-      
-      if (tableTitle) tableTitle.textContent = `${catConfig.title} Breakdown (${this.currentYear})`;
-      if (col1) col1.textContent = "Crime Type";
-      if (col2) col2.textContent = "Reported Cases";
-      if (col3) col3.textContent = "Detected / Solved";
-      if (col4) col4.textContent = "Detection Rate %";
-
-      catData.items.forEach(item => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td style="font-weight: 600; color: #fff;">${item.crime}</td>
-          <td><b>${item.reported.toLocaleString()}</b></td>
-          <td style="color: #10b981;">${item.detected.toLocaleString()}</td>
-          <td>
-            <div class="progress-bar-container">
-              <div class="progress-bar-fill" style="width: ${item.detection_pct}%;"></div>
-            </div>
-            <span>${item.detection_pct}%</span>
-          </td>
-        `;
-        tableBody.appendChild(row);
-      });
-    } else if (this.currentCategory === "cyber") {
-      const catData = this.data.categories.cyber.years[this.currentYear];
-      if (tableTitle) tableTitle.textContent = `Cyber Crime by Police Division (${this.currentYear})`;
-      if (col1) col1.textContent = "Police Division";
-      if (col2) col2.textContent = "Reported Cases";
-      if (col3) col3.textContent = "Detected Cases";
-      if (col4) col4.textContent = "Detection Rate %";
-
-      catData.items.forEach(item => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td style="font-weight: 600; color: #fff;">${item.division}</td>
-          <td><b>${item.reported.toLocaleString()}</b></td>
-          <td style="color: #10b981;">${item.detected.toLocaleString()}</td>
-          <td>
-            <div class="progress-bar-container">
-              <div class="progress-bar-fill" style="width: ${item.detection_pct}%;"></div>
-            </div>
-            <span>${item.detection_pct}%</span>
-          </td>
-        `;
-        tableBody.appendChild(row);
-      });
-    } else if (this.currentCategory === "suicides") {
-      const catData = this.data.categories.suicides.years[this.currentYear];
-      if (tableTitle) tableTitle.textContent = `Suicides by Method & Gender (${this.currentYear})`;
-      if (col1) col1.textContent = "Method";
-      if (col2) col2.textContent = "Male";
-      if (col3) col3.textContent = "Female";
-      if (col4) col4.textContent = "Total";
-
-      catData.items.forEach(item => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td style="font-weight: 600; color: #fff;">${item.cause}</td>
-          <td style="color: #38bdf8;">${item.male.toLocaleString()}</td>
-          <td style="color: #ec4899;">${item.female.toLocaleString()}</td>
-          <td><b>${item.total.toLocaleString()}</b></td>
-        `;
-        tableBody.appendChild(row);
-      });
-    } else if (this.currentCategory === "accidental") {
-      const catData = this.data.categories.accidental.years[this.currentYear];
-      if (tableTitle) tableTitle.textContent = `Accidental Deaths by Cause & Gender (${this.currentYear})`;
-      if (col1) col1.textContent = "Cause of Death";
-      if (col2) col2.textContent = "Male";
-      if (col3) col3.textContent = "Female";
-      if (col4) col4.textContent = "Total Fatalities";
-
-      catData.items.forEach(item => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td style="font-weight: 600; color: #fff;">${item.cause}</td>
-          <td style="color: #38bdf8;">${item.male.toLocaleString()}</td>
-          <td style="color: #ec4899;">${item.female.toLocaleString()}</td>
-          <td><b>${item.total.toLocaleString()}</b></td>
-        `;
-        tableBody.appendChild(row);
-      });
-    }
-  }
-}
-
-window.initUrbanPulseCrimeAnalytics = function() {
-  window.urbanpulseCrimeInstance = new CrimeAnalytics();
-};
+})();

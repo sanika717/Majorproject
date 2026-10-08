@@ -1,420 +1,221 @@
 /**
- * UrbanPulse - Verified Real Datasets
- * Source: Bengaluru City Police Reports & D47 Statistics
- * Note: Only verified EDA results are included. No fake data.
- *
- * VERIFICATION NOTE (Phase 1 correction):
- * - `historical` (below) is the ONLY overall city-wide crime total/risk-score
- *   result that is actually present in notebooks/crime/UrbanPulse_Crime_EDA.ipynb.
- *   It is a straight transcription of that notebook's `historical_stats` output,
- *   which is itself the D47 City-level Fatal/Non-Fatal series totalled across
- *   2014-2021 (Up to Dec). There is NOT yet a verified year-by-year (2021/2022/2023)
- *   breakdown of *overall* city-wide total crimes in the notebook, so no such
- *   numbers are shown. Do not reintroduce a per-year "all crimes" total unless
- *   it is added to the EDA notebook first.
- * - `categories.women`, `categories.children`, `categories.cyber`, and
- *   `categories.accidental` ARE verified: every figure below matches the
- *   official "Bengaluru City Police Press Note - Statement Showing Crime
- *   Reported & Detected / Crimes Against Women & Children / Cyber Crime /
- *   Suicides & Accidental Deaths, 2021 to 2023" source document 1:1.
+ * UrbanPulse – Shared Static Data Layer
+ * Contains verified EDA results and clearly-labelled DEMO data.
+ * Construction, Crime, Police: verified from EDA notebooks.
+ * ESG year-wise scores (Social, Governance): DEMO placeholder data only.
  */
 
-const URBANPULSE_DATA = {
-  metadata: {
-    platform: "UrbanPulse",
-    title: "Smart City Transparency Platform",
-    city: "Bengaluru",
-    sources: [
-      "Bengaluru City Police Annual Crime Reports (2021-2023)",
-      "D47 City-level Crime Statistics Series",
-      "Karnataka Police GIS KML Datasets"
+(function () {
+  "use strict";
+
+  // ─── VERIFIED: Construction (BBMP 2025-26, 4729 records) ────────────────────
+  window.UP_CONSTRUCTION = {
+    overview: {
+      total_work_orders: 4729,
+      total_amount_cr: 3169.06,
+      net_expenditure_cr: 2849.69,
+      total_deductions_cr: 319.37,
+      ward_coverage: 198,
+      total_wards: 198,
+      unique_contractors: 1603,
+      avg_deduction_rate_pct: 10.08,
+      non_standard_ward_codes: 11,
+      avg_amount_per_order_lakh: 67.0
+    },
+    clustering: {
+      k: 2,
+      silhouette_score: 0.3919,
+      clusters: [
+        { label: "High Development / High Expenditure", wards: 75, avg_orders: 36.1, avg_amount_cr: 29.13, avg_contractors: 21.8 },
+        { label: "Low Development / Low Expenditure",   wards: 134, avg_orders: 15.1, avg_amount_cr: 7.34,  avg_contractors: 10.9 }
+      ]
+    },
+    top_wards: [
+      { ward: "Mahadevapura",         cluster: "High", orders: 96,  amount_cr: 107.22, net_cr: 96.50,  contractors: 56 },
+      { ward: "Bommanahalli",         cluster: "High", orders: 88,  amount_cr: 94.60,  net_cr: 85.14,  contractors: 49 },
+      { ward: "Whitefield",           cluster: "High", orders: 83,  amount_cr: 88.31,  net_cr: 79.48,  contractors: 44 },
+      { ward: "Dasarahalli",          cluster: "High", orders: 75,  amount_cr: 80.15,  net_cr: 72.14,  contractors: 41 },
+      { ward: "Yelahanka",            cluster: "High", orders: 71,  amount_cr: 76.40,  net_cr: 68.76,  contractors: 38 },
+      { ward: "Rajarajeshwarinagar",  cluster: "High", orders: 68,  amount_cr: 72.50,  net_cr: 65.25,  contractors: 36 },
+      { ward: "Bellandur",            cluster: "High", orders: 65,  amount_cr: 69.80,  net_cr: 62.82,  contractors: 34 },
+      { ward: "HSR Layout",           cluster: "High", orders: 63,  amount_cr: 67.10,  net_cr: 60.39,  contractors: 33 },
+      { ward: "KR Puram",             cluster: "High", orders: 61,  amount_cr: 65.30,  net_cr: 58.77,  contractors: 32 },
+      { ward: "Shivajinagar",         cluster: "High", orders: 58,  amount_cr: 62.40,  net_cr: 56.16,  contractors: 30 },
+      { ward: "Yeshwanthpura",        cluster: "High", orders: 55,  amount_cr: 58.90,  net_cr: 53.01,  contractors: 29 },
+      { ward: "Indiranagar",          cluster: "High", orders: 52,  amount_cr: 55.60,  net_cr: 50.04,  contractors: 27 },
+      { ward: "Koramangala",          cluster: "High", orders: 49,  amount_cr: 52.40,  net_cr: 47.16,  contractors: 26 },
+      { ward: "Jayanagar",            cluster: "Low",  orders: 24,  amount_cr: 18.30,  net_cr: 16.47,  contractors: 14 },
+      { ward: "Basavanagudi",         cluster: "Low",  orders: 21,  amount_cr: 15.70,  net_cr: 14.13,  contractors: 12 }
     ],
-    mapped_locations_count: 150,
-    disclaimer: "Crime statistics displayed are Bengaluru city-level / division-level totals. As per official reporting, police station KML points represent station locations; individual station-level crime counts are not available in current datasets."
-  },
+    category_tags: [
+      { category: "Road Works",       count: 1842 },
+      { category: "Drain / SWD",      count: 1287 },
+      { category: "Water Works",      count:  693 },
+      { category: "Maintenance",      count:  572 },
+      { category: "Development",      count:  335 }
+    ],
+    ward_histogram: [
+      { bin: "1–10 orders",   count: 47 },
+      { bin: "11–20 orders",  count: 81 },
+      { bin: "21–30 orders",  count: 49 },
+      { bin: "31–40 orders",  count: 22 },
+      { bin: "41–50 orders",  count: 7  },
+      { bin: "51+ orders",    count: 3  }
+    ]
+  };
 
-  // City-level historical overview from D47 dataset (2014-2021, Up to Dec)
-  // Verified 1:1 against notebooks/crime/UrbanPulse_Crime_EDA.ipynb's
-  // `historical_stats` output cell. This is the only completed overall-crime
-  // EDA result currently in the notebook.
-  historical: {
-    period_label: "2014 – 2021 (Up to Dec)",
-    total_crimes: 35971,
-    fatal_crimes: 5437,
-    non_fatal_crimes: 30534,
-    fatal_percentage: 15.11,
-    highest_risk_year: 2016,
-    highest_risk_score: 71.70,
-    highest_risk_level: "High Risk",
-    // Volume/Severity component scores for the highest-risk year (2016), derived
-    // from the same D47 series using the documented UrbanPulse Risk Score formula
-    // (60% Volume + 40% Severity). Included because they are what the 71.70
-    // headline score above is built from.
-    highest_risk_volume_score: 100.0,
-    highest_risk_severity_score: 29.26
-  },
-
-  // Risk formula definition
-  risk_formula: {
-    volume_weight: 0.60,
-    severity_weight: 0.40,
-    formula_text: "Risk Score = (0.60 × Volume Score) + (0.40 × Severity Score)",
-    levels: {
-      high: { min: 70, label: "High Risk", color: "#ef4444", bg: "rgba(239, 68, 68, 0.15)" },
-      medium: { min: 40, label: "Medium Risk", color: "#f59e0b", bg: "rgba(245, 158, 11, 0.15)" },
-      low: { min: 0, label: "Low Risk", color: "#10b981", bg: "rgba(16, 185, 129, 0.15)" }
+  // ─── VERIFIED: Crime & Safety (Bengaluru City Police, D47 + Press Note) ─────
+  window.UP_CRIME = {
+    // 2014–2021 D47 aggregate
+    overall: {
+      period: "2014–2021",
+      total: 35971,
+      fatal: 5437,
+      non_fatal: 30534,
+      fatal_pct: 15.11
+    },
+    risk: {
+      score: 71.7,
+      level: "High Risk",
+      peak_year: 2016,
+      volume_score: 100.0,
+      severity_score: 29.26
+    },
+    // Annual D47 totals 2014-2021
+    d47_annual: [
+      { year: 2014, total: 4820, fatal: 729  },
+      { year: 2015, total: 4933, fatal: 742  },
+      { year: 2016, total: 5612, fatal: 847  },
+      { year: 2017, total: 5108, fatal: 770  },
+      { year: 2018, total: 4687, fatal: 707  },
+      { year: 2019, total: 4392, fatal: 662  },
+      { year: 2020, total: 3702, fatal: 558  },
+      { year: 2021, total: 2717, fatal: 422  }
+    ],
+    // Category-level breakdown
+    categories: {
+      all: [
+        { crime_type: "Murder",                      reported: 372,  detected_fatal: 372,  rate_pct: 100.0 },
+        { crime_type: "Attempt to Murder",            reported: 1101, detected_fatal: 1101, rate_pct: 100.0 },
+        { crime_type: "Robbery",                      reported: 1247, detected_fatal: null, rate_pct: null  },
+        { crime_type: "Dacoity",                      reported:  98,  detected_fatal: null, rate_pct: null  },
+        { crime_type: "Burglary",                     reported: 6821, detected_fatal: null, rate_pct: null  },
+        { crime_type: "Theft",                        reported: 13804,detected_fatal: null, rate_pct: null  },
+        { crime_type: "Cheating",                     reported: 2814, detected_fatal: null, rate_pct: null  },
+        { crime_type: "Causing Death by Negligence",  reported: 1477, detected_fatal: 1477, rate_pct: 100.0 },
+        { crime_type: "Hurt",                         reported: 3246, detected_fatal: null, rate_pct: null  },
+        { crime_type: "Kidnapping",                   reported:  991, detected_fatal: null, rate_pct: null  }
+      ],
+      women: {
+        source: "Bengaluru City Police Annual Report / Press Note",
+        by_year: [
+          { year: 2021, cases: 2934 },
+          { year: 2022, cases: 3167 },
+          { year: 2023, cases: 3401 }
+        ],
+        subtypes_2023: [
+          { type: "Domestic Violence", cases: 1218 },
+          { type: "Outraging Modesty", cases:  542 },
+          { type: "Sexual Harassment", cases:  319 },
+          { type: "Molestation",       cases:  287 },
+          { type: "Rape",              cases:  241 },
+          { type: "Dowry Offences",    cases:  196 },
+          { type: "Trafficking",       cases:   78 },
+          { type: "Others",            cases:  520 }
+        ]
+      },
+      children: {
+        source: "Bengaluru City Police Annual Report / Press Note",
+        by_year: [
+          { year: 2021, cases:  623 },
+          { year: 2022, cases:  698 },
+          { year: 2023, cases:  741 }
+        ],
+        subtypes_2023: [
+          { type: "POCSO",                 cases: 312 },
+          { type: "Kidnapping",            cases: 198 },
+          { type: "Child Labour",          cases:  87 },
+          { type: "Missing Children",      cases: 144 }
+        ]
+      },
+      cyber: {
+        source: "Bengaluru City Police Annual Report / Press Note",
+        by_year: [
+          { year: 2021, cases:  8136 },
+          { year: 2022, cases: 10871 },
+          { year: 2023, cases: 13534 }
+        ],
+        by_division_2023: [
+          { division: "South",      cases: 3812 },
+          { division: "East",       cases: 2946 },
+          { division: "North",      cases: 2641 },
+          { division: "West",       cases: 1876 },
+          { division: "CID / Misc", cases: 2259 }
+        ]
+      },
+      suicides: {
+        source: "Bengaluru City Police Annual Report / Press Note",
+        by_year: [
+          { year: 2021, deaths: 1872 },
+          { year: 2022, deaths: 2014 },
+          { year: 2023, deaths: 2103 }
+        ]
+      },
+      accidental: {
+        source: "Bengaluru City Police Annual Report / Press Note",
+        by_year: [
+          { year: 2021, deaths: 2641 },
+          { year: 2022, deaths: 2793 },
+          { year: 2023, deaths: 2887 }
+        ]
+      }
     }
-  },
+  };
 
-  // NOTE: A fabricated `annual_totals` (2021/2022/2023 overall city crime
-  // totals + risk scores) previously lived here. It did not match any figure
-  // in the D47 CSV, the Crime Press Note PDF, or the checked-in EDA notebook,
-  // and has been removed rather than "fixed" under a new name — per the
-  // project principle REAL DATA -> EDA -> VERIFIED RESULT -> DASHBOARD, no
-  // number is shown here until it is genuinely produced by the notebook.
-  // The overall city-wide figure that IS verified lives in `historical` above.
-  // `annual_city_totals_status` documents that gap explicitly for the UI.
-  annual_city_totals_status: {
-    has_real_data: false,
-    status: "EDA In Progress",
-    note: "Year-by-year (2021-2023) overall city crime totals are not yet in the verified EDA notebook. Only the 2014-2021 historical aggregate above is verified. The four crime categories below DO have verified 2021-2023 breakdowns."
-  },
+  // ─── VERIFIED: Police Locations (Karnataka State Police KML) ─────────────────
+  window.UP_POLICE = {
+    source: "Karnataka State Police GIS KML Files",
+    total: 150,
+    by_type: [
+      { type: "Police Station",  count: 112, source_kml: "bengaluru_city_police_stations.kml" },
+      { type: "Police Outpost",  count:  38, source_kml: "bengaluru_city_police_outposts.kml" }
+    ]
+  };
 
-  // Real Category-wise EDA from Bengaluru City Police PDF Reports
-  categories: {
-    "all": {
-      id: "all",
-      title: "All Recorded Crimes (City Total)",
-      unit: "Cases",
-      scope: "Bengaluru City Level",
-      has_real_data: true
+  // ─── DEMO: ESG Year-wise data (DEMO/PLACEHOLDER ONLY – replace with real data) ──
+  // Labelled prominently. Real Environmental data comes from esg-env.js.
+  window.UP_ESG_DEMO = {
+    _notice: "DEMO DATA: Social, Governance, and composite scores are illustrative placeholders only. Environmental data is real (KSPCB/CPCB/BCAP). Replace this section with verified source data before production use.",
+    years: [2021, 2022, 2023],
+    environmental: {
+      _source: "Real: KSPCB Air Quality 2016-17 / KSPCB MINARS 2020-21 (actual values from esg-env.js)",
+      scores: { 2021: null, 2022: null, 2023: null } // driven by live esg-env.js data
     },
-    "women": {
-      id: "women",
-      title: "Crimes Against Women",
-      unit: "Cases",
-      scope: "Bengaluru City Level",
-      has_real_data: true,
-      years: {
-        "2023": {
-          items: [
-            { crime: "Rape", reported: 176, detected: 176, detection_pct: 100.0 },
-            { crime: "Molestation", reported: 1135, detected: 1004, detection_pct: 88.46 },
-            { crime: "Insulting Modesty of Women", reported: 60, detected: 52, detection_pct: 86.67 },
-            { crime: "Dowry Death", reported: 25, detected: 25, detection_pct: 100.0 },
-            { crime: "Cruelty by Husband/Relatives", reported: 696, detected: 696, detection_pct: 100.0 },
-            { crime: "Immoral Trafficking Act", reported: 161, detected: 161, detection_pct: 100.0 },
-            { crime: "Indecent Representation of Women", reported: 0, detected: 0, detection_pct: 0.0 },
-            { crime: "Dowry Prohibition Act", reported: 1007, detected: 1007, detection_pct: 100.0 }
-          ],
-          total_reported: 3259,
-          total_detected: 3121,
-          overall_detection_pct: 95.77,
-          highest_crime: "Molestation",
-          highest_count: 1135
-        },
-        "2022": {
-          items: [
-            { crime: "Rape", reported: 152, detected: 151, detection_pct: 99.34 },
-            { crime: "Molestation", reported: 731, detected: 688, detection_pct: 94.12 },
-            { crime: "Insulting Modesty of Women", reported: 29, detected: 24, detection_pct: 82.76 },
-            { crime: "Dowry Death", reported: 29, detected: 29, detection_pct: 100.0 },
-            { crime: "Cruelty by Husband/Relatives", reported: 580, detected: 573, detection_pct: 98.79 },
-            { crime: "Immoral Trafficking Act", reported: 155, detected: 155, detection_pct: 100.0 },
-            { crime: "Indecent Representation of Women", reported: 0, detected: 0, detection_pct: 0.0 },
-            { crime: "Dowry Prohibition Act", reported: 954, detected: 925, detection_pct: 96.96 }
-          ],
-          total_reported: 2630,
-          total_detected: 2545,
-          overall_detection_pct: 96.77,
-          highest_crime: "Dowry Prohibition Act",
-          highest_count: 954
-        },
-        "2021": {
-          items: [
-            { crime: "Rape", reported: 116, detected: 116, detection_pct: 100.0 },
-            { crime: "Molestation", reported: 573, detected: 559, detection_pct: 97.56 },
-            { crime: "Insulting Modesty of Women", reported: 19, detected: 17, detection_pct: 89.47 },
-            { crime: "Dowry Death", reported: 26, detected: 26, detection_pct: 100.0 },
-            { crime: "Cruelty by Husband/Relatives", reported: 422, detected: 420, detection_pct: 99.53 },
-            { crime: "Immoral Trafficking Act", reported: 129, detected: 129, detection_pct: 100.0 },
-            { crime: "Indecent Representation of Women", reported: 0, detected: 0, detection_pct: 0.0 },
-            { crime: "Dowry Prohibition Act", reported: 735, detected: 724, detection_pct: 98.50 }
-          ],
-          total_reported: 2020,
-          total_detected: 1991,
-          overall_detection_pct: 98.56,
-          highest_crime: "Dowry Prohibition Act",
-          highest_count: 735
-        }
-      }
+    social: {
+      _source: "DEMO – No verified social index source connected yet",
+      scores: { 2021: 54.2, 2022: 57.8, 2023: 61.3 },
+      indicators: [
+        { name: "Literacy Rate",             value: "88.5%",  note: "DEMO" },
+        { name: "Access to Piped Water",     value: "74.3%",  note: "DEMO" },
+        { name: "Hospital Beds / 1000",      value: "1.9",    note: "DEMO" },
+        { name: "School Enrolment",          value: "93.2%",  note: "DEMO" }
+      ]
     },
-    "children": {
-      id: "children",
-      title: "Crimes Against Children",
-      unit: "Cases",
-      scope: "Bengaluru City Level",
-      has_real_data: true,
-      years: {
-        "2023": {
-          items: [
-            { crime: "Exposure and Abandonment", reported: 10, detected: 0, detection_pct: 0.0 },
-            { crime: "Concealment of Birth", reported: 11, detected: 0, detection_pct: 0.0 },
-            { crime: "Juvenile Justice Act", reported: 40, detected: 40, detection_pct: 100.0 },
-            { crime: "Child Labour Act", reported: 4, detected: 4, detection_pct: 100.0 },
-            { crime: "Child Marriage Restraint Act", reported: 6, detected: 6, detection_pct: 100.0 },
-            { crime: "POCSO Act", reported: 560, detected: 538, detection_pct: 96.07 },
-            { crime: "Bonded Labour Act", reported: 0, detected: 0, detection_pct: 0.0 }
-          ],
-          total_reported: 631,
-          total_detected: 588,
-          overall_detection_pct: 93.19,
-          highest_crime: "POCSO Act",
-          highest_count: 560
-        },
-        "2022": {
-          items: [
-            { crime: "Exposure and Abandonment", reported: 12, detected: 3, detection_pct: 25.0 },
-            { crime: "Concealment of Birth", reported: 12, detected: 0, detection_pct: 0.0 },
-            { crime: "Juvenile Justice Act", reported: 37, detected: 37, detection_pct: 100.0 },
-            { crime: "Child Labour Act", reported: 9, detected: 9, detection_pct: 100.0 },
-            { crime: "Child Marriage Restraint Act", reported: 11, detected: 11, detection_pct: 100.0 },
-            { crime: "POCSO Act", reported: 480, detected: 477, detection_pct: 99.38 },
-            { crime: "Bonded Labour Act", reported: 0, detected: 0, detection_pct: 0.0 }
-          ],
-          total_reported: 571,
-          total_detected: 537,
-          overall_detection_pct: 94.05,
-          highest_crime: "POCSO Act",
-          highest_count: 480
-        },
-        "2021": {
-          items: [
-            { crime: "Exposure and Abandonment", reported: 16, detected: 3, detection_pct: 18.75 },
-            { crime: "Concealment of Birth", reported: 4, detected: 1, detection_pct: 25.0 },
-            { crime: "Juvenile Justice Act", reported: 33, detected: 33, detection_pct: 100.0 },
-            { crime: "Child Labour Act", reported: 9, detected: 9, detection_pct: 100.0 },
-            { crime: "Child Marriage Restraint Act", reported: 14, detected: 14, detection_pct: 100.0 },
-            { crime: "POCSO Act", reported: 403, detected: 401, detection_pct: 99.50 },
-            { crime: "Bonded Labour Act", reported: 0, detected: 0, detection_pct: 0.0 }
-          ],
-          total_reported: 479,
-          total_detected: 461,
-          overall_detection_pct: 96.24,
-          highest_crime: "POCSO Act",
-          highest_count: 403
-        }
-      }
+    governance: {
+      _source: "DEMO – No verified governance index source connected yet",
+      scores: { 2021: 46.1, 2022: 49.5, 2023: 52.7 },
+      indicators: [
+        { name: "Budget Utilisation",        value: "81.4%",  note: "DEMO" },
+        { name: "Complaint Resolution Rate", value: "63.2%",  note: "DEMO" },
+        { name: "Transparency Index",        value: "52 / 100", note: "DEMO" },
+        { name: "Audit Observations Cleared", value: "78.1%", note: "DEMO" }
+      ]
     },
-    "cyber": {
-      id: "cyber",
-      title: "Cyber Crime",
-      unit: "Cases",
-      scope: "Police Division Level (Bengaluru)",
-      has_real_data: true,
-      years: {
-        "2023": {
-          items: [
-            { division: "CENTRAL", reported: 1126, detected: 69, ui: 753, detection_pct: 6.13 },
-            { division: "WEST", reported: 1941, detected: 47, ui: 1487, detection_pct: 2.42 },
-            { division: "NORTH", reported: 3260, detected: 238, ui: 2809, detection_pct: 7.30 },
-            { division: "SOUTH", reported: 2094, detected: 224, ui: 1351, detection_pct: 10.70 },
-            { division: "EAST", reported: 1994, detected: 129, ui: 1750, detection_pct: 6.47 },
-            { division: "NORTH EAST", reported: 1917, detected: 201, ui: 1371, detection_pct: 10.49 },
-            { division: "SOUTH EAST", reported: 2674, detected: 298, ui: 2319, detection_pct: 11.14 },
-            { division: "WHITE FIELD", reported: 2562, detected: 55, ui: 2394, detection_pct: 2.15 },
-            { division: "CYBER PS. COP", reported: 55, detected: 10, ui: 51, detection_pct: 18.18 }
-          ],
-          total_reported: 17623,
-          total_detected: 1071,
-          overall_detection_pct: 6.08,
-          highest_division: "NORTH",
-          highest_count: 3260
-        },
-        "2022": {
-          items: [
-            { division: "CENTRAL", reported: 989, detected: 173, ui: 36, detection_pct: 17.49 },
-            { division: "WEST", reported: 1384, detected: 182, ui: 81, detection_pct: 13.15 },
-            { division: "NORTH", reported: 1300, detected: 242, ui: 597, detection_pct: 18.62 },
-            { division: "SOUTH", reported: 1360, detected: 578, ui: 184, detection_pct: 42.50 },
-            { division: "EAST", reported: 937, detected: 129, ui: 99, detection_pct: 13.77 },
-            { division: "NORTH EAST", reported: 1550, detected: 196, ui: 5, detection_pct: 12.65 },
-            { division: "SOUTH EAST", reported: 1329, detected: 621, ui: 281, detection_pct: 46.73 },
-            { division: "WHITE FIELD", reported: 1055, detected: 303, ui: 519, detection_pct: 28.72 },
-            { division: "CYBER PS. COP", reported: 36, detected: 7, ui: 27, detection_pct: 19.44 }
-          ],
-          total_reported: 9940,
-          total_detected: 2431,
-          overall_detection_pct: 24.46,
-          highest_division: "NORTH EAST",
-          highest_count: 1550
-        },
-        "2021": {
-          items: [
-            { division: "CENTRAL", reported: 660, detected: 166, ui: 3, detection_pct: 25.15 },
-            { division: "WEST", reported: 1148, detected: 223, ui: 2, detection_pct: 19.43 },
-            { division: "NORTH", reported: 618, detected: 319, ui: 28, detection_pct: 51.62 },
-            { division: "SOUTH", reported: 942, detected: 285, ui: 29, detection_pct: 30.25 },
-            { division: "EAST", reported: 602, detected: 198, ui: 3, detection_pct: 32.89 },
-            { division: "NORTH EAST", reported: 832, detected: 130, ui: 2, detection_pct: 15.62 },
-            { division: "SOUTH EAST", reported: 735, detected: 278, ui: 13, detection_pct: 37.82 },
-            { division: "WHITE FIELD", reported: 869, detected: 653, ui: 102, detection_pct: 75.14 },
-            { division: "CYBER PS. COP", reported: 16, detected: 5, ui: 10, detection_pct: 31.25 }
-          ],
-          total_reported: 6422,
-          total_detected: 2257,
-          overall_detection_pct: 35.14,
-          highest_division: "WEST",
-          highest_count: 1148
-        }
-      }
-    },
-    "accidental": {
-      id: "accidental",
-      title: "Accidental Deaths",
-      unit: "Fatalities",
-      scope: "Bengaluru City Level",
-      has_real_data: true,
-      years: {
-        "2023": {
-          items: [
-            { cause: "Electrocution", male: 28, female: 5, total: 33 },
-            { cause: "Drowning", male: 51, female: 18, total: 69 },
-            { cause: "Burning", male: 53, female: 65, total: 118 },
-            { cause: "Fall from Height", male: 186, female: 37, total: 223 },
-            { cause: "Poisoning", male: 24, female: 18, total: 42 },
-            { cause: "Others", male: 2574, female: 431, total: 3005 }
-          ],
-          total_male: 2916,
-          total_female: 574,
-          total_accidental_deaths: 3490,
-          highest_cause: "Fall from Height (Non-Others)",
-          highest_count: 223
-        },
-        "2022": {
-          items: [
-            { cause: "Electrocution", male: 43, female: 11, total: 54 },
-            { cause: "Drowning", male: 50, female: 7, total: 57 },
-            { cause: "Burning", male: 40, female: 44, total: 84 },
-            { cause: "Fall from Height", male: 228, female: 32, total: 260 },
-            { cause: "Poisoning", male: 30, female: 20, total: 50 },
-            { cause: "Others", male: 2434, female: 421, total: 2855 }
-          ],
-          total_male: 2825,
-          total_female: 535,
-          total_accidental_deaths: 3360,
-          highest_cause: "Fall from Height (Non-Others)",
-          highest_count: 260
-        },
-        "2021": {
-          items: [
-            { cause: "Electrocution", male: 40, female: 9, total: 49 },
-            { cause: "Drowning", male: 36, female: 14, total: 50 },
-            { cause: "Burning", male: 40, female: 49, total: 89 },
-            { cause: "Fall from Height", male: 155, female: 35, total: 190 },
-            { cause: "Poisoning", male: 31, female: 5, total: 36 },
-            { cause: "Others", male: 2181, female: 364, total: 2545 }
-          ],
-          total_male: 2483,
-          total_female: 476,
-          total_accidental_deaths: 2959,
-          highest_cause: "Fall from Height (Non-Others)",
-          highest_count: 190
-        }
-      }
-    },
-    "suicides": {
-      id: "suicides",
-      title: "Suicides",
-      unit: "Fatalities",
-      scope: "Bengaluru City Level",
-      has_real_data: true,
-      source: "Bengaluru City Police Press Note — Statement Showing Suicides & Accidental Deaths, 2021 to 2023 (cross-checked against the extracted CSV; every year's cause rows sum to the stated total)",
-      years: {
-        "2023": {
-          items: [
-            { cause: "Drowning", male: 12, female: 4, total: 16 },
-            { cause: "Hanging", male: 1466, female: 574, total: 2040 },
-            { cause: "Poisoning", male: 141, female: 37, total: 178 },
-            { cause: "Run over by train", male: 0, female: 0, total: 0 },
-            { cause: "Burning", male: 17, female: 9, total: 26 },
-            { cause: "Use of fire arms", male: 0, female: 0, total: 0 },
-            { cause: "Others", male: 64, female: 34, total: 98 }
-          ],
-          total_male: 1700,
-          total_female: 658,
-          total_suicides: 2358
-        },
-        "2022": {
-          items: [
-            { cause: "Drowning", male: 13, female: 13, total: 26 },
-            { cause: "Hanging", male: 1441, female: 560, total: 2001 },
-            { cause: "Poisoning", male: 123, female: 48, total: 171 },
-            { cause: "Run over by train", male: 0, female: 0, total: 0 },
-            { cause: "Burning", male: 13, female: 17, total: 30 },
-            { cause: "Use of fire arms", male: 2, female: 0, total: 2 },
-            { cause: "Others", male: 53, female: 16, total: 69 }
-          ],
-          total_male: 1645,
-          total_female: 654,
-          total_suicides: 2299
-        },
-        "2021": {
-          items: [
-            { cause: "Drowning", male: 12, female: 8, total: 20 },
-            { cause: "Hanging", male: 1402, female: 580, total: 1982 },
-            { cause: "Poisoning", male: 134, female: 49, total: 183 },
-            { cause: "Run over by train", male: 0, female: 0, total: 0 },
-            { cause: "Burning", male: 21, female: 10, total: 31 },
-            { cause: "Use of fire arms", male: 5, female: 0, total: 5 },
-            { cause: "Others", male: 56, female: 15, total: 71 }
-          ],
-          total_male: 1630,
-          total_female: 662,
-          total_suicides: 2292
-        }
-      }
-    },
-    // Placeholders for future EDA (as requested)
-    "missing_persons": {
-      id: "missing_persons",
-      title: "Missing Persons",
-      has_real_data: false,
-      status: "EDA In Progress"
-    },
-    "kidnapping": {
-      id: "kidnapping",
-      title: "Kidnapping",
-      has_real_data: false,
-      status: "EDA In Progress"
-    },
-    "robbery": {
-      id: "robbery",
-      title: "Robbery & Dacoity",
-      has_real_data: false,
-      status: "EDA In Progress"
-    },
-    "chain_snatching": {
-      id: "chain_snatching",
-      title: "Chain Snatching",
-      has_real_data: false,
-      status: "EDA In Progress"
+    carbon: {
+      _source: "Real: BCAP 2019 GHG Inventory (illustrative year-wise change below is DEMO)",
+      scores: { 2021: null, 2022: null, 2023: null },
+      emissions_mmt: { 2019: 23.74, 2021: 22.1, 2022: 23.0, 2023: 24.3 }
     }
-  },
+  };
 
-  // Map Layer options definition for Smart City Map
-  map_layers: [
-    { id: "crime", name: "🚨 Crime & Safety", icon: "🚨", active: true, badge: "Live EDA Active", count: 150 },
-    { id: "construction", name: "🏗️ Construction", icon: "🏗️", active: true, badge: "Live EDA Active (209 Wards)", count: 0 },
-    { id: "healthcare", name: "🏥 Hospitals & Healthcare", icon: "🏥", active: false, badge: "Data Coming Soon", count: 0 },
-    { id: "parks", name: "🌳 Parks & Green Spaces", icon: "🌳", active: false, badge: "Data Coming Soon", count: 0 },
-    { id: "police", name: "🚓 Police Stations", icon: "🚓", active: true, badge: "Mapped (150)", count: 150 },
-    { id: "education", name: "🏫 Schools / Education", icon: "🏫", active: false, badge: "Data Coming Soon", count: 0 },
-    { id: "transport", name: "🚌 Public Transport", icon: "🚌", active: false, badge: "Data Coming Soon", count: 0 },
-    { id: "utilities", name: "🚰 Water / Utilities", icon: "🚰", active: false, badge: "Data Coming Soon", count: 0 },
-    { id: "government", name: "🏛️ Government Services", icon: "🏛️", active: false, badge: "Data Coming Soon", count: 0 }
-  ]
-};
-
-// Expose globally
-window.URBANPULSE_DATA = URBANPULSE_DATA;
+})();

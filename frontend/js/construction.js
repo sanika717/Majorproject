@@ -1,234 +1,236 @@
 /**
- * UrbanPulse - Construction / Ward Infrastructure Analytics Module
- * Real Data-Driven Analytics from the verified BBMP ward work-order EDA
- * (see frontend/js/construction-data.js for the full verified dataset + provenance).
+ * UrbanPulse – Construction Analytics Renderer
+ * Reads from window.URBANPULSE_CONSTRUCTION_DATA (set by construction-data.js).
+ * Renders all construction charts and tables on analytics.html.
  */
+(function () {
+  "use strict";
 
-class ConstructionAnalytics {
-  constructor() {
-    this.data = window.URBANPULSE_CONSTRUCTION_DATA || null;
-    this.investmentChart = null;
-    this.clusterChart = null;
-    this.categoryChart = null;
+  var COLORS = {
+    amber: "#f59e0b",
+    cyan:  "#38bdf8",
+    emerald: "#10b981",
+    purple: "#8b5cf6",
+    rose: "#f43f5e",
+    indigo: "#6366f1",
+    neutral: "rgba(255,255,255,0.12)"
+  };
 
-    if (!this.data) {
-      // No fabricated fallback numbers: if the data file didn't load, leave the
-      // section exactly as its "EDA In Progress" HTML fallback already reads.
-      return;
+  var CHART_DEFAULTS = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { labels: { color: "#e2e8f0", font: { family: "Inter, sans-serif", size: 12 } } } },
+    scales: {
+      x: { ticks: { color: "#94a3b8", font: { size: 11 } }, grid: { color: "rgba(255,255,255,0.06)" } },
+      y: { ticks: { color: "#94a3b8", font: { size: 11 } }, grid: { color: "rgba(255,255,255,0.06)" } }
     }
+  };
 
-    this.initCharts();
-    this.render();
-    this.initBackendData();
+  function $ (id) { return document.getElementById(id); }
+  function fmt(n, decimals) { return typeof n === "number" ? n.toFixed(decimals || 0) : "—"; }
+  function fmtCr(cr) { return cr != null ? "₹" + fmt(cr, 2) + " Cr" : "—"; }
+
+  function renderOverviewKPIs(d) {
+    var o = d.overview || {};
+    var el;
+    el = $("cx-kpi-net");   if (el) el.textContent = fmtCr(o.net_expenditure_cr);
+    el = $("cx-kpi-ded");   if (el) el.textContent = fmtCr(o.total_deductions_cr);
+    el = $("cx-kpi-avg");   if (el) el.textContent = o.avg_amount_per_order_lakh ? "₹" + fmt(o.avg_amount_per_order_lakh, 2) + " L" : "—";
   }
 
-  async initBackendData() {
-    if (!window.UrbanPulseAPI) return;
-    try {
-      const liveData = await window.UrbanPulseAPI.getFullConstructionData();
-      if (liveData) {
-        this.data = liveData;
-        window.URBANPULSE_CONSTRUCTION_DATA = liveData;
-        this.render();
-      }
-    } catch (e) {
-      console.warn("[ConstructionAnalytics] Backend fetch failed:", e);
-    }
-  }
-
-  initCharts() {
-    const invCtx = document.getElementById("construction-investment-chart")?.getContext("2d");
-    if (invCtx) {
-      this.investmentChart = new Chart(invCtx, {
-        type: "bar",
-        data: { labels: [], datasets: [] },
-        options: this.baseChartOptions("Ward")
-      });
-    }
-
-    const clusterCtx = document.getElementById("construction-cluster-chart")?.getContext("2d");
-    if (clusterCtx) {
-      this.clusterChart = new Chart(clusterCtx, {
-        type: "bar",
-        data: { labels: [], datasets: [] },
-        options: this.baseChartOptions("")
-      });
-    }
-
-    const catCtx = document.getElementById("construction-category-chart")?.getContext("2d");
-    if (catCtx) {
-      this.categoryChart = new Chart(catCtx, {
-        type: "bar",
-        data: { labels: [], datasets: [] },
-        options: this.baseChartOptions("")
-      });
-    }
-  }
-
-  baseChartOptions() {
-    return {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { labels: { color: "#94a3b8", font: { family: "Inter", size: 12 } } },
-        tooltip: {
-          backgroundColor: "rgba(15, 23, 42, 0.95)",
-          titleColor: "#fff",
-          bodyColor: "#94a3b8",
-          borderColor: "rgba(56, 189, 248, 0.3)",
-          borderWidth: 1
-        }
+  function renderBudgetDonut(d) {
+    var canvas = $("cx-budget-donut");
+    if (!canvas || typeof Chart === "undefined") return;
+    var o = d.overview || {};
+    new Chart(canvas, {
+      type: "doughnut",
+      data: {
+        labels: ["Net Expenditure", "Deductions"],
+        datasets: [{
+          data: [o.net_expenditure_cr || 0, o.total_deductions_cr || 0],
+          backgroundColor: [COLORS.emerald, COLORS.rose],
+          borderColor: "#0a0e17",
+          borderWidth: 3,
+          hoverOffset: 10
+        }]
       },
-      scales: {
-        x: {
-          grid: { color: "rgba(255, 255, 255, 0.05)" },
-          ticks: { color: "#94a3b8", maxRotation: 45, minRotation: 0 }
-        },
-        y: {
-          grid: { color: "rgba(255, 255, 255, 0.05)" },
-          ticks: { color: "#94a3b8" }
-        }
+      options: {
+        responsive: true, maintainAspectRatio: false, cutout: "65%",
+        plugins: { legend: { position: "bottom", labels: { color: "#e2e8f0", font: { size: 12 } } } }
       }
-    };
-  }
-
-  crores(rupees) {
-    return `₹${(rupees / 1e7).toFixed(2)} Cr`;
-  }
-
-  render() {
-    this.renderKPIs();
-    this.renderClusters();
-    this.renderCharts();
-    this.renderTable();
-  }
-
-  renderKPIs() {
-    const ov = this.data.overview;
-
-    const set = (id, val) => {
-      const el = document.getElementById(id);
-      if (el) el.textContent = val;
-    };
-
-    set("construction-kpi-orders", ov.total_work_orders.toLocaleString());
-    set("construction-kpi-amount", this.crores(ov.total_amount));
-    set("construction-kpi-wards", `${ov.official_numbered_wards_present} / ${ov.official_wards_total}`);
-    set("construction-kpi-contractors", ov.unique_contractors.toLocaleString());
-    set("construction-kpi-deduction", `${ov.avg_deduction_rate_pct}%`);
-    set("construction-kpi-nonstandard", ov.non_standard_ward_codes_present);
-  }
-
-  renderClusters() {
-    const clusters = this.data.clustering.clusters;
-    const high = clusters.find(c => c.cluster === 0);
-    const low = clusters.find(c => c.cluster === 1);
-
-    const set = (id, val) => {
-      const el = document.getElementById(id);
-      if (el) el.textContent = val;
-    };
-
-    if (high) {
-      set("cluster-high-count", high.ward_count);
-      set("cluster-high-orders", high.avg_work_orders.toFixed(1));
-      set("cluster-high-amount", this.crores(high.avg_total_amount));
-      set("cluster-high-contractors", high.avg_contractors.toFixed(1));
-    }
-    if (low) {
-      set("cluster-low-count", low.ward_count);
-      set("cluster-low-orders", low.avg_work_orders.toFixed(1));
-      set("cluster-low-amount", this.crores(low.avg_total_amount));
-      set("cluster-low-contractors", low.avg_contractors.toFixed(1));
-    }
-
-    const sil = this.data.clustering.silhouette_by_k;
-    const chosenK = this.data.clustering.chosen_k;
-    set("cluster-silhouette", sil && sil[String(chosenK)] !== undefined ? sil[String(chosenK)] : (sil && sil[chosenK]));
-  }
-
-  renderCharts() {
-    // Top 10 wards by verified total investment
-    if (this.investmentChart) {
-      const top = this.data.top_wards_by_investment.slice(0, 10);
-      this.investmentChart.data.labels = top.map(w => `Ward ${w.ward}`);
-      this.investmentChart.data.datasets = [{
-        label: "Total Investment (₹)",
-        data: top.map(w => w.total_amount),
-        backgroundColor: "rgba(245, 158, 11, 0.6)",
-        borderColor: "#f59e0b",
-        borderWidth: 1,
-        borderRadius: 6
-      }];
-      this.investmentChart.update();
-    }
-
-    // Cluster comparison (avg total amount + avg work orders)
-    if (this.clusterChart) {
-      const clusters = this.data.clustering.clusters;
-      this.clusterChart.data.labels = clusters.map(c => c.cluster_name);
-      this.clusterChart.data.datasets = [
-        {
-          label: "Avg Work Orders / Ward",
-          data: clusters.map(c => c.avg_work_orders),
-          backgroundColor: "rgba(56, 189, 248, 0.6)",
-          borderColor: "#38bdf8",
-          borderWidth: 1,
-          borderRadius: 6,
-          yAxisID: "y"
-        }
-      ];
-      this.clusterChart.update();
-    }
-
-    // Work-category keyword tags (citywide totals; not mutually exclusive)
-    if (this.categoryChart) {
-      const cats = this.data.category_tags;
-      const labels = {
-        drain_projects: "Drain / Drainage",
-        road_projects: "Road / Street",
-        maintenance_projects: "Maintenance / Repair",
-        development_projects: "Development / Improvement",
-        water_projects: "Water / Pipeline / Sewer"
-      };
-      this.categoryChart.data.labels = Object.keys(cats).map(k => labels[k] || k);
-      this.categoryChart.data.datasets = [{
-        label: "Work Orders Tagged (keyword match)",
-        data: Object.values(cats),
-        backgroundColor: "rgba(16, 185, 129, 0.6)",
-        borderColor: "#10b981",
-        borderWidth: 1,
-        borderRadius: 6
-      }];
-      this.categoryChart.update();
-    }
-  }
-
-  renderTable() {
-    const tableBody = document.getElementById("construction-data-table-body");
-    if (!tableBody) return;
-    tableBody.innerHTML = "";
-
-    const rows = this.data.top_wards_by_investment.slice(0, 15);
-    rows.forEach(w => {
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td style="font-weight: 700; color: #fff;">Ward ${w.ward}</td>
-        <td>
-          <span class="popup-badge" style="background: ${w.cluster_name.startsWith('High') ? 'rgba(245,158,11,0.2); color:#f59e0b' : 'rgba(56,189,248,0.2); color:#38bdf8'};">
-            ${w.cluster_name}
-          </span>
-        </td>
-        <td><b>${w.total_work_orders.toLocaleString()}</b></td>
-        <td style="color: #f59e0b;">${this.crores(w.total_amount)}</td>
-        <td style="color: #10b981;">${this.crores(w.total_net_expenditure)}</td>
-        <td>${w.unique_contractors}</td>
-      `;
-      tableBody.appendChild(row);
     });
   }
-}
 
-window.initUrbanPulseConstructionAnalytics = function() {
-  window.urbanpulseConstructionInstance = new ConstructionAnalytics();
-};
+  function renderClusterDonut(d) {
+    var canvas = $("cx-cluster-donut");
+    if (!canvas || typeof Chart === "undefined") return;
+    var clusters = (d.clustering && d.clustering.clusters) || [];
+    new Chart(canvas, {
+      type: "doughnut",
+      data: {
+        labels: clusters.map(function (c) { return c.label.split(" / ")[0]; }),
+        datasets: [{
+          data: clusters.map(function (c) { return c.wards; }),
+          backgroundColor: [COLORS.amber, COLORS.cyan],
+          borderColor: "#0a0e17",
+          borderWidth: 3,
+          hoverOffset: 10
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, cutout: "65%",
+        plugins: { legend: { position: "bottom", labels: { color: "#e2e8f0", font: { size: 12 } } } }
+      }
+    });
+  }
+
+  function renderTopOrdersChart(d) {
+    var canvas = $("cx-top-orders");
+    if (!canvas || typeof Chart === "undefined") return;
+    var wards = (d.top_wards || []).slice(0, 10);
+    new Chart(canvas, {
+      type: "bar",
+      data: {
+        labels: wards.map(function (w) { return w.ward; }),
+        datasets: [{
+          label: "Work Orders",
+          data: wards.map(function (w) { return w.orders; }),
+          backgroundColor: COLORS.cyan,
+          borderRadius: 6
+        }]
+      },
+      options: Object.assign({}, CHART_DEFAULTS, {
+        plugins: Object.assign({}, CHART_DEFAULTS.plugins, { legend: { display: false } }),
+        scales: Object.assign({}, CHART_DEFAULTS.scales, {
+          x: Object.assign({}, CHART_DEFAULTS.scales.x, { ticks: { color: "#94a3b8", maxRotation: 40, font: { size: 10 } } })
+        })
+      })
+    });
+  }
+
+  function renderWardHistogram(d) {
+    var canvas = $("cx-ward-hist");
+    if (!canvas || typeof Chart === "undefined") return;
+    var bins = d.ward_histogram || [];
+    new Chart(canvas, {
+      type: "bar",
+      data: {
+        labels: bins.map(function (b) { return b.bin; }),
+        datasets: [{
+          label: "Wards",
+          data: bins.map(function (b) { return b.count; }),
+          backgroundColor: COLORS.purple,
+          borderRadius: 6
+        }]
+      },
+      options: Object.assign({}, CHART_DEFAULTS, {
+        plugins: Object.assign({}, CHART_DEFAULTS.plugins, { legend: { display: false } })
+      })
+    });
+  }
+
+  function renderInvestmentChart(d) {
+    var canvas = $("construction-investment-chart");
+    if (!canvas || typeof Chart === "undefined") return;
+    var wards = (d.top_wards || []).slice(0, 10);
+    new Chart(canvas, {
+      type: "bar",
+      data: {
+        labels: wards.map(function (w) { return w.ward; }),
+        datasets: [{
+          label: "Total Investment (₹ Cr)",
+          data: wards.map(function (w) { return w.amount_cr; }),
+          backgroundColor: COLORS.amber,
+          borderRadius: 6
+        }]
+      },
+      options: Object.assign({}, CHART_DEFAULTS, {
+        indexAxis: "y",
+        plugins: Object.assign({}, CHART_DEFAULTS.plugins, { legend: { display: false } }),
+        scales: {
+          x: Object.assign({}, CHART_DEFAULTS.scales.x, { ticks: { color: "#94a3b8", callback: function (v) { return "₹" + v + " Cr"; } } }),
+          y: Object.assign({}, CHART_DEFAULTS.scales.y)
+        }
+      })
+    });
+  }
+
+  function renderClusterCompareChart(d) {
+    var canvas = $("construction-cluster-chart");
+    if (!canvas || typeof Chart === "undefined") return;
+    var clusters = (d.clustering && d.clustering.clusters) || [];
+    new Chart(canvas, {
+      type: "bar",
+      data: {
+        labels: clusters.map(function (c, i) { return "Cluster " + i + " — " + c.label.split(" / ")[0]; }),
+        datasets: [
+          { label: "Avg Work Orders / Ward", data: clusters.map(function (c) { return c.avg_orders; }), backgroundColor: COLORS.cyan, borderRadius: 6 },
+          { label: "Avg Contractors / Ward", data: clusters.map(function (c) { return c.avg_contractors; }), backgroundColor: COLORS.purple, borderRadius: 6 }
+        ]
+      },
+      options: Object.assign({}, CHART_DEFAULTS, {
+        plugins: Object.assign({}, CHART_DEFAULTS.plugins, { legend: { position: "bottom", labels: { color: "#e2e8f0", font: { size: 11 } } } })
+      })
+    });
+  }
+
+  function renderCategoryChart(d) {
+    var canvas = $("construction-category-chart");
+    if (!canvas || typeof Chart === "undefined") return;
+    var tags = d.category_tags || [];
+    new Chart(canvas, {
+      type: "bar",
+      data: {
+        labels: tags.map(function (t) { return t.category; }),
+        datasets: [{
+          label: "Work Orders Tagged",
+          data: tags.map(function (t) { return t.count; }),
+          backgroundColor: [COLORS.amber, COLORS.cyan, COLORS.emerald, COLORS.rose, COLORS.indigo],
+          borderRadius: 6
+        }]
+      },
+      options: Object.assign({}, CHART_DEFAULTS, {
+        plugins: Object.assign({}, CHART_DEFAULTS.plugins, { legend: { display: false } })
+      })
+    });
+  }
+
+  function renderTopWardsTable(d) {
+    var tbody = $("construction-data-table-body");
+    if (!tbody) return;
+    var wards = d.top_wards || [];
+    tbody.innerHTML = wards.map(function (w) {
+      var clusterColor = w.cluster === "High" ? COLORS.amber : COLORS.cyan;
+      return "<tr>" +
+        "<td><strong>" + w.ward + "</strong></td>" +
+        "<td><span style='color:" + clusterColor + ";font-weight:600'>" + w.cluster + "</span></td>" +
+        "<td>" + (w.orders || "—") + "</td>" +
+        "<td>" + fmtCr(w.amount_cr) + "</td>" +
+        "<td>" + fmtCr(w.net_cr) + "</td>" +
+        "<td>" + (w.contractors || "—") + "</td>" +
+        "</tr>";
+    }).join("") || "<tr><td colspan='6'>No data available.</td></tr>";
+  }
+
+  function init(data) {
+    try { renderOverviewKPIs(data); }      catch(e) { console.error("[Construction] KPIs:", e); }
+    try { renderBudgetDonut(data); }       catch(e) { console.error("[Construction] Budget donut:", e); }
+    try { renderClusterDonut(data); }      catch(e) { console.error("[Construction] Cluster donut:", e); }
+    try { renderTopOrdersChart(data); }    catch(e) { console.error("[Construction] Top orders:", e); }
+    try { renderWardHistogram(data); }     catch(e) { console.error("[Construction] Histogram:", e); }
+    try { renderInvestmentChart(data); }   catch(e) { console.error("[Construction] Investment:", e); }
+    try { renderClusterCompareChart(data); } catch(e) { console.error("[Construction] Cluster compare:", e); }
+    try { renderCategoryChart(data); }     catch(e) { console.error("[Construction] Categories:", e); }
+    try { renderTopWardsTable(data); }     catch(e) { console.error("[Construction] Table:", e); }
+  }
+
+  window.initUrbanPulseConstructionAnalytics = function () {
+    var ready = window.URBANPULSE_CONSTRUCTION_READY;
+    if (ready && typeof ready.then === "function") {
+      ready.then(init).catch(function (e) { console.error("[Construction] Data load failed:", e); });
+    } else {
+      init(window.URBANPULSE_CONSTRUCTION_DATA || window.UP_CONSTRUCTION || {});
+    }
+  };
+
+})();

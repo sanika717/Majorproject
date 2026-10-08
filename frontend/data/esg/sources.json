@@ -1,0 +1,70 @@
+[
+ {
+  "code": "GUTTIKUNDA_2019",
+  "title": "Air quality, emissions, and source contributions analysis for the Greater Bengaluru region of India (Table 2: KSPCB manual stations, annual averages 2016-17)",
+  "publisher": "Guttikunda et al., Atmospheric Pollution Research (peer-reviewed), using KSPCB monitoring data",
+  "url": "https://urbanemissions.info/wp-content/uploads/docs/2019-01-APR-AQ-Bengaluru.pdf",
+  "doi": "https://doi.org/10.1016/j.apr.2019.01.002",
+    "period": "2016-17",
+    "location": "Greater Bengaluru region",
+    "geographic_level": "Station-level observations and published city averages"
+ },
+ {
+  "code": "BCAP_2019",
+  "title": "Bengaluru Climate Action and Resilience Plan - GHG baseline 2019 (BBMP area, GPC BASIC)",
+  "publisher": "BBMP (Bruhat Bengaluru Mahanagara Palike) with WRI India / C40",
+  "url": "https://apps.bbmpgov.in/bcap/PDF/Executive%20summary_English%2018072025.pdf",
+    "period": "2019",
+    "location": "BBMP administrative area",
+    "geographic_level": "City-level inventory"
+ },
+ {
+  "code": "KSPCB_MINARS_2020_21",
+  "title": "Water quality of lakes/tanks in Bangalore during 2020-2021 (MINARS)",
+  "publisher": "Karnataka State Pollution Control Board",
+  "url": "https://karnataka.data.gov.in/resource/water-quality-lakestanks-bangalore-during-2020-2021",
+  "period": "Apr 2020 - Mar 2021",
+    "location": "Bangalore Urban district subset of Bangalore Urban and Rural districts",
+    "geographic_level": "Lake/tank station-month",
+  "note": "WQI status S = Satisfactory, US = Unsatisfactory (DO>=4, BOD<=3 mg/L, FC<=2500, TC<=5000 per source legend). * = not monitored. Supplied as CSV by the project owner."
+ },
+ {
+  "code": "BESCOM_OGD",
+  "title": "Electricity Consumption of Bengaluru City (BESCOM, lakh units by category)",
+  "publisher": "BESCOM via Open Government Data Platform India",
+  "url": "https://www.data.gov.in/catalog/electricity-consumption-bengaluru-city-0",
+    "period": "not imported",
+    "location": "Bengaluru city",
+    "geographic_level": "City-level utility dataset"
+ },
+ {
+  "code": "CPCB_RT_AQI",
+  "title": "Real time Air Quality Index from various locations (CPCB stations in Bengaluru)",
+  "publisher": "Central Pollution Control Board, via Open Government Data Platform India (data.gov.in API)",
+  "url": "https://data.gov.in/resource/real-time-air-quality-index-various-locations",
+  "period": "rolling hourly feed, stored from first update run",
+    "location": "CPCB stations in Bengaluru",
+    "geographic_level": "Station/location",
+  "note": "Live readings are stored as received. They are NOT annual means; scoring only uses them once the stored history is long enough (see ESG_LIVE_MIN_DAYS)."
+ },
+ {
+  "code": "BESCOM_OPENCITY",
+  "title": "BESCOM Annual Consumption and Revenue Data 2010-11 to 2022-23",
+  "publisher": "BESCOM (bescom.karnataka.gov.in), republished by OpenCity.in",
+  "url": "https://data.opencity.in/dataset/bescom-consumption-data",
+    "period": "2010-11 to 2022-23",
+    "location": "BESCOM supply area",
+    "geographic_level": "Utility service area; not Bengaluru city-only",
+  "note": "Covers the BESCOM supply area, not Bengaluru city alone. Source unit is million units (MU); stored as lakh units (1 MU = 10 lakh units)."
+ },
+ {
+    "code": "CPCB_NAAQS",
+    "title": "National Ambient Air Quality Standards",
+    "publisher": "Central Pollution Control Board, Government of India",
+    "url": "https://cpcb.gov.in/National-Ambient-Air-Quality-Standards/",
+    "period": "Annual standards",
+    "location": "India",
+    "geographic_level": "National benchmark",
+    "note": "Annual limits are used as a benchmark for the reported Bengaluru station averages; they are not Bengaluru observations."
+ }
+]

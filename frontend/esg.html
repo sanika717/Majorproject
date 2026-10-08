@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ESG Scoring | UrbanPulse</title>
+  <meta name="description" content="UrbanPulse is an evidence-based Smart City Transparency and Intelligence Platform for Bengaluru.">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+
+  <!-- Google Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Chart.js (Pinned with Subresource Integrity) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.js" integrity="sha384-sitkSLEO56SJYRloHWybrHos3JVvByQSlOZYJ1HiExytjxUlVOernDbpQcOgwtW8" crossorigin="anonymous"></script>
+
+  <!-- App Stylesheet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="page-esg">
+
+  <!-- =========================================================================
+       APP HEADER & NAVIGATION  (User role — each item is its own page)
+       ========================================================================= -->
+  <header class="app-header">
+    <div class="container header-inner">
+      <a href="dashboard.html" class="brand">
+        <div class="brand-icon">⚡</div>
+        <div class="brand-text">
+          <h1>URBANPULSE</h1>
+          <p>Smart City Transparency Platform</p>
+        </div>
+      </a>
+
+      <nav aria-label="User navigation">
+        <ul class="nav-links">
+          <li><a href="dashboard.html" class="nav-link">🏠 Dashboard</a></li>
+          <li><a href="analytics.html" class="nav-link">📊 Analytics</a></li>
+          <li><a href="esg.html" class="nav-link active" aria-current="page">🌍 ESG Scoring</a></li>
+          <li><a href="complaints.html" class="nav-link">📢 Public Complaints</a></li>
+          <li><a href="assistant.html" class="nav-link">🤖 Intelligence Assistant</a></li>
+        </ul>
+      </nav>
+
+      <div class="header-status">
+        <div class="status-pill">
+          <span class="pulse-dot"></span>
+          <span>Bengaluru Live Intelligence</span>
+        </div>
+        <div style="font-size: 12px; color: var(--text-muted); font-weight: 600;" id="live-time-display">--:--:-- IST</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section id="esg-page" class="section">
+      <div class="section-title-wrap">
+        <span class="section-badge badge-active">🌍 UrbanPulse ESG Composite Score</span>
+        <h2 class="section-title">🌍 ESG Scoring</h2>
+        <p class="section-desc">Source-backed indicators for Bengaluru, using the reporting period stated by each source.</p>
+      </div>
+      <div class="controls-bar" style="margin-top:16px;">
+        <label class="control-group" for="esg-year-select"><span class="control-label">Reporting period:</span>
+          <select id="esg-year-select" class="custom-select" aria-label="ESG reporting period" disabled></select>
+        </label>
+        <span class="control-label">Selected period: <strong id="esg-selected-period">Loading</strong></span>
+      </div>
+      <!-- Live AQI Card -->
+      <div class="kpi-card glass-panel" id="esg-aqi-card" style="margin-top:20px; border-left: 3px solid var(--accent-emerald);">
+        <div class="kpi-header">
+          <span class="kpi-title">🌬️ Live / Recent AQI</span>
+          <div class="kpi-icon" style="color:var(--accent-emerald)">📡</div>
+        </div>
+        <div id="esg-aqi-value" class="kpi-value" style="font-size:28px;">—</div>
+        <div class="kpi-subtext" id="esg-aqi-category">Loading air quality data…</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px;" id="esg-aqi-source">Source: CPCB / KSPCB</div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:2px;" id="esg-aqi-updated"></div>
+      </div>
+
+      <!-- ESG Demo Notice -->
+      <div style="margin-top:12px;padding:10px 14px;border-radius:8px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);font-size:12px;color:#fbbf24;" id="esg-demo-notice">
+        ⚠️ <strong>Demo data active for year-wise Social &amp; Governance scores.</strong>
+        Environmental values are real (KSPCB/CPCB/BCAP). Social and Governance indicators are illustrative placeholders only — replace with verified source data before production use.
+      </div>
+
+      <div class="kpi-grid" style="margin-top:16px;">
+        <div class="kpi-card glass-panel"><div class="kpi-header"><span class="kpi-title">Environmental</span><div class="kpi-icon" style="color:var(--accent-emerald)">🌱</div></div><div id="esg-E-value" class="kpi-value">Data unavailable</div><div class="kpi-subtext" id="esg-E-sub">Incomplete source coverage</div></div>
+        <div class="kpi-card glass-panel" style="border-top:2px dashed rgba(245,158,11,0.4);"><div class="kpi-header"><span class="kpi-title">Social <span style="font-size:10px;color:#fbbf24;font-weight:600">[DEMO]</span></span><div class="kpi-icon" style="color:var(--accent-cyan)">👥</div></div><div id="esg-S-value" class="kpi-value">Data unavailable</div><div class="kpi-subtext" id="esg-S-sub">Incomplete source coverage</div></div>
+        <div class="kpi-card glass-panel" style="border-top:2px dashed rgba(245,158,11,0.4);"><div class="kpi-header"><span class="kpi-title">Governance <span style="font-size:10px;color:#fbbf24;font-weight:600">[DEMO]</span></span><div class="kpi-icon" style="color:var(--accent-indigo)">🏛️</div></div><div id="esg-G-value" class="kpi-value">Data unavailable</div><div class="kpi-subtext" id="esg-G-sub">Incomplete source coverage</div></div>
+        <div class="kpi-card glass-panel"><div class="kpi-header"><span class="kpi-title">Carbon / Climate</span><div class="kpi-icon" style="color:var(--accent-amber)">🌡️</div></div><div id="esg-C-value" class="kpi-value">Data unavailable</div><div class="kpi-subtext" id="esg-C-sub">A reported inventory is not a comparable score</div></div>
+        <div class="kpi-card glass-panel"><div class="kpi-header"><span class="kpi-title">Overall ESG</span><div class="kpi-icon">🌍</div></div><div id="esg-O-value" class="kpi-value">Data unavailable</div><div class="kpi-subtext" id="esg-O-sub">Incomplete source coverage</div></div>
+      </div>
+      <p id="esg-data-status" class="esg-disclaimer">Loading source records.</p>
+    </section>
+
+    <section class="section" id="esg-environment">
+      <div class="section-title-wrap"><span class="section-badge badge-active">🌱 Environmental data</span><h2 class="section-title">Environmental Evidence — Bengaluru</h2></div>
+      <div class="charts-grid" style="margin-top:20px;">
+        <div class="chart-card glass-panel"><div class="chart-card-header"><h3>Area-wise Air Quality Map</h3></div><div id="esg-map" class="esg-map"></div><div id="esg-air-unmapped" class="esg-src" style="padding:0 16px"></div></div>
+        <div class="chart-card glass-panel"><div class="chart-card-header"><h3>Selected Station</h3></div><div id="esg-station-detail" class="esg-detail"></div></div>
+      </div><div id="esg-air-src" class="glass-panel esg-formula" style="margin-top:12px;"></div>
+      <div class="charts-grid" style="margin-top:20px;">
+        <div class="chart-card glass-panel"><div class="chart-card-header"><h3>Carbon Emissions (GHG)</h3></div><p id="esg-carbon-kpi" class="esg-pad"></p><div class="chart-wrapper"><canvas id="esg-chart-carbon"></canvas></div><div id="esg-carbon-src" class="esg-pad"></div></div>
+        <div class="chart-card glass-panel"><div class="chart-card-header"><h3>Lake / Tank Water Quality</h3></div><p id="esg-water-kpi" class="esg-pad"></p><div class="chart-wrapper"><canvas id="esg-chart-water"></canvas></div><div id="esg-water-src" class="esg-pad"></div></div>
+      </div>
+      <div class="chart-card glass-panel" style="margin-top:20px;"><div class="chart-card-header"><h3>Electricity / Energy Consumption by Area</h3></div><div id="esg-elec-body" class="esg-pad"></div><div id="esg-elec-src" class="esg-pad"></div></div>
+    </section>
+
+    <section class="section" id="esg-indicators">
+      <div class="section-title-wrap"><h2 class="section-title">Indicator Sources and Values</h2></div>
+      <div style="overflow-x:auto;margin-top:20px;">
+        <table class="custom-table"><thead><tr><th>Indicator</th><th>Value</th><th>Source period</th><th>Geographic level</th><th>Score</th><th>Source and provenance</th></tr></thead>
+          <tbody id="esg-indicator-rows"><tr><td colspan="6">Loading source records.</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="brand">
+          <div class="brand-icon">⚡</div>
+          <div class="brand-text">
+            <h1 style="font-size: 18px;">URBANPULSE</h1>
+            <p>Smart City Transparency Platform</p>
+          </div>
+        </div>
+        <div class="footer-copy">
+          Bengaluru Urban Transparency Initiative &bull; Verified Data Only &bull; Zero Fabricated Statistics
+        </div>
+      </div>
+      <div style="font-size: 11px; color: var(--text-muted); border-top: 1px solid var(--border-subtle); padding-top: 16px;">
+        Map tiles &copy; OpenStreetMap contributors.
+      </div>
+    </div>
+  </footer>
+
+  <!-- UrbanPulse Application Scripts -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/esg-scorecard.js?v=phase3b"></script>
+  <script src="js/esg-env.js?v=phase3b"></script>
+  <script src="js/esg-demo.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

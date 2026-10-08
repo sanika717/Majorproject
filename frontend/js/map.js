@@ -1,298 +1,345 @@
-/**
- * UrbanPulse - Unified Smart City Map Component
- * Handles layer switching, 150 real police locations, popups, and city-level metrics
- */
+(function () {
+  "use strict";
 
-class SmartCityMap {
-  constructor(containerId = "urbanpulse-map") {
-    this.containerId = containerId;
-    this.map = null;
-    this.markersLayer = null;
-    this.currentLayer = "construction";
-    this.locations = window.URBANPULSE_LOCATIONS || [];
-    this.crimeData = window.URBANPULSE_DATA || {};
-    this.constructionData = window.URBANPULSE_CONSTRUCTION_DATA || null;
-    
-    this.initMap();
-    this.initEventListeners();
-    this.renderLayer(this.currentLayer);
-  }
+  var mapElement = document.getElementById("urbanpulse-map");
+  var selector = document.getElementById("map-layer-selector");
+  if (!mapElement || !selector || !window.L) return;
 
-  initMap() {
-    // Center on Bengaluru
-    this.map = L.map(this.containerId, {
-      center: [12.9716, 77.5946],
-      zoom: 11,
-      minZoom: 9,
-      maxZoom: 18,
-      zoomControl: true
+  var map = L.map(mapElement).setView([12.9716, 77.5946], 12);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
+    maxZoom: 19
+  }).addTo(map);
+
+  var mapInfo = {
+    healthcare: { title: "Hospitals", icon: "✚", color: "healthcare", selector: "healthcare" },
+    parks: { title: "Parks", icon: "🌳", color: "parks", selector: "parks" },
+    education: { title: "Schools & Universities", icon: "🏫", color: "education", selector: "education" },
+    transport: { title: "Public Transport", icon: "🚌", color: "transport", selector: "transport" },
+    utilities: { title: "Water / Utilities", icon: "💧", color: "utilities", selector: "utilities" },
+    government: { title: "Government Services", icon: "🏛", color: "government", selector: "government" },
+    police: { title: "Police Stations", icon: "🚓", color: "police", selector: "police" }
+  };
+  var snapshot = {};
+  var activeLayer = null;
+  var activeCategory = null;
+  var requestToken = 0;
+  var overpassRequested = false;
+  var headerTitle = document.getElementById("map-header-title");
+  var headerSource = document.getElementById("map-header-source");
+  var floatingPanels = [
+    document.getElementById("map-floating-panel"),
+    document.getElementById("map-floating-panel-police"),
+    document.getElementById("map-floating-panel-construction")
+  ];
+
+  function escapeHTML(value) {
+    return String(value == null ? "" : value).replace(/[&<>"']/g, function (char) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char];
     });
-
-    // OpenStreetMap standard tiles - no API key required.
-    // Use https://tile.openstreetmap.org/{z}/{x}/{y}.png with proper attribution & crossOrigin.
-    // The dark look is applied purely with a CSS filter on .leaflet-tile-pane (see style.css).
-    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors',
-      maxZoom: 19,
-      crossOrigin: true
-    }).addTo(this.map);
-
-    this.markersLayer = L.layerGroup().addTo(this.map);
-
-    // Hydrate data from FastAPI backend if available
-    this.fetchBackendData();
   }
 
-  async fetchBackendData() {
-    if (!window.UrbanPulseAPI) return;
-    try {
-      const [fullCons, histCrime, policeLocs] = await Promise.all([
-        window.UrbanPulseAPI.getFullConstructionData(),
-        window.UrbanPulseAPI.getCrimeHistorical(),
-        window.UrbanPulseAPI.getPoliceLocations()
-      ]);
-
-      if (fullCons) {
-        this.constructionData = fullCons;
-        window.URBANPULSE_CONSTRUCTION_DATA = fullCons;
-        if (this.currentLayer === "construction") this.updateConstructionPanel();
-      }
-
-      if (histCrime) {
-        if (!this.crimeData) this.crimeData = {};
-        this.crimeData.historical = histCrime;
-        if (this.currentLayer === "crime") this.updateMapStats();
-      }
-
-      if (policeLocs && Array.isArray(policeLocs) && policeLocs.length) {
-        this.locations = policeLocs;
-        window.URBANPULSE_LOCATIONS = policeLocs;
-        if (this.currentLayer === "police") {
-          this.renderPoliceMarkers();
-          this.updatePolicePanel();
-        }
-      }
-    } catch (e) {
-      console.warn("[SmartCityMap] Live backend sync failed, using cached EDA data:", e);
+  function firstTag(tags, keys) {
+    for (var i = 0; i < keys.length; i += 1) {
+      if (tags[keys[i]] != null && String(tags[keys[i]]).trim()) return String(tags[keys[i]]);
     }
+    return "";
   }
 
-  initEventListeners() {
-    const layerSelect = document.getElementById("map-layer-selector");
-    if (layerSelect) {
-      layerSelect.addEventListener("change", (e) => {
-        this.setLayer(e.target.value);
-      });
-    }
-
-  }
-
-  setLayer(layerId) {
-    this.currentLayer = layerId;
-    this.renderLayer(layerId);
-    
-    // Dispatch event for other dashboard components
-    window.dispatchEvent(new CustomEvent("urbanpulse:layerChanged", { detail: { layer: layerId } }));
-  }
-
-  renderLayer(layerId) {
-    const placeholderEl = document.getElementById("map-placeholder-overlay");
-    const floatingPanel = document.getElementById("map-floating-panel");
-    const constructionPanel = document.getElementById("map-floating-panel-construction");
-    const policePanel = document.getElementById("map-floating-panel-police");
-    const placeholderTitle = document.getElementById("placeholder-layer-title");
-    const placeholderDesc = document.getElementById("placeholder-layer-desc");
-
-    // Clear existing markers
-    this.markersLayer.clearLayers();
-
-    this.updateHeaderBar(layerId);
-
-    // Hide both floating panels by default; each branch below turns on the one it needs
-    if (floatingPanel) floatingPanel.style.display = "none";
-    if (constructionPanel) constructionPanel.style.display = "none";
-    if (policePanel) policePanel.style.display = "none";
-
-    if (layerId === "crime") {
-      // Crime statistics are city/division-level, so there is nothing real to pin
-      // per location: show the live base map + city-level overview panel only.
-      if (placeholderEl) placeholderEl.classList.remove("show");
-      if (floatingPanel) floatingPanel.style.display = "block";
-
-      this.updateMapStats();
-    } else if (layerId === "police") {
-      // 150 verified KML station coordinates. No crime totals are attached to them.
-      if (placeholderEl) placeholderEl.classList.remove("show");
-      if (policePanel) policePanel.style.display = "block";
-
-      this.renderPoliceMarkers();
-      this.updatePolicePanel();
-    } else if (layerId === "construction" && this.constructionData) {
-      // EDA is complete and verified, but no ward-boundary/centroid coordinate
-      // dataset was supplied, so there is nothing real to plot as map markers or
-      // polygons yet. Rather than hiding this behind the generic "Coming Soon"
-      // placeholder (which would understate how much real analysis exists), show
-      // the live base map plus a floating KPI panel, and point people at the
-      // Analytics page for the real charts/tables.
-      if (placeholderEl) placeholderEl.classList.remove("show");
-      if (constructionPanel) constructionPanel.style.display = "block";
-
-      this.updateConstructionPanel();
-    } else {
-      // Layers without a real dataset - strictly no fake data
-      const layerMeta = (this.crimeData.map_layers || []).find(l => l.id === layerId) || { name: layerId };
-
-      if (placeholderTitle) placeholderTitle.textContent = "Data Coming Soon";
-      if (placeholderDesc) {
-        placeholderDesc.textContent = `${layerMeta.name}: no verified dataset has been supplied for this layer yet. Real markers will appear here once data is available.`;
-      }
-      if (placeholderEl) placeholderEl.classList.add("show");
-    }
-  }
-
-  // Map header text follows the active layer so it never claims a data source
-  // or coordinate count that does not belong to that layer.
-  updateHeaderBar(layerId) {
-    const titleEl = document.getElementById("map-header-title");
-    const sourceEl = document.getElementById("map-header-source");
-    if (!titleEl || !sourceEl) return;
-
-    const base = "Bengaluru Metropolitan Area";
-    let title = base;
-    let source = "Source: no verified dataset supplied yet";
-
-    if (layerId === "construction" && this.constructionData) {
-      title = `${base} (ward-level overview — no ward coordinates supplied)`;
-      source = "Source: BBMP 2025-26 ward work orders";
-    } else if (layerId === "crime") {
-      title = `${base} (city-level statistics — no pins)`;
-      source = "Source: D47 city-level crime statistics";
-    } else if (layerId === "police") {
-      title = `${base} (${this.locations.length} verified coordinates)`;
-      source = "Source: Karnataka Police GIS KML Datasets";
-    }
-
-    titleEl.textContent = title;
-    sourceEl.textContent = source;
-  }
-
-  updateConstructionPanel() {
-    const cd = this.constructionData;
-    if (!cd) return;
-    const ov = cd.overview;
-
-    const set = (id, val) => {
-      const el = document.getElementById(id);
-      if (el) el.textContent = val;
+  function popupRows(feature) {
+    var tags = feature.tags || {};
+    var category = feature.category;
+    var fields = [];
+    var add = function (label, keys) {
+      var value = firstTag(tags, keys);
+      if (value) fields.push([label, value]);
     };
 
-    set("construction-panel-orders", ov.total_work_orders.toLocaleString());
-    set("construction-panel-amount", `₹${(ov.total_amount / 1e7).toFixed(2)} Cr`);
-    set("construction-panel-wards", `${ov.official_numbered_wards_present} / ${ov.official_wards_total}`);
-    set("construction-panel-contractors", ov.unique_contractors.toLocaleString());
+    if (category === "healthcare") {
+      add("Type", ["healthcare", "amenity"]);
+      add("Specialty", ["healthcare:speciality", "healthcare:specialty"]);
+      add("Rating", ["stars", "rating"]);
+      add("Timings", ["opening_hours"]);
+      add("Phone", ["phone", "contact:phone"]);
+      add("Email", ["email", "contact:email"]);
+      add("Website", ["website", "contact:website"]);
+      add("Emergency", ["emergency"]);
+      add("Operator", ["operator"]);
+    } else if (category === "parks") {
+      add("Type", ["leisure"]);
+      add("Opening hours", ["opening_hours"]);
+      add("Playground", ["playground"]);
+      add("Sports facilities", ["sport"]);
+      add("Toilets", ["toilets"]);
+      add("Drinking water", ["drinking_water"]);
+      add("Pets", ["pets", "dog"]);
+      add("Website", ["website"]);
+    } else if (category === "education") {
+      add("Institution type", ["amenity", "education"]);
+      add("Education level", ["isced:level", "level", "grades"]);
+      add("Operator", ["operator"]);
+      add("Operator type", ["operator:type"]);
+      add("Phone", ["phone", "contact:phone"]);
+      add("Email", ["email", "contact:email"]);
+      add("Website", ["website", "contact:website"]);
+      add("Established", ["start_date"]);
+    } else if (category === "police") {
+      add("Facility type", ["amenity", "police"]);
+      add("Police facility", ["police"]);
+      add("Operator", ["operator"]);
+      add("Phone", ["phone", "contact:phone"]);
+      add("Opening hours", ["opening_hours"]);
+      add("Website", ["website", "contact:website"]);
+    } else if (category === "transport") {
+      add("Stop / station type", ["public_transport", "highway", "railway"]);
+      add("Network", ["network"]);
+      add("Operator", ["operator"]);
+      add("Routes", ["route_ref", "route", "ref"]);
+      add("Shelter", ["shelter"]);
+      add("Covered", ["covered"]);
+      add("Bench", ["bench"]);
+    } else if (category === "utilities") {
+      add("Facility type", ["man_made", "emergency", "amenity", "power"]);
+      add("Status", ["status", "operational_status"]);
+      add("Operator", ["operator"]);
+      add("Capacity", ["capacity"]);
+      add("Last checked", ["check_date"]);
+      add("Phone", ["phone", "contact:phone"]);
+      add("Website", ["website", "contact:website"]);
+    } else if (category === "government") {
+      add("Department", ["department"]);
+      add("Service", ["government", "office", "amenity"]);
+      add("Office type", ["office"]);
+      add("Operator", ["operator"]);
+      add("Opening hours", ["opening_hours"]);
+      add("Phone", ["phone", "contact:phone"]);
+      add("Email", ["email", "contact:email"]);
+      add("Website", ["website", "contact:website"]);
+    }
 
-    const clusters = cd.clustering.clusters;
-    const high = clusters.find(c => c.cluster === 0);
-    const low = clusters.find(c => c.cluster === 1);
-    set("construction-panel-clusters", high && low ? `${high.ward_count} High / ${low.ward_count} Low` : "—");
+    return fields;
   }
 
-  renderPoliceMarkers() {
-    this.markersLayer.clearLayers();
+  function fieldValue(label, value) {
+    var safeValue = escapeHTML(value);
+    if (label === "Website" && /^https?:\/\//i.test(value)) {
+      safeValue = '<a href="' + escapeHTML(value) + '" target="_blank" rel="noopener noreferrer">Open website</a>';
+    } else if (label === "Phone") {
+      safeValue = '<a href="tel:' + escapeHTML(value.replace(/[^+\d]/g, "")) + '">' + safeValue + '</a>';
+    } else if (label === "Email" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+      safeValue = '<a href="mailto:' + escapeHTML(value) + '">' + safeValue + '</a>';
+    }
+    return safeValue;
+  }
 
-    // Station popups show ONLY what the KML source provides (name, category,
-    // coordinates). City/division-level crime totals are deliberately NOT
-    // attached to individual stations: no station-level crime data exists.
-    const esc = (t) => String(t).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  function popupHTML(feature) {
+    var info = mapInfo[feature.category];
+    var title = feature.name || "Unnamed mapped feature";
+    var rows = popupRows(feature);
+    if (feature.address) rows.push(["Address", feature.address]);
+    var table = rows.map(function (row) {
+      return '<tr><th scope="row">' + escapeHTML(row[0]) + '</th><td>' + fieldValue(row[0], row[1]) + '</td></tr>';
+    }).join("");
+    var osmURL = "https://www.openstreetmap.org/" + encodeURIComponent(feature.osmType || "node") + "/" + encodeURIComponent(feature.osmId);
+    return '<div class="popup-inner civic-popup"><h4><span aria-hidden="true">' + info.icon + '</span>' + escapeHTML(title) + '</h4>' +
+      '<div class="popup-divider"></div><table class="popup-table">' + table + '</table>' +
+      '<a class="civic-popup-source" href="' + osmURL + '" target="_blank" rel="noopener noreferrer">OpenStreetMap object</a></div>';
+  }
 
-    this.locations.forEach((loc, index) => {
-      let pinClass = "pin-police";
-      let iconSymbol = "🚓";
+  function normalizeElement(element, category) {
+    var tags = element.tags || {};
+    var center = element.center || element;
+    var latitude = Number(center.lat);
+    var longitude = Number(center.lon);
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null;
+    return {
+      category: category,
+      osmType: element.type,
+      osmId: element.id,
+      lat: latitude,
+      lon: longitude,
+      name: tags.name || tags["name:en"] || "",
+      address: [tags["addr:housenumber"], tags["addr:street"], tags["addr:suburb"], tags["addr:city"]].filter(Boolean).join(", "),
+      tags: tags
+    };
+  }
 
-      if (loc.category === "Railway Police Station") {
-        pinClass = "pin-railway";
-        iconSymbol = "🚆";
-      } else if (loc.category === "Police Outpost") {
-        pinClass = "pin-outpost";
-        iconSymbol = "🛡️";
-      }
-
-      const customIcon = L.divIcon({
-        className: "custom-pin-wrapper",
-        html: `<div class="custom-pin ${pinClass}" style="width: 28px; height: 28px; font-size: 13px;">${iconSymbol}</div>`,
-        iconSize: [28, 28],
-        iconAnchor: [14, 14],
-        popupAnchor: [0, -14]
-      });
-
-      const popupHtml = `
-        <div class="popup-inner">
-          <h4>${iconSymbol} ${esc(loc.name || loc.category)}</h4>
-          <div style="font-size: 12px; color: #cbd5e1; margin-bottom: 4px;">${esc(loc.category)}</div>
-          <div style="font-size: 11px; color: #94a3b8; margin-bottom: 6px;">
-            Coordinates: ${loc.lat.toFixed(5)}, ${loc.lng.toFixed(5)}
-          </div>
-          <div class="popup-divider"></div>
-          <div class="popup-disclaimer">
-            ℹ️ Location from the Karnataka Police GIS KML source. Station-level crime figures are not available, so none are shown. City-level crime statistics are on the Crime & Safety layer.
-          </div>
-        </div>
-      `;
-
-      const marker = L.marker([loc.lat, loc.lng], { icon: customIcon });
-      marker.bindPopup(popupHtml, { maxWidth: 300 });
-      this.markersLayer.addLayer(marker);
+  function createLayer(features, category) {
+    var info = mapInfo[category];
+    var layer = L.featureGroup();
+    var icon = L.divIcon({
+      className: "civic-marker civic-marker-" + info.color,
+      html: '<span aria-hidden="true">' + info.icon + '</span>',
+      iconSize: [34, 34],
+      iconAnchor: [17, 17],
+      popupAnchor: [0, -16]
     });
+    features.forEach(function (feature) {
+      if (!Number.isFinite(Number(feature.lat)) || !Number.isFinite(Number(feature.lon))) return;
+      L.marker([Number(feature.lat), Number(feature.lon)], { icon: icon, title: feature.name || info.title })
+        .bindPopup(popupHTML(feature), { maxWidth: 330 })
+        .addTo(layer);
+    });
+    return layer;
   }
 
-  updatePolicePanel() {
-    const counts = {};
-    this.locations.forEach(l => { counts[l.category] = (counts[l.category] || 0) + 1; });
-    const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-    set("police-panel-total", this.locations.length);
-    set("police-panel-stations", counts["Police Station"] || 0);
-    set("police-panel-outposts", counts["Police Outpost"] || 0);
-    set("police-panel-railway", counts["Railway Police Station"] || 0);
+  function setLayerHeader(category, count, source) {
+    var info = mapInfo[category];
+    if (headerTitle) headerTitle.textContent = info.title + " in Bengaluru";
+    if (headerSource) headerSource.textContent = source + " · " + count + " mapped locations";
   }
 
-  updateMapStats() {
-    const hist = this.crimeData.historical || null;
+  function hideFloatingPanels() {
+    floatingPanels.forEach(function (panel) { if (panel) panel.style.display = "none"; });
+  }
 
-    const yearEl = document.getElementById("floating-stat-year");
-    const totalEl = document.getElementById("floating-stat-total");
-    const fatalEl = document.getElementById("floating-stat-fatal");
-    const nonFatalEl = document.getElementById("floating-stat-nonfatal");
-    const fatalPctEl = document.getElementById("floating-stat-fatalpct");
-    const riskBadgeEl = document.getElementById("floating-stat-risk");
-    const locCountEl = document.getElementById("floating-stat-loccount");
+  function showLegacyLayer(category) {
+    map.closePopup();
+    if (activeLayer) map.removeLayer(activeLayer);
+    activeLayer = null;
+    activeCategory = category;
+    hideFloatingPanels();
 
-    if (locCountEl) locCountEl.textContent = this.locations.length;
-
-    if (!hist) {
-      if (yearEl) yearEl.textContent = "N/A";
-      if (totalEl) totalEl.textContent = "—";
-      if (fatalEl) fatalEl.textContent = "—";
-      if (nonFatalEl) nonFatalEl.textContent = "—";
-      if (fatalPctEl) fatalPctEl.textContent = "—";
-      if (riskBadgeEl) riskBadgeEl.textContent = "Data Unavailable";
+    if (category === "construction") {
+      var constructionPanel = document.getElementById("map-floating-panel-construction");
+      if (constructionPanel) constructionPanel.style.display = "block";
+      var constructionValues = {
+        "construction-panel-orders": "4,729",
+        "construction-panel-amount": "₹3,169.06 Cr",
+        "construction-panel-wards": "198 / 198 official wards represented",
+        "construction-panel-contractors": "1,603",
+        "construction-panel-clusters": "2 (K-Means++, K=2)"
+      };
+      Object.keys(constructionValues).forEach(function (id) {
+        var element = document.getElementById(id);
+        if (element) element.textContent = constructionValues[id];
+      });
+      if (headerTitle) headerTitle.textContent = "BBMP 2025-26 Construction Work Orders";
+      if (headerSource) headerSource.textContent = "BBMP work-order dataset · no supplied site coordinates or status";
       return;
     }
 
-    if (yearEl) yearEl.textContent = hist.period_label;
-    if (totalEl) totalEl.textContent = hist.total_crimes.toLocaleString();
-    if (fatalEl) fatalEl.textContent = hist.fatal_crimes.toLocaleString();
-    if (nonFatalEl) nonFatalEl.textContent = hist.non_fatal_crimes.toLocaleString();
-    if (fatalPctEl) fatalPctEl.textContent = `${hist.fatal_percentage}%`;
+    var crimePanel = document.getElementById("map-floating-panel");
+    if (crimePanel) crimePanel.style.display = "block";
+    if (headerTitle) headerTitle.textContent = "Crime & Safety";
+    if (headerSource) headerSource.textContent = "No verified area-level incident data supplied; no incident locations shown";
+  }
 
-    if (riskBadgeEl) {
-      riskBadgeEl.textContent = `${hist.highest_risk_level} (peak ${hist.highest_risk_year})`;
-      riskBadgeEl.style.color = hist.highest_risk_level === "High Risk" ? "#ef4444" : "#f59e0b";
-      riskBadgeEl.style.background = hist.highest_risk_level === "High Risk" ? "rgba(239, 68, 68, 0.15)" : "rgba(245, 158, 11, 0.15)";
+  function displayCategory(category, features, source, zoomToFeatures) {
+    map.closePopup();
+    if (activeLayer) map.removeLayer(activeLayer);
+    activeCategory = category;
+    activeLayer = createLayer(features, category).addTo(map);
+    setLayerHeader(category, activeLayer.getLayers().length, source);
+    hideFloatingPanels();
+    if (category === "police") {
+      var policePanel = document.getElementById("map-floating-panel-police");
+      if (policePanel) policePanel.style.display = "block";
+      var count = document.getElementById("police-panel-total");
+      var stationCount = document.getElementById("police-panel-stations");
+      if (count) count.textContent = String(activeLayer.getLayers().length);
+      if (stationCount) stationCount.textContent = String(activeLayer.getLayers().length);
+    }
+    if (zoomToFeatures && activeLayer.getLayers().length) {
+      map.fitBounds(activeLayer.getBounds(), { padding: [32, 32], maxZoom: 15 });
     }
   }
-}
 
-// Global initialization helper
-window.initUrbanPulseMap = function() {
-  window.urbanpulseMapInstance = new SmartCityMap("urbanpulse-map");
-};
+  function overpassQuery() {
+    var bounds = "(12.70,77.30,13.20,77.85)";
+    var filters = [
+      '["amenity"="hospital"]', '["healthcare"="hospital"]',
+      '["leisure"="park"]', '["leisure"="playground"]',
+      '["amenity"="school"]', '["amenity"="university"]', '["highway"="bus_stop"]',
+      '["amenity"="police"]',
+      '["public_transport"="platform"]', '["railway"="station"]',
+      '["railway"="subway_entrance"]', '["man_made"="water_tower"]',
+      '["emergency"="water_tank"]', '["man_made"="wastewater_plant"]',
+      '["man_made"="water_works"]', '["amenity"="drinking_water"]',
+      '["office"="government"]', '["amenity"="townhall"]',
+      '["government"="administrative"]'
+    ];
+    return "[out:json][timeout:30];(" + filters.map(function (filter) {
+      return "nwr" + bounds + filter + ";";
+    }).join("") + ");out center tags;";
+  }
+
+  function categoryFromTags(tags) {
+    if (tags.amenity === "hospital" || tags.healthcare === "hospital") return "healthcare";
+    if (tags.leisure === "park" || tags.leisure === "playground") return "parks";
+    if (tags.amenity === "school" || tags.amenity === "university") return "education";
+    if (tags.amenity === "police") return "police";
+    if (tags.highway === "bus_stop" || tags.public_transport === "platform" || tags.railway === "station" || tags.railway === "subway_entrance") return "transport";
+    if (tags.man_made === "water_tower" || tags.man_made === "wastewater_plant" || tags.man_made === "water_works" || tags.emergency === "water_tank" || tags.amenity === "drinking_water") return "utilities";
+    if (tags.office === "government" || tags.amenity === "townhall" || tags.government === "administrative") return "government";
+    return null;
+  }
+
+  function refreshFromOverpass() {
+    if (overpassRequested) return;
+    overpassRequested = true;
+    var query = overpassQuery();
+    var controller = window.AbortController ? new AbortController() : null;
+    var timeout = controller ? window.setTimeout(function () { controller.abort(); }, 28000) : null;
+    return fetch("https://overpass-api.de/api/interpreter", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+      body: "data=" + encodeURIComponent(query),
+      signal: controller ? controller.signal : undefined
+    }).then(function (response) {
+      if (!response.ok) throw new Error("Overpass HTTP " + response.status);
+      return response.json();
+    }).then(function (data) {
+      var fresh = {};
+      (data.elements || []).forEach(function (element) {
+        var category = categoryFromTags(element.tags || {});
+        if (!category) return;
+        var feature = normalizeElement(element, category);
+        if (!feature) return;
+        if (!fresh[category]) fresh[category] = [];
+        fresh[category].push(feature);
+      });
+      Object.keys(fresh).forEach(function (category) {
+        if (fresh[category].length) snapshot[category] = fresh[category];
+      });
+      if (mapInfo[activeCategory] && snapshot[activeCategory] && snapshot[activeCategory].length) {
+        displayCategory(activeCategory, snapshot[activeCategory], "Live OpenStreetMap / Overpass", false);
+      }
+    }).catch(function () {
+      // Keep the bundled, attributed OSM snapshot visible when the live API is unavailable.
+    }).then(function () {
+      if (timeout) window.clearTimeout(timeout);
+    });
+  }
+
+  function selectLayer() {
+    var value = selector.value;
+    requestToken += 1;
+    if (value === "construction" || value === "crime") {
+      showLegacyLayer(value);
+      return;
+    }
+    var category = mapInfo[value] ? value : null;
+    if (!category) return;
+    var features = snapshot[category] || [];
+    displayCategory(category, features, "OpenStreetMap contributors (snapshot 2026-10-02)", true);
+    refreshFromOverpass();
+  }
+
+  fetch("data/civic-map.json", { cache: "no-store" }).then(function (response) {
+    if (!response.ok) throw new Error("OSM snapshot HTTP " + response.status);
+    return response.json();
+  }).then(function (data) {
+    data.features.forEach(function (feature) {
+      if (!snapshot[feature.category]) snapshot[feature.category] = [];
+      snapshot[feature.category].push(feature);
+    });
+    selector.addEventListener("change", selectLayer);
+    if (selector.value) selectLayer();
+  }).catch(function () {
+    if (headerSource) headerSource.textContent = "OSM snapshot could not be loaded; serve the project over HTTP";
+    selector.addEventListener("change", selectLayer);
+  });
+
+  window.setTimeout(function () { map.invalidateSize(); }, 0);
+})();
