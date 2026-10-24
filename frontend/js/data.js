@@ -9,58 +9,72 @@
   "use strict";
 
   // ─── VERIFIED: Construction (BBMP 2025-26, 4729 records) ────────────────────
+  // ─── VERIFIED: Construction (BBMP 2025-26, 4,729 records, 209 ward codes) ──
   window.UP_CONSTRUCTION = {
     overview: {
       total_work_orders: 4729,
       total_amount_cr: 3169.06,
-      net_expenditure_cr: 2849.69,
-      total_deductions_cr: 319.37,
+      net_expenditure_cr: 2857.58,
+      total_deductions_cr: 311.48,
       ward_coverage: 198,
       total_wards: 198,
+      distinct_ward_values: 209,
       unique_contractors: 1603,
       avg_deduction_rate_pct: 10.08,
       non_standard_ward_codes: 11,
-      avg_amount_per_order_lakh: 67.0
+      avg_amount_per_order_lakh: 67.01
     },
     clustering: {
       k: 2,
       silhouette_score: 0.3919,
       clusters: [
-        { label: "High Development / High Expenditure", wards: 75, avg_orders: 36.1, avg_amount_cr: 29.13, avg_contractors: 21.8 },
-        { label: "Low Development / Low Expenditure",   wards: 134, avg_orders: 15.1, avg_amount_cr: 7.34,  avg_contractors: 10.9 }
+        { label: "High Development / High Expenditure", wards: 75, avg_orders: 36.12, avg_amount_cr: 29.13, avg_contractors: 21.81 },
+        { label: "Low Development / Low Expenditure",   wards: 134, avg_orders: 15.07, avg_amount_cr: 7.34,  avg_contractors: 10.9 }
       ]
     },
     top_wards: [
-      { ward: "Mahadevapura",         cluster: "High", orders: 96,  amount_cr: 107.22, net_cr: 96.50,  contractors: 56 },
-      { ward: "Bommanahalli",         cluster: "High", orders: 88,  amount_cr: 94.60,  net_cr: 85.14,  contractors: 49 },
-      { ward: "Whitefield",           cluster: "High", orders: 83,  amount_cr: 88.31,  net_cr: 79.48,  contractors: 44 },
-      { ward: "Dasarahalli",          cluster: "High", orders: 75,  amount_cr: 80.15,  net_cr: 72.14,  contractors: 41 },
-      { ward: "Yelahanka",            cluster: "High", orders: 71,  amount_cr: 76.40,  net_cr: 68.76,  contractors: 38 },
-      { ward: "Rajarajeshwarinagar",  cluster: "High", orders: 68,  amount_cr: 72.50,  net_cr: 65.25,  contractors: 36 },
-      { ward: "Bellandur",            cluster: "High", orders: 65,  amount_cr: 69.80,  net_cr: 62.82,  contractors: 34 },
-      { ward: "HSR Layout",           cluster: "High", orders: 63,  amount_cr: 67.10,  net_cr: 60.39,  contractors: 33 },
-      { ward: "KR Puram",             cluster: "High", orders: 61,  amount_cr: 65.30,  net_cr: 58.77,  contractors: 32 },
-      { ward: "Shivajinagar",         cluster: "High", orders: 58,  amount_cr: 62.40,  net_cr: 56.16,  contractors: 30 },
-      { ward: "Yeshwanthpura",        cluster: "High", orders: 55,  amount_cr: 58.90,  net_cr: 53.01,  contractors: 29 },
-      { ward: "Indiranagar",          cluster: "High", orders: 52,  amount_cr: 55.60,  net_cr: 50.04,  contractors: 27 },
-      { ward: "Koramangala",          cluster: "High", orders: 49,  amount_cr: 52.40,  net_cr: 47.16,  contractors: 26 },
-      { ward: "Jayanagar",            cluster: "Low",  orders: 24,  amount_cr: 18.30,  net_cr: 16.47,  contractors: 14 },
-      { ward: "Basavanagudi",         cluster: "Low",  orders: 21,  amount_cr: 15.70,  net_cr: 14.13,  contractors: 12 }
+      { ward: "Ward 175", cluster: "High Development", orders: 43, amount_cr: 56.42, net_cr: 52.75, contractors: 21 },
+      { ward: "Ward 150", cluster: "High Development", orders: 54, amount_cr: 55.51, net_cr: 50.46, contractors: 28 },
+      { ward: "Ward 54",  cluster: "High Development", orders: 45, amount_cr: 55.37, net_cr: 50.88, contractors: 27 },
+      { ward: "Ward 4",   cluster: "High Development", orders: 62, amount_cr: 51.95, net_cr: 48.63, contractors: 40 },
+      { ward: "Ward 184", cluster: "High Development", orders: 46, amount_cr: 49.56, net_cr: 45.52, contractors: 32 },
+      { ward: "Ward 25",  cluster: "High Development", orders: 31, amount_cr: 49.55, net_cr: 45.33, contractors: 17 },
+      { ward: "Ward 159", cluster: "High Development", orders: 39, amount_cr: 48.95, net_cr: 44.81, contractors: 20 },
+      { ward: "Ward 3",   cluster: "High Development", orders: 73, amount_cr: 48.86, net_cr: 45.41, contractors: 47 },
+      { ward: "Ward 194", cluster: "High Development", orders: 38, amount_cr: 48.26, net_cr: 45.18, contractors: 28 },
+      { ward: "Ward 153", cluster: "High Development", orders: 56, amount_cr: 45.55, net_cr: 43.12, contractors: 26 },
+      { ward: "Ward 1",   cluster: "High Development", orders: 50, amount_cr: 45.23, net_cr: 42.22, contractors: 32 },
+      { ward: "Ward 198", cluster: "High Development", orders: 36, amount_cr: 44.89, net_cr: 37.91, contractors: 17 },
+      { ward: "Ward 58",  cluster: "High Development", orders: 25, amount_cr: 42.49, net_cr: 36.37, contractors: 17 },
+      { ward: "Ward 65",  cluster: "High Development", orders: 34, amount_cr: 42.05, net_cr: 38.49, contractors: 20 },
+      { ward: "Ward 35",  cluster: "High Development", orders: 30, amount_cr: 40.50, net_cr: 37.58, contractors: 21 }
+    ],
+    top_wards_by_work_orders: [
+      { ward: "Ward 3",   cluster: "High Development", orders: 73, amount_cr: 48.86, net_cr: 45.41, contractors: 47 },
+      { ward: "Ward 4",   cluster: "High Development", orders: 62, amount_cr: 51.95, net_cr: 48.63, contractors: 40 },
+      { ward: "Ward 26",  cluster: "High Development", orders: 61, amount_cr: 33.13, net_cr: 30.34, contractors: 25 },
+      { ward: "Ward 44",  cluster: "High Development", orders: 57, amount_cr: 33.83, net_cr: 31.39, contractors: 24 },
+      { ward: "Ward 153", cluster: "High Development", orders: 56, amount_cr: 45.55, net_cr: 43.12, contractors: 26 },
+      { ward: "Ward 150", cluster: "High Development", orders: 54, amount_cr: 55.51, net_cr: 50.46, contractors: 28 },
+      { ward: "Ward 1",   cluster: "High Development", orders: 50, amount_cr: 45.23, net_cr: 42.22, contractors: 32 },
+      { ward: "Ward 184", cluster: "High Development", orders: 46, amount_cr: 49.56, net_cr: 45.52, contractors: 32 },
+      { ward: "Ward 54",  cluster: "High Development", orders: 45, amount_cr: 55.37, net_cr: 50.88, contractors: 27 },
+      { ward: "Ward 175", cluster: "High Development", orders: 43, amount_cr: 56.42, net_cr: 52.75, contractors: 21 }
     ],
     category_tags: [
-      { category: "Road Works",       count: 1842 },
-      { category: "Drain / SWD",      count: 1287 },
-      { category: "Water Works",      count:  693 },
-      { category: "Maintenance",      count:  572 },
-      { category: "Development",      count:  335 }
+      { category: "Road Works",       count: 2327 },
+      { category: "Development",      count: 2063 },
+      { category: "Drain / SWD",      count: 1514 },
+      { category: "Maintenance",      count:  795 },
+      { category: "Water Works",      count:  397 }
     ],
     ward_histogram: [
-      { bin: "1–10 orders",   count: 47 },
-      { bin: "11–20 orders",  count: 81 },
-      { bin: "21–30 orders",  count: 49 },
-      { bin: "31–40 orders",  count: 22 },
-      { bin: "41–50 orders",  count: 7  },
-      { bin: "51+ orders",    count: 3  }
+      { bin: "1–10 orders",   count: 30 },
+      { bin: "11–20 orders",  count: 78 },
+      { bin: "21–30 orders",  count: 54 },
+      { bin: "31–40 orders",  count: 21 },
+      { bin: "41–50 orders",  count: 17 },
+      { bin: "51+ orders",    count:  9 }
     ]
   };
 

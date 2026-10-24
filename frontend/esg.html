@@ -67,45 +67,139 @@
         </label>
         <span class="control-label">Selected period: <strong id="esg-selected-period">Loading</strong></span>
       </div>
-      <!-- Live AQI Card -->
-      <div class="kpi-card glass-panel" id="esg-aqi-card" style="margin-top:20px; border-left: 3px solid var(--accent-emerald);">
-        <div class="kpi-header">
-          <span class="kpi-title">🌬️ Live / Recent AQI</span>
-          <div class="kpi-icon" style="color:var(--accent-emerald)">📡</div>
+      <!-- ── Live AQI Hero Card ─────────────────────────────────────────── -->
+      <div id="esg-aqi-card" class="glass-panel" style="margin-top:24px; padding:28px 32px; border-radius:16px; border-left:4px solid var(--accent-emerald); position:relative; overflow:hidden;">
+        <!-- decorative background glow -->
+        <div style="position:absolute;top:-40px;right:-40px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(16,185,129,0.12) 0%,transparent 70%);pointer-events:none;"></div>
+
+        <div style="display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:16px;">
+          <!-- Left: title + big value -->
+          <div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+              <span style="font-size:20px;">🌬️</span>
+              <span style="font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);">Live / Recent AQI · Bengaluru</span>
+              <span id="esg-aqi-live-dot" style="display:none;width:8px;height:8px;border-radius:50%;background:var(--accent-emerald);box-shadow:0 0 6px var(--accent-emerald);animation:pulse 2s infinite;"></span>
+            </div>
+            <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;">
+              <span id="esg-aqi-value" style="font-size:56px;font-weight:800;font-family:'Outfit',sans-serif;line-height:1;color:var(--accent-emerald);">—</span>
+              <div>
+                <div id="esg-aqi-category" style="font-size:17px;font-weight:700;color:var(--text-primary);">Loading air quality data…</div>
+                <div id="esg-aqi-pollutant" style="font-size:12px;color:var(--text-muted);margin-top:3px;"></div>
+              </div>
+            </div>
+          </div>
+          <!-- Right: meta info -->
+          <div style="text-align:right;min-width:320px;">
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;" id="esg-aqi-source">Source: Connecting to live atmospheric feed…</div>
+            <div style="font-size:11px;margin-bottom:4px;display:flex;align-items:center;justify-content:flex-end;gap:6px;">
+              <span style="color:var(--text-muted);">Observation Time:</span>
+              <strong id="esg-aqi-data-time" style="color:var(--text-primary);font-family:'Inter',sans-serif;">—</strong>
+            </div>
+            <div style="font-size:11px;color:var(--text-muted);display:flex;align-items:center;justify-content:flex-end;gap:6px;">
+              <span>Fetched:</span>
+              <span id="esg-aqi-fetch-time" style="color:var(--text-secondary);font-family:'Inter',sans-serif;">—</span>
+            </div>
+            <div id="esg-aqi-updated" style="display:none;"></div>
+            <div id="esg-aqi-key-hint" style="display:none;margin-top:10px;">
+              <span style="font-size:10px;color:var(--text-muted);background:rgba(255,255,255,0.05);padding:4px 8px;border-radius:6px;border:1px solid var(--border-subtle);">
+                📡 Add <code>GOOGLE_AQI_API_KEY</code> to <code>.env</code> for Google AQI
+              </span>
+            </div>
+          </div>
         </div>
-        <div id="esg-aqi-value" class="kpi-value" style="font-size:28px;">—</div>
-        <div class="kpi-subtext" id="esg-aqi-category">Loading air quality data…</div>
-        <div style="font-size:11px;color:var(--text-muted);margin-top:4px;" id="esg-aqi-source">Source: CPCB / KSPCB</div>
-        <div style="font-size:10px;color:var(--text-muted);margin-top:2px;" id="esg-aqi-updated"></div>
+
+        <!-- AQI scale bar -->
+        <div style="margin-top:20px;">
+          <div style="display:flex;gap:3px;border-radius:8px;overflow:hidden;height:8px;">
+            <div style="flex:1;background:#10b981;" title="Good (0–50)"></div>
+            <div style="flex:1;background:#84cc16;" title="Satisfactory (51–100)"></div>
+            <div style="flex:1;background:#f59e0b;" title="Moderate (101–200)"></div>
+            <div style="flex:1;background:#f97316;" title="Poor (201–300)"></div>
+            <div style="flex:1;background:#ef4444;" title="Very Poor (301–400)"></div>
+            <div style="flex:1;background:#7c3aed;" title="Severe (400+)"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:4px;">
+            <span style="font-size:9px;color:var(--text-muted);">Good</span>
+            <span style="font-size:9px;color:var(--text-muted);">Satisfactory</span>
+            <span style="font-size:9px;color:var(--text-muted);">Moderate</span>
+            <span style="font-size:9px;color:var(--text-muted);">Poor</span>
+            <span style="font-size:9px;color:var(--text-muted);">Very Poor</span>
+            <span style="font-size:9px;color:var(--text-muted);">Severe</span>
+          </div>
+          <!-- indicator needle -->
+          <div id="esg-aqi-needle" style="display:none;position:relative;margin-top:2px;">
+            <div id="esg-aqi-needle-arrow" style="position:absolute;top:0;width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:8px solid var(--text-primary);transform:translateX(-50%);"></div>
+          </div>
+        </div>
       </div>
 
-      <!-- ESG Demo Notice -->
-      <div style="margin-top:12px;padding:10px 14px;border-radius:8px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);font-size:12px;color:#fbbf24;" id="esg-demo-notice">
-        ⚠️ <strong>Demo data active for year-wise Social &amp; Governance scores.</strong>
-        Environmental values are real (KSPCB/CPCB/BCAP). Social and Governance indicators are illustrative placeholders only — replace with verified source data before production use.
+      <!-- ── PM2.5 & PM10 Live Trend Chart ──────────────────────────────── -->
+      <div id="esg-pm-chart-card" class="chart-card glass-panel" style="margin-top:20px; padding:24px 28px; border-radius:16px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:18px;">
+          <div>
+            <h3 style="font-size:16px; font-weight:700; color:var(--text-primary); margin:0 0 4px 0; display:flex; align-items:center; gap:8px;">
+              <span>📈 24-Hour Particulate Matter Trend (PM2.5 &amp; PM10)</span>
+            </h3>
+            <p style="font-size:12px; color:var(--text-muted); margin:0;">
+              Hourly concentrations in Bengaluru (&micro;g/m&sup3;) &bull; Dynamically rendered from live monitoring feed
+            </p>
+          </div>
+          <div style="display:flex; align-items:center; gap:16px; font-size:12px;">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span style="display:inline-block; width:12px; height:12px; border-radius:3px; background:#38bdf8; box-shadow:0 0 6px rgba(56,189,248,0.5);"></span>
+              <span style="color:var(--text-secondary); font-weight:600;">PM2.5: <strong id="esg-pm25-badge" style="color:#38bdf8;">—</strong> &micro;g/m&sup3;</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span style="display:inline-block; width:12px; height:12px; border-radius:3px; background:#f59e0b; box-shadow:0 0 6px rgba(245,158,11,0.5);"></span>
+              <span style="color:var(--text-secondary); font-weight:600;">PM10: <strong id="esg-pm10-badge" style="color:#f59e0b;">—</strong> &micro;g/m&sup3;</span>
+            </div>
+          </div>
+        </div>
+
+        <div id="esg-pm-chart-loading" style="text-align:center; padding:45px 0; color:var(--text-muted); font-size:13px;">
+          <div class="pulse-dot" style="margin:0 auto 10px auto; background:var(--accent-cyan); box-shadow:0 0 8px var(--accent-cyan);"></div>
+          Fetching live particulate matter trend from API…
+        </div>
+
+        <div id="esg-pm-chart-error" style="display:none; text-align:center; padding:30px 0; color:var(--accent-rose); font-size:13px; background:rgba(244,63,94,0.06); border-radius:10px; border:1px solid rgba(244,63,94,0.2);">
+          <p id="esg-pm-chart-error-msg" style="margin:0 0 10px 0;">Air quality timeline API currently unavailable.</p>
+          <button id="esg-pm-chart-retry-btn" class="btn btn-secondary" style="padding:6px 14px; font-size:12px;" onclick="window.ESG_ENV && window.ESG_ENV.fetchLiveAQI && window.ESG_ENV.fetchLiveAQI()">Retry API Request</button>
+        </div>
+
+        <div class="chart-wrapper" id="esg-pm-chart-wrapper" style="position:relative; height:270px; width:100%; display:none;">
+          <canvas id="esg-pm-trend-chart"></canvas>
+        </div>
       </div>
 
-      <div class="kpi-grid" style="margin-top:16px;">
-        <div class="kpi-card glass-panel"><div class="kpi-header"><span class="kpi-title">Environmental</span><div class="kpi-icon" style="color:var(--accent-emerald)">🌱</div></div><div id="esg-E-value" class="kpi-value">Data unavailable</div><div class="kpi-subtext" id="esg-E-sub">Incomplete source coverage</div></div>
-        <div class="kpi-card glass-panel" style="border-top:2px dashed rgba(245,158,11,0.4);"><div class="kpi-header"><span class="kpi-title">Social <span style="font-size:10px;color:#fbbf24;font-weight:600">[DEMO]</span></span><div class="kpi-icon" style="color:var(--accent-cyan)">👥</div></div><div id="esg-S-value" class="kpi-value">Data unavailable</div><div class="kpi-subtext" id="esg-S-sub">Incomplete source coverage</div></div>
-        <div class="kpi-card glass-panel" style="border-top:2px dashed rgba(245,158,11,0.4);"><div class="kpi-header"><span class="kpi-title">Governance <span style="font-size:10px;color:#fbbf24;font-weight:600">[DEMO]</span></span><div class="kpi-icon" style="color:var(--accent-indigo)">🏛️</div></div><div id="esg-G-value" class="kpi-value">Data unavailable</div><div class="kpi-subtext" id="esg-G-sub">Incomplete source coverage</div></div>
-        <div class="kpi-card glass-panel"><div class="kpi-header"><span class="kpi-title">Carbon / Climate</span><div class="kpi-icon" style="color:var(--accent-amber)">🌡️</div></div><div id="esg-C-value" class="kpi-value">Data unavailable</div><div class="kpi-subtext" id="esg-C-sub">A reported inventory is not a comparable score</div></div>
-        <div class="kpi-card glass-panel"><div class="kpi-header"><span class="kpi-title">Overall ESG</span><div class="kpi-icon">🌍</div></div><div id="esg-O-value" class="kpi-value">Data unavailable</div><div class="kpi-subtext" id="esg-O-sub">Incomplete source coverage</div></div>
-      </div>
-      <p id="esg-data-status" class="esg-disclaimer">Loading source records.</p>
+      <p id="esg-data-status" class="esg-disclaimer" style="margin-top:14px;">Loading verified source records.</p>
     </section>
 
-    <section class="section" id="esg-environment">
-      <div class="section-title-wrap"><span class="section-badge badge-active">🌱 Environmental data</span><h2 class="section-title">Environmental Evidence — Bengaluru</h2></div>
-      <div class="charts-grid" style="margin-top:20px;">
-        <div class="chart-card glass-panel"><div class="chart-card-header"><h3>Area-wise Air Quality Map</h3></div><div id="esg-map" class="esg-map"></div><div id="esg-air-unmapped" class="esg-src" style="padding:0 16px"></div></div>
-        <div class="chart-card glass-panel"><div class="chart-card-header"><h3>Selected Station</h3></div><div id="esg-station-detail" class="esg-detail"></div></div>
-      </div><div id="esg-air-src" class="glass-panel esg-formula" style="margin-top:12px;"></div>
-      <div class="charts-grid" style="margin-top:20px;">
-        <div class="chart-card glass-panel"><div class="chart-card-header"><h3>Carbon Emissions (GHG)</h3></div><p id="esg-carbon-kpi" class="esg-pad"></p><div class="chart-wrapper"><canvas id="esg-chart-carbon"></canvas></div><div id="esg-carbon-src" class="esg-pad"></div></div>
-        <div class="chart-card glass-panel"><div class="chart-card-header"><h3>Lake / Tank Water Quality</h3></div><p id="esg-water-kpi" class="esg-pad"></p><div class="chart-wrapper"><canvas id="esg-chart-water"></canvas></div><div id="esg-water-src" class="esg-pad"></div></div>
+    <section class="section" id="esg-areas">
+      <div class="section-title-wrap">
+        <span class="section-badge badge-active">📍 Area-wise ESG Score</span>
+        <h2 class="section-title">ESG Score for Each Area of Bengaluru</h2>
+        <p class="section-desc">Calculated live from the registered datasets using the formula below. Click a row or a map circle for the working.</p>
       </div>
-      <div class="chart-card glass-panel" style="margin-top:20px;"><div class="chart-card-header"><h3>Electricity / Energy Consumption by Area</h3></div><div id="esg-elec-body" class="esg-pad"></div><div id="esg-elec-src" class="esg-pad"></div></div>
+      <p id="esg-area-kpi" class="esg-pad"></p>
+      <div class="charts-grid" style="margin-top:12px;">
+        <div class="chart-card glass-panel"><div class="chart-card-header"><h3>Area ESG Map</h3></div><div id="esg-area-map" class="esg-map"></div></div>
+        <div class="chart-card glass-panel"><div class="chart-card-header"><h3>How this area was scored</h3></div><div id="esg-area-detail" class="esg-detail">Loading…</div></div>
+      </div>
+      <div style="overflow-x:auto;margin-top:20px;">
+        <table class="custom-table"><thead><tr><th>Rank</th><th>Area</th><th>Air</th><th>Water</th><th>Environmental</th><th>Social</th><th>Governance</th><th>Overall ESG</th><th>Confidence</th></tr></thead>
+          <tbody id="esg-area-rows"><tr><td colspan="9">Calculating…</td></tr></tbody></table>
+      </div>
+      <div class="glass-panel esg-formula" style="margin-top:16px;">
+        <h3>Formula</h3>
+        <p><strong>Air</strong> = min over pollutants of <code>100 × min(1, CPCB annual limit ÷ estimated concentration)</code>. Concentration at the area centre is the inverse-distance-squared weighted mean of KSPCB station annual means (2016-17). The worst pollutant governs, as in AQI. Air is only scored if a station is within 10 km.</p>
+        <p><strong>Water</strong> = mean points of all monitored lake/tank station-months in the area (KSPCB MINARS 2020-21), with CPCB class points <code>A=100, B=80, C=60, D=40, E=20</code>.</p>
+        <p><strong>Environmental</strong> = equal-weight mean of Air and Water (missing ones are dropped, never guessed).</p>
+        <p><strong>Overall ESG</strong> = <code>0.4·E + 0.3·S + 0.3·G</code>, re-normalised over the pillars that have data. Social and Governance have no area-level dataset registered yet, so right now Overall ESG = Environmental. Add the dataset and they join the formula automatically.</p>
+        <p><strong>Confidence</strong>: High = station within 6 km and 20+ water station-months; Medium = one of the two is strong; Low = air not scored.</p>
+        <p>Area centres are approximate, used only for distance. Data years differ per indicator (air 2016-17, water 2020-21), and each is shown as its own period.</p>
+        <h3 style="margin-top:12px;">Datasets used</h3>
+        <ul id="esg-area-sources"></ul>
+      </div>
     </section>
 
     <section class="section" id="esg-indicators">
@@ -116,6 +210,121 @@
         </table>
       </div>
     </section>
+
+    <!-- ====================================================================
+         Area-wise Civic Utility Data & Dataset Registry
+         Zero fabrication: markers only for verified data, "Data unavailable"
+         when no registered dataset covers the area or metric.
+         ==================================================================== -->
+    <section class="section" id="esg-survey-datasets" style="padding-bottom:32px;">
+      <div class="section-title-wrap">
+        <span class="section-badge badge-active">&#x1F4CA; Civic Survey Data</span>
+        <h2 class="section-title">Area-wise Civic Utility Data &amp; Dataset Registry</h2>
+        <p class="section-desc">
+          Verified data is displayed for each metric. <strong>&ldquo;Data unavailable&rdquo;</strong> is shown
+          and <strong>no map marker is drawn</strong> when no registered dataset covers that area or metric.
+          All classifications are rule-based, derived only from actual data.
+        </p>
+      </div>
+      <p id="esg-survey-loading" style="color:var(--text-muted);margin-top:16px;font-size:13px;">Loading survey datasets&hellip;</p>
+
+      <!-- Water Quality Section -->
+      <div class="glass-panel" style="margin-top:24px;padding:24px 28px;border-radius:16px;border-left:4px solid #10b981;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+          <span style="font-size:22px;">&#x1F4A7;</span>
+          <h3 style="font-size:16px;font-weight:700;color:var(--text-primary);margin:0;">Water Quality &mdash; Area-wise (KSPCB MINARS 2020&ndash;21)</h3>
+        </div>
+        <p style="font-size:12px;color:var(--text-muted);margin:0 0 14px 0;">
+          Source: Karnataka State Pollution Control Board &mdash; monthly lake/tank station WQI data.
+          <strong>Note:</strong> This shows lake/tank <em>water quality</em>, not domestic water supply hours.
+          &nbsp;&bull;&nbsp;
+          <strong>Water supply timings (BWSSB):</strong>
+          <span style="color:#f43f5e;font-weight:600;">Data unavailable</span> &mdash; no registered dataset covers area-wise supply hours or timetable.
+        </p>
+        <!-- Classification legend -->
+        <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:16px;padding:10px 14px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid var(--border-subtle);">
+          <span style="font-size:11px;font-weight:700;color:var(--text-muted);letter-spacing:.06em;text-transform:uppercase;align-self:center;">Classification rules (CPCB class points A=100 B=80 C=60 D=40 E=20):</span>
+          <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
+            <span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#10b981;"></span>
+            <span style="color:var(--text-secondary);"><strong style="color:#10b981;">Normal</strong> &mdash; Score &ge;70 (Class A/B dominant &bull; Drinking/Bathing quality)</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
+            <span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#f59e0b;"></span>
+            <span style="color:var(--text-secondary);"><strong style="color:#f59e0b;">High Concern</strong> &mdash; Score 50&ndash;69 (Class C dominant &bull; Conventional treatment needed)</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
+            <span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#f43f5e;"></span>
+            <span style="color:var(--text-secondary);"><strong style="color:#f43f5e;">Critical</strong> &mdash; Score &lt;50 (Class D/E dominant &bull; Degraded/Polluted)</span>
+          </div>
+        </div>
+        <!-- Map and table grid -->
+        <div class="charts-grid" style="margin-top:12px;">
+          <div class="chart-card glass-panel">
+            <div class="chart-card-header">
+              <h3>Lake/Tank Water Quality Map</h3>
+              <span style="font-size:11px;color:var(--text-muted);">Markers only for areas with verified KSPCB lake data &bull; Click for details</span>
+            </div>
+            <div id="esg-survey-wq-map" class="esg-map"></div>
+          </div>
+          <div class="chart-card glass-panel">
+            <div class="chart-card-header">
+              <h3>Area Water Quality Status</h3>
+              <span style="font-size:11px;color:var(--text-muted);">Source: KSPCB MINARS, Apr 2020&ndash;Mar 2021</span>
+            </div>
+            <div style="overflow-x:auto;">
+              <table class="custom-table" style="font-size:12px;">
+                <thead><tr>
+                  <th>Area</th><th>WQ Score</th><th>Status</th>
+                  <th>Data Coverage</th><th>% Satisfactory</th>
+                </tr></thead>
+                <tbody id="esg-survey-wq-rows"><tr><td colspan="5">Loading&hellip;</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Electricity Section (city-level only) -->
+      <div class="glass-panel" style="margin-top:20px;padding:24px 28px;border-radius:16px;border-left:4px solid #f59e0b;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+          <span style="font-size:22px;">&#x26A1;</span>
+          <h3 style="font-size:16px;font-weight:700;color:var(--text-primary);margin:0;">Electricity &mdash; BESCOM Supply Area (City-level Trend, 2010&ndash;23)</h3>
+        </div>
+        <p style="font-size:12px;color:var(--text-muted);margin:0 0 16px 0;">
+          Source: BESCOM via OpenCity.in. <strong>Important:</strong> This dataset covers the entire BESCOM supply area
+          (Bengaluru + surrounding districts) &mdash; not individual city zones.
+          &nbsp;&bull;&nbsp;
+          <strong>Area-wise electricity availability:</strong>
+          <span style="color:#f43f5e;font-weight:600;">Data unavailable</span> &mdash; no area/zone-level BESCOM dataset is registered in this project.
+        </p>
+        <div id="esg-survey-elec-loading" style="text-align:center;padding:20px;color:var(--text-muted);font-size:12px;">
+          <div class="pulse-dot" style="margin:0 auto 8px;background:var(--accent-amber);box-shadow:0 0 8px var(--accent-amber);"></div>
+          Loading BESCOM electricity trend&hellip;
+        </div>
+        <div id="esg-survey-elec-wrapper" style="position:relative;height:260px;"></div>
+      </div>
+
+      <!-- Dataset Provenance Table -->
+      <div class="glass-panel esg-formula" style="margin-top:24px;">
+        <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:12px;flex-wrap:wrap;">
+          <h3 style="margin:0;">&#x1F4C2; Registered Datasets &mdash; Provenance &amp; Coverage</h3>
+          <span style="font-size:11px;color:var(--text-muted);">All data is sourced from the official datasets below. No values are estimated or fabricated.</span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="custom-table" style="font-size:12px;">
+            <thead><tr>
+              <th style="min-width:160px;">Source File / Dataset</th>
+              <th style="min-width:200px;">Area / Geographic Scope</th>
+              <th style="min-width:200px;">Available Metrics</th>
+              <th style="min-width:110px;">Reporting Period</th>
+              <th style="min-width:200px;">Publisher / Source</th>
+            </tr></thead>
+            <tbody id="esg-datasets-rows"><tr><td colspan="5">Loading&hellip;</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <footer class="app-footer">
@@ -138,14 +347,19 @@
     </div>
   </footer>
 
+  <!-- Supabase JS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <!-- UrbanPulse Application Scripts -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
   <script src="js/data.js"></script>
-  <script src="js/esg-scorecard.js?v=phase3b"></script>
-  <script src="js/esg-env.js?v=phase3b"></script>
-  <script src="js/esg-demo.js"></script>
+  <script src="js/esg-scorecard.js?v=phase4_verified"></script>
+  <script src="js/esg-env.js?v=phase4_verified"></script>
+  <script src="js/esg-areas.js?v=phase4_verified"></script>
+  <script src="js/esg-survey.js?v=phase5_verified"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

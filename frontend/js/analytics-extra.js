@@ -37,9 +37,16 @@
         panels.forEach(function (p) { p.classList.remove("active"); });
         tab.classList.add("active");
         tab.setAttribute("aria-selected", "true");
-        var targetId = "tab-" + tab.getAttribute("data-tab");
+        var tabName = tab.getAttribute("data-tab");
+        var targetId = "tab-" + tabName;
         var panel = document.getElementById(targetId);
         if (panel) panel.classList.add("active");
+
+        if (tabName === "construction" && typeof window.initUrbanPulseConstructionAnalytics === "function") {
+          window.initUrbanPulseConstructionAnalytics();
+        } else if (tabName === "crime" && typeof window.initUrbanPulseCrimeAnalytics === "function") {
+          window.initUrbanPulseCrimeAnalytics();
+        }
       });
     });
   }

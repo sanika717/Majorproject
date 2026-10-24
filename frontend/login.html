@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In | UrbanPulse Smart City Transparency</title>
+  <meta name="description" content="Sign in to UrbanPulse to access civic analytics, verified reports, and civic intelligence.">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+
+  <!-- Google Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- App Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="page-auth">
+
+  <!-- Minimal Brand Header -->
+  <header class="app-header">
+    <div class="container header-inner" style="justify-content: space-between;">
+      <a href="dashboard.html" class="brand">
+        <div class="brand-icon">⚡</div>
+        <div class="brand-text">
+          <h1>URBANPULSE</h1>
+          <p>Smart City Transparency Platform</p>
+        </div>
+      </a>
+
+      <div class="header-status">
+        <a href="dashboard.html" style="color: var(--text-secondary); text-decoration: none; font-size: 13px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; transition: var(--transition-fast);">
+          <span>← Back to Public Dashboard</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Auth Container -->
+  <main class="auth-page-wrapper">
+    <div class="auth-card" id="auth-card">
+
+      <div class="auth-header">
+        <div class="auth-brand-badge" id="portal-badge">
+          <span id="badge-icon">🌐</span>
+          <span id="badge-text">Public Citizen Access</span>
+        </div>
+        <h2 class="auth-title" id="portal-title">Sign In to UrbanPulse</h2>
+        <p class="auth-subtitle" id="portal-subtitle">Access live smart city analytics, track public grievances, and inspect verified municipal intelligence.</p>
+      </div>
+
+      <!-- Portal Switcher: Public vs Administrator -->
+      <div class="auth-portal-tabs" role="tablist" aria-label="Authentication portal options">
+        <button type="button" class="auth-portal-tab active" id="tab-public" role="tab" aria-selected="true" aria-controls="login-form">
+          <span>👥</span> Public Citizen
+        </button>
+        <button type="button" class="auth-portal-tab admin-tab" id="tab-admin" role="tab" aria-selected="false" aria-controls="login-form">
+          <span>🛡️</span> Administrator
+        </button>
+      </div>
+
+      <!-- Dynamic Alert Container -->
+      <div id="auth-alert" class="auth-alert" style="display: none;" role="alert">
+        <span id="auth-alert-icon">⚠️</span>
+        <span id="auth-alert-msg"></span>
+      </div>
+
+      <!-- Config Notice (shown only if Supabase credentials are missing) -->
+      <div id="config-notice" class="auth-alert auth-alert-warning" style="display: none;">
+        <span>⚙️</span>
+        <div>
+          <b>Supabase Auth Configuration:</b> Please set your <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code> in <code>backend/.env</code> or <code>frontend/js/config.js</code> to enable live authentication.
+        </div>
+      </div>
+
+      <!-- Login Form -->
+      <form id="login-form" autocomplete="on" novalidate>
+        <!-- Email Field -->
+        <div class="form-field">
+          <label for="login-email">Email Address</label>
+          <div class="auth-input-wrap">
+            <span class="auth-input-icon">✉️</span>
+            <input 
+              type="email" 
+              id="login-email" 
+              name="email" 
+              class="auth-input" 
+              placeholder="name@example.com" 
+              required 
+              autocomplete="email"
+            >
+          </div>
+        </div>
+
+        <!-- Password Field -->
+        <div class="form-field">
+          <label for="login-password">Password</label>
+          <div class="auth-input-wrap">
+            <span class="auth-input-icon">🔒</span>
+            <input 
+              type="password" 
+              id="login-password" 
+              name="password" 
+              class="auth-input" 
+              placeholder="••••••••" 
+              required 
+              autocomplete="current-password"
+            >
+            <button type="button" class="password-toggle-btn" id="toggle-password-btn" aria-label="Toggle password visibility">
+              👁️
+            </button>
+          </div>
+        </div>
+
+        <!-- Options: Remember & Forgot -->
+        <div class="auth-row-options">
+          <label class="auth-remember-label">
+            <input type="checkbox" id="remember-me" checked>
+            <span>Remember me</span>
+          </label>
+          <a href="forgot-password.html" class="auth-link" id="forgot-password-link">Forgot password?</a>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="auth-submit-btn" id="login-submit-btn">
+          <span class="spinner" id="login-spinner" style="display: none;"></span>
+          <span id="login-btn-text">Sign In as Citizen</span>
+        </button>
+      </form>
+
+      <!-- Bottom Links -->
+      <div class="auth-footer" id="auth-footer-links">
+        <p id="signup-prompt">
+          Don't have an account yet? 
+          <a href="signup.html" class="auth-link">Create an account</a>
+        </p>
+        <p id="admin-security-note" style="display: none; font-size: 11.5px; color: var(--text-muted); margin-top: 6px;">
+          🔒 Strictly protected civic authority pathway. Access logs are verified and audited against backend security roles.
+        </p>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Supabase JS CDN (UMD bundle) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Application Configuration & API -->
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+
+  <!-- Login Page Controller -->
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const authCard = document.getElementById("auth-card");
+      const tabPublic = document.getElementById("tab-public");
+      const tabAdmin = document.getElementById("tab-admin");
+      const portalBadge = document.getElementById("portal-badge");
+      const badgeIcon = document.getElementById("badge-icon");
+      const badgeText = document.getElementById("badge-text");
+      const portalTitle = document.getElementById("portal-title");
+      const portalSubtitle = document.getElementById("portal-subtitle");
+      const loginBtnText = document.getElementById("login-btn-text");
+      const loginSpinner = document.getElementById("login-spinner");
+      const submitBtn = document.getElementById("login-submit-btn");
+      const alertBox = document.getElementById("auth-alert");
+      const alertIcon = document.getElementById("auth-alert-icon");
+      const alertMsg = document.getElementById("auth-alert-msg");
+      const emailInput = document.getElementById("login-email");
+      const passwordInput = document.getElementById("login-password");
+      const togglePassBtn = document.getElementById("toggle-password-btn");
+      const configNotice = document.getElementById("config-notice");
+      const signupPrompt = document.getElementById("signup-prompt");
+      const adminSecurityNote = document.getElementById("admin-security-note");
+
+      let currentMode = "public"; // "public" | "admin"
+
+      // Check URL parameters for preset mode or messages
+      const urlParams = new URLSearchParams(window.location.search);
+      const modeParam = urlParams.get("type");
+      if (modeParam === "admin") {
+        setMode("admin");
+      } else {
+        setMode("public");
+      }
+
+      if (urlParams.get("reset") === "success") {
+        showAlert("Password reset link processed successfully. Please log in with your new password.", "success");
+      }
+
+      // Check Supabase configuration
+      const client = await UrbanPulseAuth.init();
+      if (!client) {
+        if (configNotice) configNotice.style.display = "flex";
+      }
+
+      // Switch Modes
+      function setMode(mode) {
+        currentMode = mode;
+        if (mode === "admin") {
+          authCard.classList.add("admin-mode");
+          tabAdmin.classList.add("active");
+          tabAdmin.setAttribute("aria-selected", "true");
+          tabPublic.classList.remove("active");
+          tabPublic.setAttribute("aria-selected", "false");
+
+          badgeIcon.textContent = "🛡️";
+          badgeText.textContent = "Civic Authority Portal";
+          portalTitle.textContent = "Administrator Sign In";
+          portalSubtitle.textContent = "Authorized municipal governance and infrastructure management access only.";
+          loginBtnText.textContent = "Authenticate as Administrator";
+
+          signupPrompt.style.display = "none";
+          adminSecurityNote.style.display = "block";
+        } else {
+          authCard.classList.remove("admin-mode");
+          tabPublic.classList.add("active");
+          tabPublic.setAttribute("aria-selected", "true");
+          tabAdmin.classList.remove("active");
+          tabAdmin.setAttribute("aria-selected", "false");
+
+          badgeIcon.textContent = "🌐";
+          badgeText.textContent = "Public Citizen Access";
+          portalTitle.textContent = "Sign In to UrbanPulse";
+          portalSubtitle.textContent = "Access live smart city analytics, track public grievances, and inspect verified municipal intelligence.";
+          loginBtnText.textContent = "Sign In as Citizen";
+
+          signupPrompt.style.display = "block";
+          adminSecurityNote.style.display = "none";
+        }
+        hideAlert();
+      }
+
+      tabPublic.addEventListener("click", () => setMode("public"));
+      tabAdmin.addEventListener("click", () => setMode("admin"));
+
+      // Show/Hide password
+      togglePassBtn.addEventListener("click", () => {
+        const isPass = passwordInput.type === "password";
+        passwordInput.type = isPass ? "text" : "password";
+        togglePassBtn.textContent = isPass ? "🙈" : "👁️";
+      });
+
+      function showAlert(message, type = "error") {
+        alertBox.className = `auth-alert auth-alert-${type}`;
+        alertIcon.textContent = type === "error" ? "❌" : (type === "success" ? "✅" : "⚠️");
+        alertMsg.textContent = message;
+        alertBox.style.display = "flex";
+      }
+
+      function hideAlert() {
+        alertBox.style.display = "none";
+      }
+
+      // Form submission
+      document.getElementById("login-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        hideAlert();
+
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+
+        if (!email || !password) {
+          showAlert("Please enter both email and password.");
+          return;
+        }
+
+        submitBtn.disabled = true;
+        loginSpinner.style.display = "inline-block";
+        loginBtnText.textContent = currentMode === "admin" ? "Authenticating Authority..." : "Signing in...";
+
+        try {
+          const res = await UrbanPulseAuth.signIn({
+            email,
+            password,
+            loginType: currentMode
+          });
+
+          showAlert("Authentication successful! Redirecting...", "success");
+
+          // Determine redirect destination
+          const redirectParam = urlParams.get("redirect");
+          let destination = currentMode === "admin" ? "admin.html" : "dashboard.html";
+          if (redirectParam && !redirectParam.includes("login.html")) {
+            destination = redirectParam;
+          }
+
+          setTimeout(() => {
+            window.location.href = destination;
+          }, 600);
+
+        } catch (err) {
+          console.error("[Login Error]", err);
+          let message = err.message || "Failed to sign in. Please verify your credentials.";
+          if (message.includes("Invalid login credentials")) {
+            message = "Invalid email or password. Please try again.";
+          } else if (message.includes("Email not confirmed")) {
+            message = "Your email has not been verified yet. Please check your inbox for the Supabase confirmation link.";
+          }
+          showAlert(message, "error");
+        } finally {
+          submitBtn.disabled = false;
+          loginSpinner.style.display = "none";
+          loginBtnText.textContent = currentMode === "admin" ? "Authenticate as Administrator" : "Sign In as Citizen";
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>

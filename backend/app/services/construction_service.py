@@ -94,6 +94,7 @@ class ConstructionService:
                 "cluster_name": w.cluster_name,
                 "total_work_orders": w.total_work_orders,
                 "total_amount": w.total_amount,
+                "total_net_expenditure": w.total_net_expenditure,
                 "unique_contractors": w.unique_contractors,
             }
             for w in wards

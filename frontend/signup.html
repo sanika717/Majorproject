@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account | UrbanPulse Civic Platform</title>
+  <meta name="description" content="Create a new UrbanPulse citizen account to participate in civic governance and track complaints.">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+
+  <!-- Google Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- App Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="page-auth">
+
+  <!-- Minimal Brand Header -->
+  <header class="app-header">
+    <div class="container header-inner" style="justify-content: space-between;">
+      <a href="dashboard.html" class="brand">
+        <div class="brand-icon">⚡</div>
+        <div class="brand-text">
+          <h1>URBANPULSE</h1>
+          <p>Smart City Transparency Platform</p>
+        </div>
+      </a>
+
+      <div class="header-status">
+        <a href="login.html" style="color: var(--text-secondary); text-decoration: none; font-size: 13px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; transition: var(--transition-fast);">
+          <span>Already have an account? Sign In →</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Auth Container -->
+  <main class="auth-page-wrapper">
+    <div class="auth-card" id="signup-card">
+
+      <div class="auth-header">
+        <div class="auth-brand-badge">
+          <span>✨</span>
+          <span>Citizen Registration</span>
+        </div>
+        <h2 class="auth-title">Join UrbanPulse</h2>
+        <p class="auth-subtitle">Create your citizen account to track municipal grievances, explore ward analytics, and contribute to city transparency.</p>
+      </div>
+
+      <!-- Dynamic Alert Container -->
+      <div id="auth-alert" class="auth-alert" style="display: none;" role="alert">
+        <span id="auth-alert-icon">⚠️</span>
+        <span id="auth-alert-msg"></span>
+      </div>
+
+      <!-- Config Notice (if Supabase not set) -->
+      <div id="config-notice" class="auth-alert auth-alert-warning" style="display: none;">
+        <span>⚙️</span>
+        <div>
+          <b>Supabase Auth Configuration:</b> Please set your <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code> in <code>backend/.env</code> or <code>frontend/js/config.js</code>.
+        </div>
+      </div>
+
+      <!-- Registration Form -->
+      <form id="signup-form" autocomplete="on" novalidate>
+        
+        <!-- Full Name -->
+        <div class="form-field">
+          <label for="signup-name">Full Name</label>
+          <div class="auth-input-wrap">
+            <span class="auth-input-icon">👤</span>
+            <input 
+              type="text" 
+              id="signup-name" 
+              name="name" 
+              class="auth-input" 
+              placeholder="e.g. Ramesh Kumar" 
+              required 
+              autocomplete="name"
+            >
+          </div>
+        </div>
+
+        <!-- Email Address -->
+        <div class="form-field">
+          <label for="signup-email">Email Address</label>
+          <div class="auth-input-wrap">
+            <span class="auth-input-icon">✉️</span>
+            <input 
+              type="email" 
+              id="signup-email" 
+              name="email" 
+              class="auth-input" 
+              placeholder="name@example.com" 
+              required 
+              autocomplete="email"
+            >
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="form-field">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label for="signup-password" style="margin-bottom: 0;">Password</label>
+            <span id="pass-strength-label" style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Min. 8 characters</span>
+          </div>
+          <div class="auth-input-wrap">
+            <span class="auth-input-icon">🔒</span>
+            <input 
+              type="password" 
+              id="signup-password" 
+              name="password" 
+              class="auth-input" 
+              placeholder="At least 8 characters" 
+              required 
+              autocomplete="new-password"
+            >
+            <button type="button" class="password-toggle-btn" id="toggle-pass-btn" aria-label="Toggle password visibility">
+              👁️
+            </button>
+          </div>
+        </div>
+
+        <!-- Confirm Password -->
+        <div class="form-field">
+          <label for="signup-confirm-password">Confirm Password</label>
+          <div class="auth-input-wrap">
+            <span class="auth-input-icon">🛡️</span>
+            <input 
+              type="password" 
+              id="signup-confirm-password" 
+              name="confirmPassword" 
+              class="auth-input" 
+              placeholder="Re-enter your password" 
+              required 
+              autocomplete="new-password"
+            >
+            <button type="button" class="password-toggle-btn" id="toggle-confirm-pass-btn" aria-label="Toggle confirm password visibility">
+              👁️
+            </button>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="auth-submit-btn" id="signup-submit-btn" style="margin-top: 14px;">
+          <span class="spinner" id="signup-spinner" style="display: none;"></span>
+          <span id="signup-btn-text">Create Citizen Account</span>
+        </button>
+      </form>
+
+      <!-- Bottom Links -->
+      <div class="auth-footer">
+        <p>
+          Already have an account? 
+          <a href="login.html" class="auth-link">Sign In</a>
+        </p>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Supabase JS CDN (UMD bundle) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Application Configuration & API -->
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+
+  <!-- Signup Page Controller -->
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const nameInput = document.getElementById("signup-name");
+      const emailInput = document.getElementById("signup-email");
+      const passInput = document.getElementById("signup-password");
+      const confirmPassInput = document.getElementById("signup-confirm-password");
+      const submitBtn = document.getElementById("signup-submit-btn");
+      const signupSpinner = document.getElementById("signup-spinner");
+      const signupBtnText = document.getElementById("signup-btn-text");
+      const alertBox = document.getElementById("auth-alert");
+      const alertIcon = document.getElementById("auth-alert-icon");
+      const alertMsg = document.getElementById("auth-alert-msg");
+      const configNotice = document.getElementById("config-notice");
+
+      const togglePassBtn = document.getElementById("toggle-pass-btn");
+      const toggleConfirmBtn = document.getElementById("toggle-confirm-pass-btn");
+
+      // Password toggle helpers
+      togglePassBtn.addEventListener("click", () => {
+        const isPass = passInput.type === "password";
+        passInput.type = isPass ? "text" : "password";
+        togglePassBtn.textContent = isPass ? "🙈" : "👁️";
+      });
+
+      toggleConfirmBtn.addEventListener("click", () => {
+        const isPass = confirmPassInput.type === "password";
+        confirmPassInput.type = isPass ? "text" : "password";
+        toggleConfirmBtn.textContent = isPass ? "🙈" : "👁️";
+      });
+
+      // Check Supabase config
+      const client = await UrbanPulseAuth.init();
+      if (!client && configNotice) {
+        configNotice.style.display = "flex";
+      }
+
+      function showAlert(message, type = "error") {
+        alertBox.className = `auth-alert auth-alert-${type}`;
+        alertIcon.textContent = type === "error" ? "❌" : (type === "success" ? "✅" : "⚠️");
+        alertMsg.textContent = message;
+        alertBox.style.display = "flex";
+      }
+
+      function hideAlert() {
+        alertBox.style.display = "none";
+      }
+
+      // Live validation on password confirmation
+      confirmPassInput.addEventListener("input", () => {
+        if (confirmPassInput.value && passInput.value !== confirmPassInput.value) {
+          confirmPassInput.style.borderColor = "#ef4444";
+        } else {
+          confirmPassInput.style.borderColor = "";
+        }
+      });
+
+      document.getElementById("signup-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        hideAlert();
+
+        const fullName = nameInput.value.trim();
+        const email = emailInput.value.trim();
+        const password = passInput.value;
+        const confirmPassword = confirmPassInput.value;
+
+        // Validation
+        if (!fullName) {
+          showAlert("Please enter your full name.");
+          nameInput.focus();
+          return;
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email || !emailRegex.test(email)) {
+          showAlert("Please provide a valid email address.");
+          emailInput.focus();
+          return;
+        }
+
+        if (!password || password.length < 8) {
+          showAlert("Password must be at least 8 characters long.");
+          passInput.focus();
+          return;
+        }
+
+        if (password !== confirmPassword) {
+          showAlert("Passwords do not match. Please re-enter.");
+          confirmPassInput.focus();
+          return;
+        }
+
+        submitBtn.disabled = true;
+        signupSpinner.style.display = "inline-block";
+        signupBtnText.textContent = "Creating Account...";
+
+        try {
+          const res = await UrbanPulseAuth.signUp({
+            email,
+            password,
+            fullName
+          });
+
+          // Check if session was granted immediately (email confirmation disabled)
+          if (res.session) {
+            showAlert("Account created successfully! Redirecting to your dashboard...", "success");
+            setTimeout(() => {
+              window.location.href = "dashboard.html";
+            }, 1000);
+          } else {
+            // Email confirmation enabled on Supabase
+            showAlert("Account created! A confirmation email has been sent to " + email + ". Please check your inbox to verify your account, then sign in.", "success");
+            submitBtn.style.display = "none";
+            setTimeout(() => {
+              window.location.href = "login.html";
+            }, 3500);
+          }
+        } catch (err) {
+          console.error("[Signup Error]", err);
+          let message = err.message || "Failed to create account. Please try again.";
+          if (message.includes("User already registered")) {
+            message = "An account with this email address already exists. Please sign in instead.";
+          }
+          showAlert(message, "error");
+        } finally {
+          submitBtn.disabled = false;
+          signupSpinner.style.display = "none";
+          signupBtnText.textContent = "Create Citizen Account";
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>

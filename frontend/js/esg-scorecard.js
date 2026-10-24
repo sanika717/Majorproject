@@ -73,7 +73,11 @@
 
   function waterRecords(period) {
     var water = DATA.water || {};
-    if (!water.period || String(water.period) !== period || !isNumber(water.pct_satisfactory)) return [];
+    if (!water.period || !isNumber(water.pct_satisfactory)) return [];
+    var pStr = String(period).trim();
+    var wStr = String(water.period).trim();
+    var matches = (wStr === pStr) || (pStr === "2020-21" && (wStr.indexOf("2020") >= 0 || wStr.indexOf("2021") >= 0));
+    if (!matches) return [];
     var source = sourceFor("KSPCB_MINARS_2020_21", water.sources);
     if (!source.url) return [];
     var geography = { location: source.location || water.scope, level: "Lake/tank station-month records within Bangalore Urban district" };
@@ -108,29 +112,55 @@
 
   function electricityRecords(period) {
     var electricity = DATA.electricity || {};
-    return (electricity.rows || []).filter(function (row) { return String(row.year) === period && isNumber(row.value_lakh_units); })
-      .map(function (row) {
-        var source = sourceFor(row.source_code, electricity.sources);
-        return record(row.category || "Electricity consumption", row.value_lakh_units, "lakh units", row.year, source,
-          { location: row.area, level: source.geographic_level }, row.last_updated,
-          "Reported BESCOM supply-area value; not scored as Bengaluru city data.", null, "climate");
-      }).filter(function (item) { return !!item.source_url; });
+    var pNorm = String(period).replace(/^.*(\d{4})[^\d]+(\d{2,4}).*$/, "$1-$2");
+    return (electricity.rows || []).filter(function (row) {
+      var rYear = String(row.year).trim();
+      return (rYear === String(period).trim() || rYear === pNorm) && isNumber(row.value_lakh_units);
+    }).map(function (row) {
+      var source = sourceFor(row.source_code, electricity.sources);
+      return record(row.category || "Electricity consumption", row.value_lakh_units, "lakh units", row.year, source,
+        { location: row.area, level: source.geographic_level }, row.last_updated,
+        "Reported BESCOM supply-area value; not scored as Bengaluru city data.", null, "climate");
+    }).filter(function (item) { return !!item.source_url; });
   }
 
   function availablePeriods() {
+    var seen = {};
     var values = [];
-    var add = function (value) { if (value != null && String(value).trim() && values.indexOf(String(value)) < 0) values.push(String(value)); };
-    var air = DATA.air || {}, carbon = DATA.carbon || {}, water = DATA.water || {}, electricity = DATA.electricity || {};
-    add(air.year);
-    if (air.live && air.live.scoring_eligible) add(air.live.period_label);
-    (carbon.series || []).filter(function (row) { return row.sector === "Total"; }).forEach(function (row) { add(row.year); });
-    add(water.period);
-    (electricity.rows || []).forEach(function (row) { add(row.year); });
-    return values.sort(function (left, right) {
-      var leftYear = Number((left.match(/\d{4}/) || [0])[0]);
-      var rightYear = Number((right.match(/\d{4}/) || [0])[0]);
-      return rightYear - leftYear || right.localeCompare(left);
+    // Helper: add a canonical period string once
+    var add = function (raw) {
+      var key = String(raw == null ? "" : raw).trim();
+      if (!key || seen[key]) return;
+      seen[key] = true;
+      values.push(key);
+    };
+    var air = DATA.air || {}, carbon = DATA.carbon || {}, water = DATA.water || {};
+
+    // Air quality: dataset year (e.g. "2016-17")
+    if (air.year) add(air.year);
+    // Live AQI period label (if scoring-eligible)
+    if (air.live && air.live.scoring_eligible && air.live.period_label) add(air.live.period_label);
+
+    // Water quality: use the canonical "2020-21" key (source says "Apr 2020 - Mar 2021")
+    if (water.period || water.station_months_monitored) add("2020-21");
+
+    // Carbon: each year that has a Total entry with a value
+    (carbon.series || []).filter(function (row) {
+      return row.sector === "Total" && isNumber(row.mmt_co2e);
+    }).forEach(function (row) { add(String(row.year)); });
+
+    // Only keep periods that actually yield indicators in any function
+    var withData = values.filter(function (p) {
+      return airRecords(p).length > 0 || waterRecords(p).length > 0 || carbonRecords(p).length > 0;
     });
+
+    // Sort descending by the first 4-digit year found in the period string
+    withData.sort(function (a, b) {
+      var ya = Number((a.match(/\d{4}/) || [0])[0]);
+      var yb = Number((b.match(/\d{4}/) || [0])[0]);
+      return yb - ya || b.localeCompare(a);
+    });
+    return withData;
   }
 
   function calculate(period) {
@@ -140,40 +170,34 @@
     var environmentalScore = scores.length ? scores.reduce(function (sum, value) { return sum + value; }, 0) / scores.length : null;
     var climateHasValues = indicators.some(function (item) { return item.category === "climate"; });
     var categories = {
-      environmental: { score: environmentalScore, status: environmentalScore == null ? "Data unavailable" : "Incomplete data" },
-      social: { score: null, status: "Data unavailable" },
-      governance: { score: null, status: "Data unavailable" },
-      climate: { score: null, status: climateHasValues ? "Value available; score unavailable" : "Data unavailable" }
+      environmental: {
+        score: environmentalScore,
+        status: environmentalScore == null ? "No indicators for this period" : (scores.length + " verified indicators")
+      },
+      social: { score: null, scoreText: "Pending", status: "Official dataset pending" },
+      governance: { score: null, scoreText: "Pending", status: "Official dataset pending" },
+      climate: { score: null, scoreText: "Pending", status: climateHasValues ? "Verified inventory (not scored)" : "Data unavailable" }
     };
-    var completeScores = Object.keys(categories).map(function (key) { return categories[key].score; });
-    var overall = completeScores.every(isNumber)
-      ? completeScores.reduce(function (sum, value) { return sum + value; }, 0) / completeScores.length
-      : null;
     return {
       period: period,
       indicators: indicators,
       categories: categories,
-      overall: overall
+      overall: null
     };
+  }
+
+  function formatPeriod(p) {
+    // "2020-21" → "2020–21"  |  "2016-17" → "2016–17"  |  "2019" → "2019"
+    return String(p || "").replace(/(\d{4})-(\d{2,4})/, "$1\u2013$2");
   }
 
   function render(period) {
     var result = calculate(period);
-    var scoreLabels = {
-      environmental: ["esg-E-value", "esg-E-sub"],
-      social: ["esg-S-value", "esg-S-sub"],
-      governance: ["esg-G-value", "esg-G-sub"],
-      climate: ["esg-C-value", "esg-C-sub"]
-    };
-    Object.keys(scoreLabels).forEach(function (key) {
-      var ids = scoreLabels[key], category = result.categories[key];
-      $(ids[0]).textContent = isNumber(category.score) ? category.score.toFixed(1) + " / 100" : "Data unavailable";
-      $(ids[1]).textContent = category.status;
-    });
-    $("esg-O-value").textContent = "Data unavailable";
-    $("esg-O-sub").textContent = "A complete score cannot be calculated without comparable social, governance, environmental, and climate data.";
-    $("esg-selected-period").textContent = period || "No source period available";
 
+    // Update the period display (no removed cards to update)
+    $("esg-selected-period").textContent = formatPeriod(period) || "No source period available";
+
+    // Indicator sources table
     var table = result.indicators.map(function (item) {
       var sourceLink = (item.source_urls || [item.source_url]).map(function (url, index) {
         var label = index === 0 ? item.source_title || "Official source" : "Benchmark source";
@@ -187,20 +211,19 @@
       if (item.methodology) details += (details ? "<br>" : "") + "Method: " + escapeHTML(item.methodology);
       var score = isNumber(item.score) ? item.score.toFixed(1) + " / 100" : "Not scored";
       return "<tr><th scope=\"row\">" + escapeHTML(item.indicator) + "</th><td>" + value + "</td><td>" +
-        escapeHTML(item.period) + "</td><td>" + escapeHTML(item.geographic_level || "Not specified") + "</td><td>" + score +
+        escapeHTML(formatPeriod(item.period)) + "</td><td>" + escapeHTML(item.geographic_level || "Not specified") + "</td><td>" + score +
         "</td><td>" + sourceLink + (details ? "<br><small>" + details + "</small>" : "") + "</td></tr>";
     }).join("");
     $("esg-indicator-rows").innerHTML = table || '<tr><td colspan="6">No source records for this period.</td></tr>';
-    $("esg-data-status").textContent = result.indicators.length
-      ? "Social and governance source records are not available for this period. Category scores and the overall score remain incomplete."
-      : "No source records are available for this period.";
 
-    console.info("[UrbanPulse ESG] selected period", period, "calculated indicators", result.indicators.filter(function (item) {
-      return isNumber(item.score);
-    }).map(function (item) {
-      return { indicator: item.indicator, score: item.score, period: item.period, source: item.source_organization,
-        source_url: item.source_url, geographic_level: item.geographic_level };
-    }));
+    var statusEl = $("esg-data-status");
+    if (statusEl) {
+      statusEl.textContent = result.indicators.length
+        ? "Showing verified source records for " + formatPeriod(period) + "."
+        : "No verified source records are available for this period.";
+    }
+
+    console.info("[UrbanPulse ESG] period", period, "indicators", result.indicators.length);
     window.URBANPULSE_ESG_SCORECARD = result;
   }
 
@@ -211,7 +234,7 @@
     periods.forEach(function (period) {
       var option = document.createElement("option");
       option.value = period;
-      option.textContent = period;
+      option.textContent = formatPeriod(period);
       selector.appendChild(option);
     });
     selector.disabled = !periods.length;
@@ -219,17 +242,31 @@
       render("");
       return;
     }
-    selector.value = periods[0];
+    // Default to the most recent period that has environmental (scored) indicators
+    var defaultPeriod = periods[0];
+    for (var i = 0; i < periods.length; i++) {
+      var indicators = airRecords(periods[i]).concat(waterRecords(periods[i]));
+      var hasScoredEnv = indicators.some(function (item) { return item.category === "environmental" && isNumber(item.score); });
+      if (hasScoredEnv) { defaultPeriod = periods[i]; break; }
+    }
+    selector.value = defaultPeriod;
     selector.onchange = function () { render(selector.value); };
     render(selector.value);
   }
 
   window.URBANPULSE_ESG = { start: start, calculate: calculate, availablePeriods: availablePeriods };
-  document.addEventListener("DOMContentLoaded", function () {
+
+  function initScorecard() {
     var loadData = window.ESG_ENV && window.ESG_ENV.start ? window.ESG_ENV.start() : Promise.resolve({});
     Promise.resolve(loadData).then(start).catch(function (error) {
       console.error("Unable to load ESG source records:", error);
       start({});
     });
-  });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initScorecard);
+  } else {
+    initScorecard();
+  }
 })();

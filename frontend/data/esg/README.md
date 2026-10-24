@@ -19,3 +19,9 @@ To add new source data, register the source and its geography in `sources.json`,
 `backend/app/services/esg_update/` refreshes the database in the background (see its `scheduler.py` header for env vars).
 Air = CPCB feed on data.gov.in (needs `DATA_GOV_IN_API_KEY`), electricity = BESCOM CSV via OpenCity, carbon/water = reload
 when the verified JSON here changes. Check `GET /api/v1/esg/update-status`. Never add estimated values.
+
+## Area-wise ESG (`js/esg-areas.js`)
+Scores for 11 Bengaluru areas are calculated in the browser from `air_quality_stations.json` and `water_quality_lakes_2020_21.json`.
+Formula: Air = worst-pollutant headroom vs CPCB limits (IDW from stations within 10 km); Water = mean CPCB class points (A100/B80/C60/D40/E20);
+Environmental = mean(Air, Water); Overall = 0.4E + 0.3S + 0.3G re-normalised over available pillars.
+Social and Governance need an area-level dataset (none registered), so they stay "Pending" and are never estimated.

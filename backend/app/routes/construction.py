@@ -25,7 +25,7 @@ def get_construction_clustering(db: Session = Depends(get_db)):
 
 @router.get("/top-wards")
 def get_top_wards(
-    by: str = Query("investment", regex="^(investment|work_orders)$"),
+    by: str = Query("investment", pattern="^(investment|work_orders)$"),
     limit: int = Query(15, ge=1, le=50),
     db: Session = Depends(get_db)
 ):

@@ -1,27 +1,26 @@
 /**
- * UrbanPulse – Intelligence Assistant
+ * UrbanPulse – Intelligence Assistant (Backend-Connected)
  *
- * Flow: User types question → keyword-match against UP_CONSTRUCTION / UP_CRIME / UP_POLICE
- *       → if backend is up, try GET /api/v1/assistant/query (optional)
- *       → always render an answer from verified local data.
+ * Flow: User types question → POST /api/v1/intelligence/ask
+ *       → Receives structured UrbanScore + Qwen3:8b answer
+ *       → Renders UrbanScore card, decision analysis, sources
  *
- * Answers are built from verified datasets in data.js (UP_CONSTRUCTION, UP_CRIME, UP_POLICE).
- * No answer is ever left blank.
+ * All data comes exclusively from verified PostgreSQL datasets via the backend.
+ * No statistics, citations, or scores are hardcoded or fabricated here.
  */
 (function () {
   "use strict";
 
+  var API_BASE = "/api/v1/intelligence";
+
   // ─── DOM refs ──────────────────────────────────────────────────────────────
-  var messagesEl  = document.getElementById("chat-messages");
-  var formEl      = document.getElementById("chat-form");
-  var inputEl     = document.getElementById("chat-input");
-  var statusEl    = document.getElementById("assistant-status");
-  var suggestEl   = document.getElementById("chat-suggestions");
+  var messagesEl = document.getElementById("chat-messages");
+  var formEl     = document.getElementById("chat-form");
+  var inputEl    = document.getElementById("chat-input");
+  var statusEl   = document.getElementById("assistant-status");
+  var suggestEl  = document.getElementById("chat-suggestions");
 
   // ─── Helpers ───────────────────────────────────────────────────────────────
-  function fmt(n) { return typeof n === "number" ? n.toLocaleString("en-IN") : String(n); }
-  function fmtCr(cr) { return "₹" + Number(cr).toFixed(2) + " Cr"; }
-  function now() { return new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata" }); }
   function esc(s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, function(c) {
       return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
@@ -37,297 +36,269 @@
     return div;
   }
 
-  function userMsg(text) {
-    addMsg("user", esc(text));
-  }
-
-  function assistantMsg(html) {
-    return addMsg("assistant", html);
-  }
+  function userMsg(text)       { addMsg("user",      esc(text)); }
+  function assistantMsg(html)  { return addMsg("assistant", html); }
 
   function typingMsg() {
     return assistantMsg('<span class="typing-dots"><span>.</span><span>.</span><span>.</span></span>');
   }
 
   function setStatus(text, online) {
-    if (statusEl) {
-      statusEl.textContent = text;
-      statusEl.style.color = online ? "var(--accent-emerald)" : "var(--text-muted)";
-    }
+    if (!statusEl) return;
+    statusEl.textContent = text;
+    statusEl.style.color = online ? "var(--accent-emerald)" : "var(--text-muted)";
   }
 
-  // ─── Verified data getters ─────────────────────────────────────────────────
-  function cons()   { return window.UP_CONSTRUCTION  || {}; }
-  function crime()  { return window.UP_CRIME          || {}; }
-  function police() { return window.UP_POLICE         || {}; }
-
-  // ─── Knowledge base: keyword → answer builder ─────────────────────────────
-  var KB = [
-    {
-      keys: ["total construction", "work order", "investment", "bbmp", "ward work"],
-      build: function() {
-        var o = cons().overview || {};
-        return [
-          "<b>🏗️ BBMP 2025–26 Construction Overview</b>",
-          "<table style='width:100%;font-size:13px;border-collapse:collapse;margin-top:8px'>",
-          row("Total Work Orders",              fmt(o.total_work_orders || 4729)),
-          row("Verified Investment",            fmtCr(o.total_amount_cr || 3169.06)),
-          row("Net Expenditure",                fmtCr(o.net_expenditure_cr || 2849.69)),
-          row("Total Deductions",               fmtCr(o.total_deductions_cr || 319.37)),
-          row("Ward Coverage",                  (o.ward_coverage || 198) + " / " + (o.total_wards || 198) + " wards"),
-          row("Unique Contractors",             fmt(o.unique_contractors || 1603)),
-          row("Avg Deduction Rate",             (o.avg_deduction_rate_pct || 10.08) + "%"),
-          "</table>",
-          "<div style='font-size:11px;color:var(--text-muted);margin-top:8px'>📂 Source: BBMP 2025-26 ward work-order dataset · 4,729 verified records · EDA-verified figures</div>"
-        ].join("");
-      }
-    },
-    {
-      keys: ["top ward", "highest investment", "top 5", "best ward", "most investment"],
-      build: function() {
-        var wards = (cons().top_wards || []).slice(0, 5);
-        var rows = wards.map(function(w) {
-          return "<tr><td style='padding:4px 8px'>" + esc(w.ward) + "</td><td style='padding:4px 8px;color:#f59e0b'>" + fmtCr(w.amount_cr) + "</td><td style='padding:4px 8px'>" + fmt(w.orders) + "</td></tr>";
-        }).join("");
-        return [
-          "<b>🏗️ Top 5 Wards by Verified Investment</b>",
-          "<table style='width:100%;font-size:13px;border-collapse:collapse;margin-top:8px'>",
-          "<tr style='color:var(--text-muted);font-size:11px'><th style='text-align:left;padding:4px 8px'>Ward</th><th style='padding:4px 8px'>Investment</th><th style='padding:4px 8px'>Work Orders</th></tr>",
-          rows,
-          "</table>",
-          "<div style='font-size:11px;color:var(--text-muted);margin-top:8px'>📂 Source: BBMP 2025-26 dataset</div>"
-        ].join("");
-      }
-    },
-    {
-      keys: ["cluster", "development cluster", "k-means", "kmeans"],
-      build: function() {
-        var cl = (cons().clustering || {});
-        var clusters = cl.clusters || [];
-        return [
-          "<b>📊 BBMP Ward Development Clusters (K-Means++, K=" + (cl.k || 2) + ")</b>",
-          "<p style='font-size:12px;color:var(--text-muted)'>Silhouette Score: <b>" + (cl.silhouette_score || 0.3919) + "</b> · Best K across K=2–8</p>",
-          "<table style='width:100%;font-size:13px;border-collapse:collapse;margin-top:4px'>",
-          clusters.map(function(c) {
-            return [
-              "<tr style='border-top:1px solid rgba(255,255,255,0.06)'>",
-              "<td style='padding:6px 8px'><b>" + esc(c.label) + "</b></td>",
-              "<td style='padding:6px 8px'>" + fmt(c.wards) + " wards</td>",
-              "<td style='padding:6px 8px'>Avg " + c.avg_orders + " orders / ward</td>",
-              "</tr>"
-            ].join("");
-          }).join(""),
-          "</table>",
-          "<div style='font-size:11px;color:var(--text-muted);margin-top:8px'>📂 Source: BBMP 2025-26 EDA · K-Means++ clustering on work-order volume + expenditure</div>"
-        ].join("");
-      }
-    },
-    {
-      keys: ["total crime", "recorded crime", "crime total", "criminal", "d47"],
-      build: function() {
-        var o = crime().overall || {};
-        var risk = crime().risk || {};
-        return [
-          "<b>🚨 Bengaluru City Crime Statistics (D47 Series)</b>",
-          "<table style='width:100%;font-size:13px;border-collapse:collapse;margin-top:8px'>",
-          row("Total Recorded Crimes", fmt(o.total || 35971) + " (" + (o.period || "2014–2021") + ")"),
-          row("Fatal Crimes",          fmt(o.fatal || 5437)),
-          row("Non-Fatal Crimes",      fmt(o.non_fatal || 30534)),
-          row("Fatal Severity Rate",   (o.fatal_pct || 15.11) + "%"),
-          row("UrbanPulse Risk Score", (risk.score || 71.7) + " / 100 — " + (risk.level || "High Risk") + " (peak: " + (risk.peak_year || 2016) + ")"),
-          "</table>",
-          "<div style='font-size:11px;color:var(--text-muted);margin-top:8px'>📂 Source: Bengaluru City Police D47 Annual Report (2014–2021) · Verified EDA</div>"
-        ].join("");
-      }
-    },
-    {
-      keys: ["risk score", "urbanpulse risk", "crime risk", "danger", "safety score"],
-      build: function() {
-        var risk = crime().risk || {};
-        var score = risk.score || 71.7;
-        var level = risk.level || "High Risk";
-        var vol   = risk.volume_score || 100.0;
-        var sev   = risk.severity_score || 29.26;
-        return [
-          "<b>⚠️ UrbanPulse Crime Risk Score</b>",
-          "<div style='margin:10px 0;padding:12px 16px;background:rgba(239,68,68,0.08);border-radius:8px;border-left:3px solid #ef4444'>",
-          "<div style='font-size:28px;font-weight:800;color:#ef4444'>" + score + " <span style='font-size:14px;font-weight:400'>/ 100</span></div>",
-          "<div style='font-size:13px;color:#ef4444;font-weight:600;margin-top:4px'>" + level + " · Peak year: " + (risk.peak_year || 2016) + "</div>",
-          "</div>",
-          "<b style='font-size:12px'>Algorithm:</b> <code style='font-size:12px'>60% Volume Score + 40% Severity Score</code>",
-          "<div style='font-size:12px;margin-top:6px'>Volume Score: <b>" + vol + " / 100</b> &nbsp;·&nbsp; Severity Score: <b>" + sev + " / 100</b></div>",
-          "<div style='font-size:11px;color:var(--text-muted);margin-top:8px'>📂 Source: Bengaluru City Police D47 Series · UrbanPulse composite formula</div>"
-        ].join("");
-      }
-    },
-    {
-      keys: ["women crime", "crime against women", "woman", "gender crime"],
-      build: function() {
-        var cat = ((crime().categories || {}).women) || {};
-        var yr = cat.by_year || [];
-        var subs = cat.subtypes_2023 || [];
-        var latest = yr.find(function(r){ return r.year === 2023; }) || {};
-        return [
-          "<b>👩 Crimes Against Women — Bengaluru</b>",
-          "<table style='width:100%;font-size:13px;border-collapse:collapse;margin-top:8px'>",
-          yr.map(function(r){ return row(String(r.year), fmt(r.cases) + " cases"); }).join(""),
-          "</table>",
-          subs.length ? ("<b style='font-size:12px;display:block;margin-top:10px'>Top Sub-types (2023)</b><div style='font-size:12px;color:var(--text-secondary)'>" + subs.slice(0,4).map(function(s){ return s.type + ": " + fmt(s.cases); }).join(" · ") + "</div>") : "",
-          "<div style='font-size:11px;color:var(--text-muted);margin-top:8px'>📂 Source: Bengaluru City Police Annual Report / Press Note · Verified</div>"
-        ].join("");
-      }
-    },
-    {
-      keys: ["children crime", "crime against children", "child crime", "pocso"],
-      build: function() {
-        var cat = ((crime().categories || {}).children) || {};
-        var yr = cat.by_year || [];
-        return [
-          "<b>👶 Crimes Against Children — Bengaluru</b>",
-          "<table style='width:100%;font-size:13px;border-collapse:collapse;margin-top:8px'>",
-          yr.map(function(r){ return row(String(r.year), fmt(r.cases) + " cases"); }).join(""),
-          "</table>",
-          "<div style='font-size:11px;color:var(--text-muted);margin-top:8px'>📂 Source: Bengaluru City Police Annual Report / Press Note · Verified</div>"
-        ].join("");
-      }
-    },
-    {
-      keys: ["cyber crime", "cyber", "online crime", "digital crime", "hacking"],
-      build: function() {
-        var cat = ((crime().categories || {}).cyber) || {};
-        var yr = cat.by_year || [];
-        var divs = cat.by_division_2023 || [];
-        return [
-          "<b>💻 Cyber Crime — Bengaluru</b>",
-          "<table style='width:100%;font-size:13px;border-collapse:collapse;margin-top:8px'>",
-          yr.map(function(r){ return row(String(r.year), fmt(r.cases) + " cases"); }).join(""),
-          "</table>",
-          divs.length ? ("<b style='font-size:12px;display:block;margin-top:10px'>By Division (2023)</b><div style='font-size:12px;color:var(--text-secondary)'>" + divs.map(function(d){ return d.division + ": " + fmt(d.cases); }).join(" · ") + "</div>") : "",
-          "<div style='font-size:11px;color:var(--text-muted);margin-top:8px'>📂 Source: Bengaluru City Police Press Note · Verified</div>"
-        ].join("");
-      }
-    },
-    {
-      keys: ["suicide", "self harm", "accidental death", "accidental"],
-      build: function() {
-        var suis = ((crime().categories || {}).suicides) || {};
-        var acc  = ((crime().categories || {}).accidental) || {};
-        var sYr  = suis.by_year || [];
-        var aYr  = acc.by_year || [];
-        return [
-          "<b>🕊️ Suicides &amp; Accidental Deaths — Bengaluru</b>",
-          "<table style='width:100%;font-size:13px;border-collapse:collapse;margin-top:8px'>",
-          "<tr style='color:var(--text-muted);font-size:11px'><th style='text-align:left;padding:4px 8px'>Year</th><th style='padding:4px 8px'>Suicides</th><th style='padding:4px 8px'>Accidental Deaths</th></tr>",
-          [2021,2022,2023].map(function(yr) {
-            var s = sYr.find(function(r){ return r.year===yr; }) || {};
-            var a = aYr.find(function(r){ return r.year===yr; }) || {};
-            return "<tr><td style='padding:4px 8px'>" + yr + "</td><td style='padding:4px 8px'>" + (s.deaths!=null?fmt(s.deaths):"—") + "</td><td style='padding:4px 8px'>" + (a.deaths!=null?fmt(a.deaths):"—") + "</td></tr>";
-          }).join(""),
-          "</table>",
-          "<div style='font-size:11px;color:var(--text-muted);margin-top:8px'>📂 Source: Bengaluru City Police Annual Report · Verified</div>"
-        ].join("");
-      }
-    },
-    {
-      keys: ["police location", "police station", "mapped police", "outpost", "kml"],
-      build: function() {
-        var p = police();
-        var types = p.by_type || [];
-        return [
-          "<b>🚓 Mapped Police Locations — Bengaluru</b>",
-          "<table style='width:100%;font-size:13px;border-collapse:collapse;margin-top:8px'>",
-          row("Total Mapped Locations", fmt(p.total || 150)),
-          types.map(function(t){ return row(t.type, fmt(t.count) + " locations"); }).join(""),
-          "</table>",
-          "<div style='font-size:11px;color:var(--text-muted);margin-top:8px'>📂 Source: Karnataka State Police GIS KML files · Verified station &amp; outpost coordinates</div>",
-          "<div style='font-size:11px;color:var(--text-muted)'>Note: Mapped community-contributed locations only. Not an authoritative directory.</div>"
-        ].join("");
-      }
-    },
-    {
-      keys: ["aqi", "air quality", "pollution", "pm2.5", "pm10", "environment", "esg", "environmental score"],
-      build: function() {
-        var esgData = window.URBANPULSE_ESG_DATA;
-        var air = esgData && esgData.air;
-        var avg = air && (air.city_average || (air.live && air.live.city_mean)) || {};
-        var year = (air && air.year) || "2016-17";
-        if (avg.pm25) {
-          return [
-            "<b>🌱 Bengaluru Air Quality Data</b>",
-            "<p style='font-size:12px;color:var(--text-muted);margin:4px 0'>Reporting period: " + esc(year) + "</p>",
-            "<table style='width:100%;font-size:13px;border-collapse:collapse;margin-top:8px'>",
-            avg.pm25  != null ? row("PM2.5",  avg.pm25  + " µg/m³ (NAAQS limit: 40)") : "",
-            avg.pm10  != null ? row("PM10",   avg.pm10  + " µg/m³ (NAAQS limit: 60)") : "",
-            avg.no2   != null ? row("NO₂",    avg.no2   + " µg/m³ (NAAQS limit: 40)") : "",
-            avg.so2   != null ? row("SO₂",    avg.so2   + " µg/m³ (NAAQS limit: 50)") : "",
-            "</table>",
-            "<div style='font-size:11px;color:var(--text-muted);margin-top:8px'>📂 Source: KSPCB / CPCB station observations · ESG Environmental data</div>"
-          ].join("");
-        }
-        return [
-          "<b>🌱 ESG Environmental Overview</b>",
-          "<p>Air quality data is loaded from the KSPCB / CPCB station dataset. Visit the <a href='esg.html' style='color:#38bdf8'>ESG Scoring page</a> for the full Environmental panel with the area-wise air quality map.</p>",
-          "<div style='font-size:11px;color:var(--text-muted);margin-top:8px'>📂 Source: KSPCB / CPCB Annual Observations · BCAP 2019 GHG Inventory</div>"
-        ].join("");
-      }
-    },
-    {
-      keys: ["urban score", "urbanpulse score", "city score", "overall score", "composite score"],
-      build: function() {
-        var risk = crime().risk || {};
-        var o = cons().overview || {};
-        return [
-          "<b>⚡ UrbanPulse City Intelligence Overview</b>",
-          "<table style='width:100%;font-size:13px;border-collapse:collapse;margin-top:8px'>",
-          row("Crime Risk Score",            (risk.score || 71.7) + " / 100 — " + (risk.level || "High Risk")),
-          row("Construction Investment",     fmtCr(o.total_amount_cr || 3169.06)),
-          row("Work Orders (BBMP 2025-26)",  fmt(o.total_work_orders || 4729)),
-          row("Police Locations (KML)",      fmt(police().total || 150)),
-          row("ESG Score",                   "Environmental: real data · Social/Governance: demo"),
-          "</table>",
-          "<div style='font-size:11px;color:var(--text-muted);margin-top:8px'>📂 Sources: BBMP work-orders, Bengaluru City Police D47, Karnataka KML, KSPCB/CPCB/BCAP</div>"
-        ].join("");
-      }
+  // ─── Score Bar ─────────────────────────────────────────────────────────────
+  function scoreBar(label, score, weight, color) {
+    if (score == null) {
+      return '<div style="margin:4px 0;font-size:12px;color:var(--text-muted)">◦ ' + esc(label) + ' — Data unavailable</div>';
     }
-  ];
-
-  function row(label, value) {
-    return "<tr style='border-top:1px solid rgba(255,255,255,0.06)'>" +
-      "<td style='padding:5px 8px;color:var(--text-muted);font-size:12px'>" + esc(label) + "</td>" +
-      "<td style='padding:5px 8px;font-weight:600'>" + String(value) + "</td></tr>";
+    var pct = Math.round(score);
+    return (
+      '<div style="margin:6px 0">' +
+      '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:2px">' +
+      '<span>' + esc(label) + ' <span style="color:var(--text-muted);font-size:10px">(wt ' + Math.round(weight * 100) + '%)</span></span>' +
+      '<span style="font-weight:700;color:' + color + '">' + score + '/100</span>' +
+      '</div>' +
+      '<div style="background:rgba(255,255,255,0.08);border-radius:4px;height:6px;overflow:hidden">' +
+      '<div style="width:' + pct + '%;height:100%;background:' + color + ';border-radius:4px;transition:width 0.6s ease"></div>' +
+      '</div></div>'
+    );
   }
 
-  // ─── Answer engine ─────────────────────────────────────────────────────────
-  function findAnswer(question) {
-    var q = question.toLowerCase();
-    for (var i = 0; i < KB.length; i++) {
-      var entry = KB[i];
-      for (var j = 0; j < entry.keys.length; j++) {
-        if (q.indexOf(entry.keys[j]) !== -1) {
-          try { return entry.build(); } catch(e) { console.error("[Assistant] build error:", e); }
-        }
-      }
-    }
-    return null;
+  // ─── Grade Badge ───────────────────────────────────────────────────────────
+  function gradeColor(score) {
+    if (score >= 80) return "#10b981";  // emerald
+    if (score >= 65) return "#3b82f6";  // blue
+    if (score >= 50) return "#f59e0b";  // amber
+    return "#ef4444";                    // red
   }
 
-  var FALLBACK = [
-    "<b>🤖 UrbanPulse Intelligence Assistant</b>",
-    "<p>I can answer questions about the following verified datasets:</p>",
-    "<ul style='margin:8px 0;padding-left:16px;font-size:13px;color:var(--text-secondary)'>",
-    "<li>🏗️ <b>Construction</b> — BBMP 2025-26 work orders, investment, top wards, clusters</li>",
-    "<li>🚨 <b>Crime</b> — D47 totals (2014-2021), risk score, women, children, cyber, suicides</li>",
-    "<li>🚓 <b>Police</b> — KML-mapped station &amp; outpost locations</li>",
-    "<li>🌱 <b>ESG / Air Quality</b> — KSPCB/CPCB station data, carbon inventory</li>",
-    "<li>⚡ <b>Urban Score</b> — composite overview across all datasets</li>",
-    "</ul>",
-    "<p style='font-size:12px;color:var(--text-muted)'>Try: <em>\"Total construction investment\"</em>, <em>\"Crime risk score\"</em>, <em>\"Top wards by investment\"</em>, <em>\"Women crimes 2023\"</em>, <em>\"Police locations\"</em></p>",
-    "<div style='font-size:11px;color:var(--text-muted);margin-top:8px'>📂 Data: BBMP, Bengaluru City Police, Karnataka State Police KML, KSPCB, CPCB, BCAP</div>"
-  ].join("");
+  // ─── UrbanScore Card ───────────────────────────────────────────────────────
+  function renderUrbanScoreCard(us) {
+    if (!us) return "";
+    var score  = us.score != null ? us.score : us.urban_score;
+    var grade  = us.grade || us.tier || "N/A";
+    var cov    = us.data_coverage_pct != null ? us.data_coverage_pct : "N/A";
+    var conf   = us.confidence || "N/A";
+    var comps  = us.components || {};
+    var lims   = us.limitations || us.missing_indicators || [];
+    var color  = gradeColor(score);
+
+    var shortGrade = grade.replace(/^Tier \d+:\s*/, "");
+
+    var bars = [
+      scoreBar("🛡 Safety",               comps.safety               ? comps.safety.score              : null, 0.25, "#ef4444"),
+      scoreBar("🏗 Infrastructure",       comps.infrastructure        ? comps.infrastructure.score       : null, 0.25, "#3b82f6"),
+      scoreBar("🌱 Environment",          comps.environment           ? comps.environment.score          : null, 0.20, "#10b981"),
+      scoreBar("🏫 Social Infrastructure",comps.social_infrastructure ? comps.social_infrastructure.score: null, 0.15, "#a78bfa"),
+      scoreBar("📋 Governance",           comps.governance            ? comps.governance.score           : null, 0.15, "#f59e0b"),
+    ].join("");
+
+    var limHtml = "";
+    if (lims.length) {
+      limHtml = '<div style="margin-top:10px;padding:8px;background:rgba(239,68,68,0.08);border-radius:6px;font-size:11px;color:var(--text-muted)">' +
+        "⚠ Limitations: " + lims.slice(0, 2).map(esc).join(" · ") + "</div>";
+    }
+
+    return (
+      '<div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:16px;margin:10px 0">' +
+      '<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">' +
+      '<div style="width:60px;height:60px;border-radius:50%;background:conic-gradient(' + color + ' ' + score + '%, rgba(255,255,255,0.1) 0%);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:' + color + '">' + score + '</div>' +
+      '<div>' +
+      '<div style="font-size:16px;font-weight:700">' + esc(us.locality || "Locality") + '</div>' +
+      '<div style="font-size:12px;color:' + color + ';font-weight:600">⚡ UrbanScore: ' + score + '/100</div>' +
+      '<div style="font-size:11px;color:var(--text-muted)">' + esc(shortGrade) + ' · ' + conf + ' confidence · ' + cov + '% data coverage</div>' +
+      '</div></div>' +
+      bars +
+      limHtml +
+      '<div style="font-size:10px;color:var(--text-muted);margin-top:8px">Methodology: Safety 25% · Infrastructure 25% · Environment 20% · Social 15% · Governance 15%</div>' +
+      '</div>'
+    );
+  }
+
+  // ─── Decision Analysis Panel ───────────────────────────────────────────────
+  function renderAnalysis(analysis) {
+    if (!analysis) return "";
+    var html = '<div style="margin-top:10px">';
+
+    var consider = analysis.reasons_to_consider || [];
+    if (consider.length) {
+      html += '<div style="background:rgba(16,185,129,0.08);border-left:3px solid #10b981;padding:10px 12px;border-radius:0 6px 6px 0;margin-bottom:8px">' +
+        '<div style="font-size:12px;font-weight:700;color:#10b981;margin-bottom:4px">✅ Reasons to Consider</div>' +
+        consider.map(function(r) { return '<div style="font-size:12px;color:var(--text-secondary);margin:2px 0">• ' + esc(r) + '</div>'; }).join("") +
+        '</div>';
+    }
+
+    var caution = analysis.reasons_for_caution || [];
+    if (caution.length) {
+      html += '<div style="background:rgba(245,158,11,0.08);border-left:3px solid #f59e0b;padding:10px 12px;border-radius:0 6px 6px 0;margin-bottom:8px">' +
+        '<div style="font-size:12px;font-weight:700;color:#f59e0b;margin-bottom:4px">⚠ Reasons for Caution</div>' +
+        caution.map(function(r) { return '<div style="font-size:12px;color:var(--text-secondary);margin:2px 0">• ' + esc(r) + '</div>'; }).join("") +
+        '</div>';
+    }
+
+    var risks = analysis.risks || {};
+    var riskKeys = Object.keys(risks);
+    if (riskKeys.length) {
+      html += '<div style="background:rgba(239,68,68,0.07);border-left:3px solid #ef4444;padding:10px 12px;border-radius:0 6px 6px 0;margin-bottom:8px">' +
+        '<div style="font-size:12px;font-weight:700;color:#ef4444;margin-bottom:4px">🚨 Risk Indicators (by Category)</div>' +
+        riskKeys.map(function(k) {
+          var val = Array.isArray(risks[k]) ? risks[k].join("; ") : risks[k];
+          return '<div style="font-size:12px;color:var(--text-secondary);margin:2px 0"><b>' + esc(k) + '</b>: ' + esc(val) + '</div>';
+        }).join("") +
+        '</div>';
+    }
+
+    var recs = analysis.actionable_recommendations || analysis.recommendations || [];
+    if (recs.length) {
+      html += '<div style="background:rgba(59,130,246,0.07);border-left:3px solid #3b82f6;padding:10px 12px;border-radius:0 6px 6px 0;margin-bottom:8px">' +
+        '<div style="font-size:12px;font-weight:700;color:#3b82f6;margin-bottom:4px">💡 Actionable Recommendations</div>' +
+        recs.map(function(r) { return '<div style="font-size:12px;color:var(--text-secondary);margin:2px 0">→ ' + esc(r) + '</div>'; }).join("") +
+        '</div>';
+    }
+
+    var dlims = analysis.data_limitations || analysis.missing_data_warnings || [];
+    if (dlims.length) {
+      html += '<div style="font-size:11px;color:var(--text-muted);background:rgba(255,255,255,0.04);padding:8px;border-radius:6px;">' +
+        '📌 Data Limitations: ' + dlims.map(esc).join(" · ") +
+        '</div>';
+    }
+
+    html += '</div>';
+    return html;
+  }
+
+  // ─── Answer Mode Badge ───────────────────────────────────────────────────────
+  var MODE_STYLES = {
+    "Verified UrbanPulse Data":          { icon: "🗄", color: "#10b981", bg: "rgba(16,185,129,0.12)" },
+    "UrbanPulse Data + AI Analysis":    { icon: "🤖", color: "#3b82f6", bg: "rgba(59,130,246,0.12)" },
+    "General AI Answer":                 { icon: "💬", color: "#a78bfa", bg: "rgba(167,139,250,0.12)" },
+    "Verified UrbanPulse Data (AI Unavailable)": { icon: "🗄", color: "#f59e0b", bg: "rgba(245,158,11,0.10)" }
+  };
+
+  function renderModeBadge(mode, model, cached) {
+    var style = MODE_STYLES[mode] || { icon: "🤖", color: "#6b7280", bg: "rgba(107,114,128,0.1)" };
+    var modelStr = (model && model !== "n/a (data-only)" && model !== "none")
+      ? " · " + esc(model) : "";
+    var cacheStr = cached ? " · ♻ Cached" : "";
+    return (
+      '<div style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;' +
+      'background:' + style.bg + ';border:1px solid ' + style.color + '33;' +
+      'border-radius:20px;font-size:11px;font-weight:600;color:' + style.color + ';margin-bottom:10px">' +
+      style.icon + ' ' + esc(mode) + modelStr + cacheStr +
+      '</div>'
+    );
+  }
+
+  // ─── Sources Footer ─────────────────────────────────────────────────────────
+  function renderSources(sources, meta) {
+    if (!sources || !sources.length) return "";
+    return (
+      '<div style="margin-top:12px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.07)">' +
+      '<div style="font-size:10px;color:var(--text-muted);margin-bottom:4px">📂 Data Sources & Attribution:</div>' +
+      sources.slice(0, 6).map(function(s) {
+        return '<div style="font-size:10px;color:var(--text-muted)">• ' + esc(typeof s === "string" ? s : s.name || JSON.stringify(s)) + '</div>';
+      }).join("") +
+      (meta && meta.latency_ms ? '<div style="font-size:10px;color:var(--text-muted);margin-top:4px">⏱ ' + meta.latency_ms + 'ms</div>' : "") +
+      '</div>'
+    );
+  }
+
+  // ─── Format Answer Markdown (basic) ────────────────────────────────────────
+  function renderAnswer(text) {
+    if (!text) return "";
+    var escaped = esc(text);
+    // Bold **text**
+    escaped = escaped.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+    // #### headings
+    escaped = escaped.replace(/^####\s(.+)$/gm, '<h5 style="color:#93c5fd;font-size:13px;margin:10px 0 4px">$1</h5>');
+    // ### headings
+    escaped = escaped.replace(/^###\s(.+)$/gm, '<h4 style="color:#93c5fd;font-size:14px;margin:12px 0 6px">$1</h4>');
+    // ## headings
+    escaped = escaped.replace(/^##\s(.+)$/gm, '<h3 style="color:#60a5fa;font-size:15px;margin:14px 0 6px">$1</h3>');
+    // - list items
+    escaped = escaped.replace(/^[•\-]\s(.+)$/gm, '<div style="margin:2px 0;padding-left:12px">• $1</div>');
+    // → items
+    escaped = escaped.replace(/^→\s(.+)$/gm, '<div style="margin:2px 0;padding-left:12px;color:#60a5fa">→ $1</div>');
+    // Newlines
+    escaped = escaped.replace(/\n\n/g, '<br><br>');
+    escaped = escaped.replace(/\n/g, '<br>');
+    return '<div style="font-size:13px;line-height:1.7;color:var(--text-secondary)">' + escaped + '</div>';
+  }
+
+  // ─── Render Full Response ──────────────────────────────────────────────────
+  function renderResponse(data) {
+    var html = "";
+
+    // Answer mode badge (always first)
+    var mode = data.answer_mode || "UrbanPulse Data + AI Analysis";
+    html += renderModeBadge(mode, data.model, data.cached);
+
+    // UrbanScore card (when a locality is involved)
+    if (data.urban_score) {
+      html += renderUrbanScoreCard(data.urban_score);
+    }
+
+    // Main answer
+    if (data.answer) {
+      html += renderAnswer(data.answer);
+    }
+
+    // Decision analysis (only for hybrid/data modes)
+    if (data.analysis && mode !== "General AI Answer") {
+      html += renderAnalysis(data.analysis);
+    }
+
+    // Sources
+    html += renderSources(data.sources, {
+      latency_ms: data.latency_ms,
+      model: data.model,
+      cached: data.cached
+    });
+
+    return html || "No answer returned from the backend.";
+  }
+
+  // ─── API Call ──────────────────────────────────────────────────────────────
+  function askBackend(question, typing) {
+    var body = JSON.stringify({ question: question, enable_cache: true });
+
+    fetch(API_BASE + "/ask", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: body
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      if (typing && typing.parentNode) typing.parentNode.removeChild(typing);
+
+      if (data.detail) {
+        assistantMsg(
+          '<div style="color:#f87171;font-size:13px">⚠ Backend error: ' + esc(data.detail) + '</div>'
+        );
+        setStatus("Error from backend", false);
+        return;
+      }
+
+      var mode = data.answer_mode || "";
+      var modeStr = mode ? " [" + mode + "]" : "";
+      assistantMsg(renderResponse(data));
+      setStatus("Ready" + modeStr, true);
+    })
+    .catch(function(err) {
+      if (typing && typing.parentNode) typing.parentNode.removeChild(typing);
+      assistantMsg(
+        '<div style="color:#f87171;font-size:13px">⚠ Could not reach the UrbanPulse backend. Please ensure the server is running on port 8000.<br><small>Error: ' + esc(String(err)) + '</small></div>'
+      );
+      setStatus("Backend unavailable", false);
+    });
+  }
 
   // ─── Submit ────────────────────────────────────────────────────────────────
   function handleQuestion(question) {
-    question = question.trim();
+    question = (question || "").trim();
     if (!question) return;
 
     if (inputEl) inputEl.value = "";
@@ -335,17 +306,65 @@
 
     userMsg(question);
     var typing = typingMsg();
-
-    setTimeout(function() {
-      var answer = findAnswer(question);
-      if (typing && typing.parentNode) typing.parentNode.removeChild(typing);
-      assistantMsg(answer || FALLBACK);
-    }, 420);
+    setStatus("⏳ Routing through 3-level answering strategy…", true);
+    askBackend(question, typing);
   }
 
-  // ─── Event wiring ──────────────────────────────────────────────────────────
+
+  // ─── Status Check on Load ──────────────────────────────────────────────────
+  function checkStatus() {
+    fetch(API_BASE + "/status")
+      .then(function(res) { return res.json(); })
+      .then(function(d) {
+        // Support both old shape (d.model.connected) and new shape (d.model.primary_model)
+        var modelOk   = d.model && (d.model.connected || d.model.primary_model);
+        var cacheOk   = d.cache && d.cache.connected;
+        var locs      = d.localities_indexed || 0;
+        var primary   = (d.model && (d.model.primary_model || d.model.target_model)) || "qwen3:8b";
+        var fallback  = d.model && d.model.fallback_model ? " ➔ " + d.model.fallback_model : "";
+        var modelStr  = modelOk ? "✅ " + primary + fallback : "⚠ Ollama offline";
+        var cacheStr  = cacheOk ? " · Redis ✅" : " · Redis bypassed";
+        setStatus(modelStr + cacheStr + " · " + locs + " localities", modelOk);
+
+        // Update suggestion pills with locality-aware queries
+        if (locs > 0) {
+          updateSuggestions(modelOk);
+        }
+      })
+      .catch(function() {
+        setStatus("⚠ Backend not reachable — start the server on port 8000", false);
+      });
+  }
+
+  function updateSuggestions(modelOk) {
+    if (!suggestEl) return;
+    var pills = [
+      { q: "Should I buy a house in Whitefield?",               label: "🏠 Buy in Whitefield?" },
+      { q: "Is Koramangala safe for a family?",                  label: "👨‍👩‍👧 Koramangala safe?" },
+      { q: "Compare Whitefield and HSR Layout",                  label: "⚖️ Whitefield vs HSR?" },
+      { q: "What is the UrbanScore for Indiranagar?",            label: "⚡ Indiranagar score?" },
+      { q: "What are the major infrastructure risks in Bellandur?", label: "🚧 Bellandur risks?" },
+      { q: "Which area has better governance — BTM or Jayanagar?", label: "📋 BTM vs Jayanagar?" },
+      { q: "Why is air quality poor in Peenya?",                 label: "🌫 Peenya AQI?" },
+      { q: "What is the total BBMP construction investment in Bengaluru?", label: "💰 City-wide investment?" },
+    ];
+    suggestEl.innerHTML = pills.map(function(p) {
+      return '<button type="button" class="category-pill" data-q="' + esc(p.q) + '">' + esc(p.label) + '</button>';
+    }).join("");
+
+    // Re-wire click events
+    var newPills = suggestEl.querySelectorAll(".category-pill[data-q]");
+    newPills.forEach(function(pill) {
+      pill.addEventListener("click", function() {
+        handleQuestion(pill.getAttribute("data-q"));
+      });
+    });
+  }
+
+  // ─── Event Wiring ──────────────────────────────────────────────────────────
   document.addEventListener("DOMContentLoaded", function() {
-    setStatus("Ready · Answering from verified UrbanPulse datasets", true);
+    setStatus("Connecting to UrbanPulse Intelligence backend…", false);
+    checkStatus();
 
     if (formEl) {
       formEl.addEventListener("submit", function(e) {
@@ -354,13 +373,27 @@
       });
     }
 
-    // Suggestion pill clicks
+    // Original suggestion pills
     var pills = document.querySelectorAll("#chat-suggestions .category-pill[data-q]");
     pills.forEach(function(pill) {
       pill.addEventListener("click", function() {
         handleQuestion(pill.getAttribute("data-q"));
       });
     });
+
+    // Live time display
+    var timeEl = document.getElementById("live-time-display");
+    if (timeEl) {
+      function updateTime() {
+        var t = new Date().toLocaleTimeString("en-IN", {
+          hour: "2-digit", minute: "2-digit", second: "2-digit",
+          hour12: false, timeZone: "Asia/Kolkata"
+        });
+        timeEl.textContent = t + " IST";
+      }
+      updateTime();
+      setInterval(updateTime, 1000);
+    }
   });
 
 })();

@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Administrator Gateway | UrbanPulse</title>
+  <meta name="description" content="UrbanPulse Verified Civic Administrator Pathway & Role-Based Access Control.">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+
+  <!-- Google Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- App Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="page-admin">
+
+  <!-- Admin Portal Header -->
+  <header class="app-header" style="border-bottom: 1px solid rgba(244, 63, 94, 0.25);">
+    <div class="container header-inner" style="justify-content: space-between;">
+      <div style="display: flex; align-items: center; gap: 14px;">
+        <a href="dashboard.html" class="brand">
+          <div class="brand-icon" style="background: rgba(244, 63, 94, 0.15); border-color: rgba(244, 63, 94, 0.3); color: #f43f5e;">🛡️</div>
+          <div class="brand-text">
+            <h1 style="letter-spacing: 0.5px;">URBANPULSE <span style="font-size: 13px; font-weight: 700; color: #f43f5e; margin-left: 4px; padding: 2px 8px; border-radius: 4px; background: rgba(244,63,94,0.15); border: 1px solid rgba(244,63,94,0.3);">ADMIN</span></h1>
+            <p>Civic Authority & Governance Gateway</p>
+          </div>
+        </a>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <a href="dashboard.html" class="btn btn-sm btn-outline" style="text-decoration: none; padding: 6px 14px; font-size: 13px; font-weight: 600; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); color: var(--text-secondary); background: rgba(255,255,255,0.04); display: inline-flex; align-items: center; gap: 6px;">
+          <span>🌐 Public Portal</span>
+        </a>
+        <button id="admin-signout-btn" class="btn btn-sm" style="background: rgba(244, 63, 94, 0.12); border: 1px solid rgba(244, 63, 94, 0.3); color: #f87171; cursor: pointer; padding: 6px 14px; font-size: 13px; font-weight: 600; border-radius: var(--radius-sm); transition: var(--transition-fast);">
+          Sign Out
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" style="max-width: 1000px; padding: 48px 24px;">
+
+    <!-- Verification Loading State -->
+    <div id="admin-loading-view" style="text-align: center; padding: 80px 20px;">
+      <span class="spinner" style="width: 36px; height: 36px; border-width: 3px; border-color: rgba(244, 63, 94, 0.2); border-top-color: #f43f5e; margin-bottom: 20px;"></span>
+      <h3 style="font-family: var(--font-display); font-size: 20px; color: #fff; margin-bottom: 8px;">Verifying Administrator Security Privileges...</h3>
+      <p style="color: var(--text-muted); font-size: 14px;">Validating authenticated token and role claims with backend security authority.</p>
+    </div>
+
+    <!-- 403 Forbidden View (Denied access) -->
+    <div id="admin-denied-view" class="glass-panel" style="display: none; padding: 48px 36px; text-align: center; border-color: rgba(239, 68, 68, 0.35); box-shadow: 0 10px 40px rgba(239, 68, 68, 0.1);">
+      <div style="width: 68px; height: 68px; border-radius: 50%; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 20px; color: #ef4444;">
+        🚫
+      </div>
+      <span style="display: inline-block; padding: 4px 12px; border-radius: 999px; background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #f87171; font-weight: 700; font-size: 12px; letter-spacing: 0.5px; margin-bottom: 12px;">
+        403 ACCESS FORBIDDEN
+      </span>
+      <h2 style="font-family: var(--font-display); font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 12px;">Civic Administrator Privileges Required</h2>
+      <p style="color: var(--text-secondary); font-size: 15px; max-width: 580px; margin: 0 auto 24px; line-height: 1.6;">
+        Your authenticated account (<span id="denied-user-email" style="color: #fff; font-weight: 600;">citizen</span>) is registered with standard citizen permissions and does not possess verified administrator credentials.
+      </p>
+
+      <div style="display: flex; justify-content: center; gap: 14px; flex-wrap: wrap;">
+        <a href="dashboard.html" class="btn btn-primary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+          <span>← Return to Public Dashboard</span>
+        </a>
+        <a href="login.html?type=admin" class="btn" style="text-decoration: none; padding: 10px 20px; border-radius: 10px; border: 1px solid rgba(244, 63, 94, 0.4); background: rgba(244, 63, 94, 0.15); color: #f87171; font-weight: 700; font-size: 14px; display: inline-flex; align-items: center; gap: 8px;">
+          <span>Switch Administrator Account →</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Verified Administrator Pathway View -->
+    <div id="admin-authorized-view" style="display: none;">
+
+      <!-- Verified Banner Card -->
+      <div class="glass-panel" style="padding: 32px; border-color: rgba(244, 63, 94, 0.35); box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(244, 63, 94, 0.1); margin-bottom: 30px; position: relative; overflow: hidden;">
+        <div style="position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #f43f5e, #fb923c);"></div>
+
+        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
+          <div>
+            <div style="display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px; border-radius: 999px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--accent-emerald); font-size: 12px; font-weight: 700; margin-bottom: 12px;">
+              <span class="pulse-dot"></span>
+              <span>VERIFIED ADMINISTRATOR SESSION ACTIVE</span>
+            </div>
+            <h2 style="font-family: var(--font-display); font-size: 26px; font-weight: 800; color: #fff; margin-bottom: 8px;">
+              Civic Administration Gateway
+            </h2>
+            <p style="color: var(--text-secondary); font-size: 14px; line-height: 1.5; max-width: 650px;">
+              Role-based access control (RBAC) has verified your credentials against the backend authentication service. All administrative actions within this zone require verified authorization claims.
+            </p>
+          </div>
+
+          <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 14px 18px; text-align: right;">
+            <div style="font-size: 11px; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px;">SECURITY CLEARANCE</div>
+            <div style="font-size: 18px; font-weight: 800; color: #f43f5e; font-family: var(--font-display);">ADMINISTRATOR</div>
+            <div id="verified-time" style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Verified: Active</div>
+          </div>
+        </div>
+
+        <!-- Verified User Details Grid -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--border-subtle);">
+          <div style="background: rgba(30, 41, 59, 0.5); padding: 14px 18px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+            <div style="font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Authenticated Admin Email</div>
+            <div id="admin-email-display" style="font-size: 14px; font-weight: 600; color: #fff; margin-top: 4px; word-break: break-all;">—</div>
+          </div>
+
+          <div style="background: rgba(30, 41, 59, 0.5); padding: 14px 18px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+            <div style="font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Backend Token Verification</div>
+            <div style="font-size: 14px; font-weight: 600; color: var(--accent-emerald); margin-top: 4px; display: flex; align-items: center; gap: 6px;">
+              <span>✓</span> FastAPI Token Verified
+            </div>
+          </div>
+
+          <div style="background: rgba(30, 41, 59, 0.5); padding: 14px 18px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+            <div style="font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Access Protection Policy</div>
+            <div style="font-size: 14px; font-weight: 600; color: var(--accent-cyan); margin-top: 4px;">
+              Strict RBAC Enforced
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- =========================================================================
+           AUTHORITY GRIEVANCE & COMPLAINTS OPERATIONS CENTER
+           ========================================================================= -->
+      <section class="section" style="margin-top: 10px;">
+        <div class="section-header" style="margin-bottom: 20px;">
+          <div class="section-title-wrap">
+            <span class="section-badge badge-active" style="background: rgba(244, 63, 94, 0.15); border-color: rgba(244, 63, 94, 0.3); color: #f43f5e;">⚡ Live Operational Console</span>
+            <h2 class="section-title" style="font-size: 22px;">📢 Public Grievance Authority Review & Operations</h2>
+            <p class="section-desc">Review submitted civic complaints, assign municipal departments, update resolution statuses, issue public remarks, and calibrate priority based on objective severity, public safety threats, and affected area impact.</p>
+          </div>
+        </div>
+
+        <!-- Authority KPI Metric Cards -->
+        <div class="kpi-grid" style="margin-bottom: 24px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+          <div class="kpi-card glass-panel">
+            <div class="kpi-header"><span class="kpi-title">Total Lodged</span><div class="kpi-icon">📬</div></div>
+            <div id="adm-kpi-total" class="kpi-value">0</div>
+            <div class="kpi-subtext"><span>All civic grievances</span></div>
+          </div>
+          <div class="kpi-card glass-panel">
+            <div class="kpi-header"><span class="kpi-title">Pending Review</span><div class="kpi-icon" style="color: var(--text-secondary);">🔍</div></div>
+            <div id="adm-kpi-submitted" class="kpi-value" style="color: var(--text-secondary);">0</div>
+            <div class="kpi-subtext"><span>Newly submitted</span></div>
+          </div>
+          <div class="kpi-card glass-panel">
+            <div class="kpi-header"><span class="kpi-title">Under Review</span><div class="kpi-icon" style="color: var(--accent-amber);">⏳</div></div>
+            <div id="adm-kpi-review" class="kpi-value" style="color: var(--accent-amber);">0</div>
+            <div class="kpi-subtext"><span>Initial assessment</span></div>
+          </div>
+          <div class="kpi-card glass-panel">
+            <div class="kpi-header"><span class="kpi-title">Active In Progress</span><div class="kpi-icon" style="color: var(--accent-blue);">🔧</div></div>
+            <div id="adm-kpi-progress" class="kpi-value" style="color: var(--accent-blue);">0</div>
+            <div class="kpi-subtext"><span>Dispatched to crews</span></div>
+          </div>
+          <div class="kpi-card glass-panel">
+            <div class="kpi-header"><span class="kpi-title">Resolved</span><div class="kpi-icon" style="color: var(--accent-emerald);">✅</div></div>
+            <div id="adm-kpi-resolved" class="kpi-value" style="color: var(--accent-emerald);">0</div>
+            <div class="kpi-subtext"><span>Verified closure</span></div>
+          </div>
+          <div class="kpi-card glass-panel">
+            <div class="kpi-header"><span class="kpi-title">Critical / Safety</span><div class="kpi-icon" style="color: #f43f5e;">🚨</div></div>
+            <div id="adm-kpi-critical" class="kpi-value" style="color: #f43f5e;">0</div>
+            <div class="kpi-subtext"><span>Urgent hazard tier</span></div>
+          </div>
+        </div>
+
+        <!-- Filter & Search Console -->
+        <div class="glass-panel" style="padding: 18px 24px; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between;">
+          <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; flex: 1; min-width: 280px;">
+            <input type="text" id="adm-search-filter" class="form-input" placeholder="🔍 Search Ticket ID, Ward, keyword…" style="max-width: 260px; padding: 8px 14px; font-size: 13px;">
+            <select id="adm-status-filter" class="form-input" style="max-width: 170px; padding: 8px 12px; font-size: 13px;">
+              <option value="">All Statuses</option>
+              <option value="SUBMITTED">Submitted</option>
+              <option value="UNDER_REVIEW">Under Review</option>
+              <option value="IN_PROGRESS">In Progress</option>
+              <option value="RESOLVED">Resolved</option>
+              <option value="REJECTED">Rejected</option>
+            </select>
+            <select id="adm-priority-filter" class="form-input" style="max-width: 160px; padding: 8px 12px; font-size: 13px;">
+              <option value="">All Priorities</option>
+              <option value="CRITICAL">🚨 Critical</option>
+              <option value="HIGH">⚠️ High</option>
+              <option value="MEDIUM">⚡ Medium</option>
+              <option value="LOW">ℹ️ Low</option>
+            </select>
+            <select id="adm-dept-filter" class="form-input" style="max-width: 220px; padding: 8px 12px; font-size: 13px;">
+              <option value="">All Departments</option>
+              <option value="BBMP Roads">BBMP Roads Infrastructure</option>
+              <option value="Stormwater">BBMP Stormwater Drains</option>
+              <option value="BWSSB">BWSSB (Water & Sewage)</option>
+              <option value="BESCOM">BESCOM (Electricity)</option>
+              <option value="Solid Waste">BBMP Solid Waste</option>
+              <option value="Town Planning">BBMP Town Planning</option>
+              <option value="Police">Bengaluru City Police</option>
+            </select>
+          </div>
+          <button id="adm-refresh-btn" class="btn btn-sm btn-outline" style="padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+            <span>🔄</span> Refresh Queue
+          </button>
+        </div>
+
+        <!-- Complaints Table Container -->
+        <div class="glass-panel" style="padding: 0; overflow-x: auto; margin-bottom: 30px;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+            <thead>
+              <tr style="background: rgba(15, 23, 42, 0.7); border-bottom: 1px solid var(--border-subtle); color: var(--text-muted); text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px;">
+                <th style="padding: 14px 18px;">Ticket ID</th>
+                <th style="padding: 14px 18px;">Category &amp; Location</th>
+                <th style="padding: 14px 18px;">Priority &amp; Score</th>
+                <th style="padding: 14px 18px;">Assigned Department</th>
+                <th style="padding: 14px 18px;">Status</th>
+                <th style="padding: 14px 18px;">Submitted</th>
+                <th style="padding: 14px 18px; text-align: right;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="adm-complaints-tbody">
+              <tr>
+                <td colspan="7" style="padding: 36px 20px; text-align: center; color: var(--text-muted);">
+                  <div class="spinner" style="width: 24px; height: 24px; border-width: 2px; margin: 0 auto 10px;"></div>
+                  Loading complaints from database…
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Authority Review & Prioritization Modal -->
+      <div id="adm-review-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); backdrop-filter: blur(6px); z-index: 9999; overflow-y: auto; padding: 40px 20px;">
+        <div class="glass-panel" style="max-width: 720px; margin: 0 auto; padding: 28px 32px; border: 1px solid rgba(244, 63, 94, 0.4); box-shadow: 0 20px 50px rgba(0,0,0,0.6); position: relative;">
+          
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+            <div>
+              <span style="font-size: 11.5px; font-weight: 700; color: #f43f5e; letter-spacing: 0.5px; text-transform: uppercase;">Authority Review &amp; Triage</span>
+              <h3 id="modal-ticket-id" style="font-size: 22px; font-weight: 800; color: #fff; margin-top: 2px; font-family: monospace;">UP-2026-XXXXXX</h3>
+            </div>
+            <button id="modal-close-btn" style="background: none; border: none; font-size: 24px; color: var(--text-muted); cursor: pointer; line-height: 1; padding: 4px;">&times;</button>
+          </div>
+
+          <!-- Alert within modal -->
+          <div id="modal-alert" style="display: none; padding: 10px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 13px;"></div>
+
+          <!-- Complaint Context Card -->
+          <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 14px 18px; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">
+              <span>📂 Category: <b id="modal-category" style="color: #fff;">—</b></span>
+              <span>📍 Location/Ward: <b id="modal-location" style="color: #fff;">—</b></span>
+              <span>👤 Complainant: <b id="modal-citizen" style="color: #94a3b8;">—</b></span>
+            </div>
+            <div style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.5; margin-top: 6px;" id="modal-desc">—</div>
+          </div>
+
+          <!-- Review Form -->
+          <form id="adm-review-form">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; margin-bottom: 18px;">
+              <!-- Status -->
+              <div class="form-field">
+                <label for="rev-status" style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px;">Complaint Status</label>
+                <select id="rev-status" class="form-input" style="padding: 10px 14px;">
+                  <option value="SUBMITTED">📬 SUBMITTED — Awaiting Review</option>
+                  <option value="UNDER_REVIEW">🔍 UNDER_REVIEW — Initial Assessment</option>
+                  <option value="IN_PROGRESS">🔧 IN_PROGRESS — Dispatched to Field Crew</option>
+                  <option value="RESOLVED">✅ RESOLVED — Work Completed &amp; Verified</option>
+                  <option value="REJECTED">❌ REJECTED — Invalid / Duplicate</option>
+                </select>
+              </div>
+
+              <!-- Department -->
+              <div class="form-field">
+                <label for="rev-dept" style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px;">Assigned Department</label>
+                <select id="rev-dept" class="form-input" style="padding: 10px 14px;">
+                  <option value="BBMP Roads Infrastructure">BBMP Roads Infrastructure</option>
+                  <option value="BBMP Stormwater Drains">BBMP Stormwater Drains</option>
+                  <option value="BWSSB (Water Supply &amp; Sewerage Board)">BWSSB (Water Supply &amp; Sewerage Board)</option>
+                  <option value="BESCOM (Electricity Supply)">BESCOM (Electricity Supply)</option>
+                  <option value="BBMP Solid Waste Management">BBMP Solid Waste Management</option>
+                  <option value="BBMP Town Planning &amp; Engineering">BBMP Town Planning &amp; Engineering</option>
+                  <option value="Bengaluru City Police">Bengaluru City Police</option>
+                  <option value="KSPCB (Pollution Control Board)">KSPCB (Pollution Control Board)</option>
+                  <option value="BBMP Civic Administration">BBMP Civic Administration</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Prioritization Metrics Box -->
+            <div style="background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(244, 63, 94, 0.25); border-radius: 10px; padding: 18px 20px; margin-bottom: 20px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
+                <b style="font-size: 13px; color: #fff;">⚡ Objective Prioritization Scoring Matrix</b>
+                <div id="rev-score-badge" style="padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; background: rgba(244,63,94,0.15); border: 1px solid rgba(244,63,94,0.3); color: #f43f5e;">
+                  Score: -- | Priority: --
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;">
+                <!-- Severity Slider -->
+                <div>
+                  <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
+                    <span style="color: var(--text-secondary);">Severity Level (Weight 2.0x)</span>
+                    <b id="rev-severity-val" style="color: #38bdf8;">2 — Moderate</b>
+                  </div>
+                  <input type="range" id="rev-severity" min="1" max="5" value="2" style="width: 100%; cursor: pointer;">
+                  <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); margin-top: 2px;">
+                    <span>1: Minor</span>
+                    <span>3: Disruption</span>
+                    <span>5: Critical Threat</span>
+                  </div>
+                </div>
+
+                <!-- Area Impact Slider -->
+                <div>
+                  <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
+                    <span style="color: var(--text-secondary);">Affected Area Impact (Weight 1.5x)</span>
+                    <b id="rev-area-val" style="color: #38bdf8;">2 — Street / Block</b>
+                  </div>
+                  <input type="range" id="rev-area" min="1" max="5" value="2" style="width: 100%; cursor: pointer;">
+                  <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); margin-top: 2px;">
+                    <span>1: Spot</span>
+                    <span>3: Layout</span>
+                    <span>5: Arterial Highway</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Public Safety Checkbox -->
+              <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border-subtle);">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13px;">
+                  <input type="checkbox" id="rev-safety" style="width: 18px; height: 18px; cursor: pointer; accent-color: #f43f5e;">
+                  <span style="color: #fff;"><b>Public Safety Hazard:</b> Poses immediate threat to life, injury hazard, or emergency vehicle blockage (+5.0 priority pts)</span>
+                </label>
+              </div>
+
+              <!-- Priority Override (Optional) -->
+              <div style="margin-top: 14px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                <label for="rev-priority-override" style="font-size: 12px; color: var(--text-muted);">Manual Priority Override (Optional):</label>
+                <select id="rev-priority-override" class="form-input" style="max-width: 180px; padding: 6px 10px; font-size: 12px;">
+                  <option value="">Auto (Use Formula)</option>
+                  <option value="CRITICAL">🚨 CRITICAL</option>
+                  <option value="HIGH">⚠️ HIGH</option>
+                  <option value="MEDIUM">⚡ MEDIUM</option>
+                  <option value="LOW">ℹ️ LOW</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Admin Remarks -->
+            <div class="form-field" style="margin-bottom: 20px;">
+              <label for="rev-notes" style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px;">Official Authority Remarks / Public Action Update</label>
+              <textarea id="rev-notes" class="form-input" rows="3" maxlength="2000" placeholder="State operational findings, dispatch details, crew reference, or timeline. This will be visible on citizen ticket tracking and the public feed."></textarea>
+            </div>
+
+            <!-- Modal Action Buttons -->
+            <div style="display: flex; justify-content: flex-end; gap: 12px;">
+              <button type="button" id="modal-cancel-btn" class="btn" style="background: rgba(255,255,255,0.06); border: 1px solid var(--border-subtle); color: var(--text-secondary); padding: 10px 18px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; cursor: pointer;">
+                Cancel
+              </button>
+              <button type="submit" id="rev-submit-btn" class="btn btn-primary" style="background: #f43f5e; border-color: #f43f5e; padding: 10px 24px; font-size: 13px; font-weight: 700; cursor: pointer;">
+                Save &amp; Publish Update
+              </button>
+            </div>
+          </form>
+
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Supabase JS CDN (UMD bundle) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Application Configuration & API -->
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+
+  <!-- Admin Operations Controller -->
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const loadingView = document.getElementById("admin-loading-view");
+      const deniedView = document.getElementById("admin-denied-view");
+      const authorizedView = document.getElementById("admin-authorized-view");
+      const adminEmailDisplay = document.getElementById("admin-email-display");
+      const deniedUserEmail = document.getElementById("denied-user-email");
+      const signoutBtn = document.getElementById("admin-signout-btn");
+      const verifiedTime = document.getElementById("verified-time");
+
+      signoutBtn.onclick = () => UrbanPulseAuth.signOut("login.html?type=admin");
+
+      // Verify Session
+      const session = await UrbanPulseAuth.getSession();
+      if (!session || !session.access_token) {
+        window.location.href = "login.html?type=admin&redirect=admin.html";
+        return;
+      }
+
+      const token = session.access_token;
+
+      // Verify Admin Role with Backend
+      try {
+        const check = await UrbanPulseAuth.verifyAdminRole(token);
+        loadingView.style.display = "none";
+
+        if (check && check.is_admin) {
+          adminEmailDisplay.textContent = (session.user && session.user.email) || "admin@urbanpulse.org";
+          if (verifiedTime) {
+            verifiedTime.textContent = "Verified: " + new Date().toLocaleTimeString("en-IN", { hour12: true });
+          }
+          authorizedView.style.display = "block";
+          initAdminComplaintsConsole(token);
+        } else {
+          deniedUserEmail.textContent = (session.user && session.user.email) || "Citizen Account";
+          deniedView.style.display = "block";
+        }
+      } catch (err) {
+        loadingView.style.display = "none";
+        deniedUserEmail.textContent = (session.user && session.user.email) || "Citizen Account";
+        deniedView.style.display = "block";
+      }
+    });
+
+    /**
+     * Initializes the Authority Complaints Console
+     */
+    function initAdminComplaintsConsole(token) {
+      const isHttp = window.location.protocol.startsWith("http");
+      const host = window.location.hostname || "127.0.0.1";
+      const port = window.location.port;
+      const apiBase = isHttp && port === "8000" ? "/api/v1" : `http://${host}:8000/api/v1`;
+
+      let currentComplaints = [];
+      let activeComplaint = null;
+
+      const tbody = document.getElementById("adm-complaints-tbody");
+      const searchInput = document.getElementById("adm-search-filter");
+      const statusFilter = document.getElementById("adm-status-filter");
+      const priorityFilter = document.getElementById("adm-priority-filter");
+      const deptFilter = document.getElementById("adm-dept-filter");
+      const refreshBtn = document.getElementById("adm-refresh-btn");
+
+      // Modal elements
+      const modal = document.getElementById("adm-review-modal");
+      const modalClose = document.getElementById("modal-close-btn");
+      const modalCancel = document.getElementById("modal-cancel-btn");
+      const reviewForm = document.getElementById("adm-review-form");
+      const modalTicketId = document.getElementById("modal-ticket-id");
+      const modalCategory = document.getElementById("modal-category");
+      const modalLocation = document.getElementById("modal-location");
+      const modalCitizen = document.getElementById("modal-citizen");
+      const modalDesc = document.getElementById("modal-desc");
+      const revStatus = document.getElementById("rev-status");
+      const revDept = document.getElementById("rev-dept");
+      const revSeverity = document.getElementById("rev-severity");
+      const revSeverityVal = document.getElementById("rev-severity-val");
+      const revArea = document.getElementById("rev-area");
+      const revAreaVal = document.getElementById("rev-area-val");
+      const revSafety = document.getElementById("rev-safety");
+      const revScoreBadge = document.getElementById("rev-score-badge");
+      const revPriorityOverride = document.getElementById("rev-priority-override");
+      const revNotes = document.getElementById("rev-notes");
+      const modalAlert = document.getElementById("modal-alert");
+      const submitBtn = document.getElementById("rev-submit-btn");
+
+      const SEV_LABELS = {
+        1: "1 — Minor / Cosmetic",
+        2: "2 — Moderate / Routine",
+        3: "3 — Significant Disruption",
+        4: "4 — Severe Hazard",
+        5: "5 — Critical Threat / Emergency"
+      };
+
+      const AREA_LABELS = {
+        1: "1 — Spot / Single Building",
+        2: "2 — Street / Block Level",
+        3: "3 — Neighborhood / Layout",
+        4: "4 — Ward Main Corridor",
+        5: "5 — Arterial Highway / Inter-Ward"
+      };
+
+      function updateScorePreview() {
+        const sev = parseInt(revSeverity.value, 10) || 2;
+        const area = parseInt(revArea.value, 10) || 2;
+        const safety = revSafety.checked;
+        const safetyPts = safety ? 5 : 0;
+        const score = Math.round((sev * 2.0) + safetyPts + (area * 1.5));
+
+        revSeverityVal.textContent = SEV_LABELS[sev] || `${sev}`;
+        revAreaVal.textContent = AREA_LABELS[area] || `${area}`;
+
+        let autoPri = "LOW";
+        let col = "var(--accent-cyan)";
+        if (score >= 15) { autoPri = "CRITICAL"; col = "#f43f5e"; }
+        else if (score >= 11) { autoPri = "HIGH"; col = "#ef4444"; }
+        else if (score >= 7) { autoPri = "MEDIUM"; col = "#f59e0b"; }
+
+        const override = revPriorityOverride.value;
+        const finalPri = override || autoPri;
+
+        revScoreBadge.textContent = `Calculated Score: ${score} | Priority: ${finalPri}`;
+        revScoreBadge.style.color = col;
+        revScoreBadge.style.borderColor = `${col}60`;
+      }
+
+      revSeverity.addEventListener("input", updateScorePreview);
+      revArea.addEventListener("input", updateScorePreview);
+      revSafety.addEventListener("change", updateScorePreview);
+      revPriorityOverride.addEventListener("change", updateScorePreview);
+
+      // Load Statistics
+      async function loadStats() {
+        try {
+          const res = await fetch(`${apiBase}/complaints/stats`, {
+            headers: { "Authorization": `Bearer ${token}` }
+          });
+          if (!res.ok) return;
+          const s = await res.json();
+          document.getElementById("adm-kpi-total").textContent = s.total || 0;
+          document.getElementById("adm-kpi-submitted").textContent = (s.by_status && s.by_status.SUBMITTED) || 0;
+          document.getElementById("adm-kpi-review").textContent = (s.by_status && s.by_status.UNDER_REVIEW) || 0;
+          document.getElementById("adm-kpi-progress").textContent = (s.by_status && s.by_status.IN_PROGRESS) || 0;
+          document.getElementById("adm-kpi-resolved").textContent = (s.by_status && s.by_status.RESOLVED) || 0;
+          document.getElementById("adm-kpi-critical").textContent = (s.by_priority && s.by_priority.CRITICAL) || 0;
+        } catch (_) {}
+      }
+
+      // Load Complaints Table
+      async function loadComplaints() {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" style="padding: 30px; text-align: center; color: var(--text-muted);">
+              <div class="spinner" style="width: 22px; height: 22px; border-width: 2px; margin: 0 auto 8px;"></div>
+              Fetching complaints queue…
+            </td>
+          </tr>
+        `;
+
+        try {
+          const params = new URLSearchParams();
+          if (statusFilter.value) params.append("status", statusFilter.value);
+          if (priorityFilter.value) params.append("priority", priorityFilter.value);
+          if (deptFilter.value) params.append("department", deptFilter.value);
+          if (searchInput.value.trim()) params.append("search", searchInput.value.trim());
+
+          const res = await fetch(`${apiBase}/complaints/?${params.toString()}`, {
+            headers: {
+              "Authorization": `Bearer ${token}`,
+              "Accept": "application/json"
+            }
+          });
+
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          currentComplaints = await res.json();
+
+          if (!currentComplaints.length) {
+            tbody.innerHTML = `
+              <tr>
+                <td colspan="7" style="padding: 40px 20px; text-align: center; color: var(--text-muted);">
+                  <div style="font-size: 28px; margin-bottom: 8px;">📭</div>
+                  <div style="font-weight: 600; color: var(--text-secondary);">No complaints matching current filters</div>
+                  <div style="font-size: 12px; margin-top: 4px;">All queues are processed. New citizen submissions will populate here.</div>
+                </td>
+              </tr>
+            `;
+            return;
+          }
+
+          tbody.innerHTML = currentComplaints.map(c => {
+            const priColor = c.priority === "CRITICAL" ? "#f43f5e" : (c.priority === "HIGH" ? "#ef4444" : (c.priority === "MEDIUM" ? "#f59e0b" : "var(--accent-cyan)"));
+            const statusColor = c.status === "RESOLVED" ? "var(--accent-emerald)" : (c.status === "IN_PROGRESS" ? "var(--accent-blue)" : (c.status === "UNDER_REVIEW" ? "var(--accent-amber)" : (c.status === "REJECTED" ? "#ef4444" : "var(--text-secondary)")));
+            const dateStr = c.created_at ? new Date(c.created_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "—";
+            const locationStr = c.ward && c.location && !c.location.includes(c.ward) ? `${c.ward} • ${c.location}` : (c.location || c.ward || "Bengaluru");
+
+            return `
+              <tr style="border-bottom: 1px solid var(--border-subtle); transition: background 0.15s ease;" onmouseenter="this.style.background='rgba(255,255,255,0.03)'" onmouseleave="this.style.background='transparent'">
+                <td style="padding: 14px 18px; font-family: monospace; font-weight: 700; color: #38bdf8;">${c.ticket_id}</td>
+                <td style="padding: 14px 18px;">
+                  <div style="font-weight: 600; color: #fff;">${c.category}</div>
+                  <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;">📍 ${locationStr}</div>
+                </td>
+                <td style="padding: 14px 18px;">
+                  <span style="font-size: 11px; padding: 3px 8px; border-radius: 4px; font-weight: 700; background: ${priColor}15; border: 1px solid ${priColor}40; color: ${priColor};">
+                    ${c.priority || "MEDIUM"} (${c.priority_score || 5})
+                  </span>
+                </td>
+                <td style="padding: 14px 18px; font-size: 12.5px; color: var(--text-secondary); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                  ${c.department || "BBMP Civic Administration"}
+                </td>
+                <td style="padding: 14px 18px;">
+                  <span style="font-size: 11px; padding: 3px 8px; border-radius: 4px; font-weight: 700; background: ${statusColor}15; border: 1px solid ${statusColor}40; color: ${statusColor};">
+                    ${c.status}
+                  </span>
+                </td>
+                <td style="padding: 14px 18px; font-size: 11.5px; color: var(--text-muted);">${dateStr}</td>
+                <td style="padding: 14px 18px; text-align: right;">
+                  <button class="btn btn-sm" onclick="openReviewModal('${c.ticket_id}')" style="background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.35); color: #f43f5e; cursor: pointer; padding: 5px 12px; font-size: 12px; font-weight: 700; border-radius: var(--radius-sm);">
+                    Review ⚡
+                  </button>
+                </td>
+              </tr>
+            `;
+          }).join("");
+
+        } catch (err) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="7" style="padding: 24px; text-align: center; color: #ef4444;">
+                ⚠️ Failed to load complaints: ${err.message}
+              </td>
+            </tr>
+          `;
+        }
+      }
+
+      window.openReviewModal = function(ticketId) {
+        activeComplaint = currentComplaints.find(c => c.ticket_id === ticketId);
+        if (!activeComplaint) return;
+
+        modalAlert.style.display = "none";
+        modalTicketId.textContent = activeComplaint.ticket_id;
+        modalCategory.textContent = activeComplaint.category;
+        modalLocation.textContent = activeComplaint.ward && activeComplaint.location ? `${activeComplaint.ward} • ${activeComplaint.location}` : (activeComplaint.location || activeComplaint.ward || "Bengaluru");
+        modalCitizen.textContent = activeComplaint.name || "Anonymous Citizen";
+        modalDesc.textContent = activeComplaint.description || "";
+
+        revStatus.value = activeComplaint.status || "SUBMITTED";
+        if (activeComplaint.department) {
+          revDept.value = activeComplaint.department;
+        }
+
+        revSeverity.value = activeComplaint.severity_level || 2;
+        revArea.value = activeComplaint.affected_area_impact || 2;
+        revSafety.checked = Boolean(activeComplaint.public_safety_impact);
+        revPriorityOverride.value = "";
+        revNotes.value = activeComplaint.admin_notes || "";
+
+        updateScorePreview();
+        modal.style.display = "block";
+      };
+
+      function closeModal() {
+        modal.style.display = "none";
+        activeComplaint = null;
+      }
+
+      modalClose.onclick = closeModal;
+      modalCancel.onclick = closeModal;
+      window.onclick = (e) => { if (e.target === modal) closeModal(); };
+
+      // Review Form Submission
+      reviewForm.onsubmit = async (e) => {
+        e.preventDefault();
+        if (!activeComplaint) return;
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Publishing Update…";
+        modalAlert.style.display = "none";
+
+        try {
+          const payload = {
+            status: revStatus.value,
+            department: revDept.value,
+            severity_level: parseInt(revSeverity.value, 10),
+            affected_area_impact: parseInt(revArea.value, 10),
+            public_safety_impact: revSafety.checked,
+            admin_notes: revNotes.value.trim() || null
+          };
+
+          if (revPriorityOverride.value) {
+            payload.priority = revPriorityOverride.value;
+          }
+
+          const res = await fetch(`${apiBase}/complaints/${activeComplaint.ticket_id}/admin-review`, {
+            method: "PATCH",
+            headers: {
+              "Authorization": `Bearer ${token}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+          });
+
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.detail || `Server returned ${res.status}`);
+          }
+
+          modalAlert.style.display = "block";
+          modalAlert.style.background = "rgba(16, 185, 129, 0.15)";
+          modalAlert.style.border = "1px solid rgba(16, 185, 129, 0.3)";
+          modalAlert.style.color = "var(--accent-emerald)";
+          modalAlert.textContent = `✅ Successfully updated ticket ${activeComplaint.ticket_id}! Reflected on public portal.`;
+
+          await loadStats();
+          await loadComplaints();
+
+          setTimeout(() => {
+            closeModal();
+          }, 900);
+
+        } catch (err) {
+          modalAlert.style.display = "block";
+          modalAlert.style.background = "rgba(239, 68, 68, 0.15)";
+          modalAlert.style.border = "1px solid rgba(239, 68, 68, 0.3)";
+          modalAlert.style.color = "#f87171";
+          modalAlert.textContent = `❌ Update failed: ${err.message}`;
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Save & Publish Update";
+        }
+      };
+
+      // Filter events
+      searchInput.addEventListener("input", () => { clearTimeout(searchInput._timer); searchInput._timer = setTimeout(loadComplaints, 300); });
+      statusFilter.addEventListener("change", loadComplaints);
+      priorityFilter.addEventListener("change", loadComplaints);
+      deptFilter.addEventListener("change", loadComplaints);
+      refreshBtn.addEventListener("click", () => { loadStats(); loadComplaints(); });
+
+      // Initial load
+      loadStats();
+      loadComplaints();
+    }
+  </script>
+
+</body>
+</html>
+

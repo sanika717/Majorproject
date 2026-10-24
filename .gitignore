@@ -1,8 +1,8 @@
-x.env
-*.env
+.env
+.env.*
+!.env.example
 .venv/
 venv/
 __pycache__/
-*.pyc
-*.pyo
+node_modules/
 .DS_Store

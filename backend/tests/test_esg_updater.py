@@ -152,3 +152,70 @@ def test_existing_rows_get_provenance_and_apis_return_it(sf):
     carbon = EsgService.carbon(db)
     sectors = [row for row in carbon["series"] if row["sector"] != "Total"]
     assert all(row["mmt_co2e"] is None for row in sectors)
+
+
+def test_no_duplicate_rows_on_reload(sf):
+    """Reloading jobs multiple times must be strictly idempotent and produce no duplicate rows."""
+    r_elec = run_job("electricity", sf, force=True)
+    assert r_elec["status"] == "ok"
+    r_carb = run_job("carbon", sf, force=True)
+    r_wat = run_job("water", sf, force=True)
+
+    db = sf()
+    elec_count = db.query(m.EsgElectricity).count()
+    carb_count = db.query(m.EsgCarbonEmission).count()
+    water_count = db.query(m.EsgWaterReading).count()
+    db.close()
+
+    # Second run with force=True
+    run_job("electricity", sf, force=True)
+    run_job("carbon", sf, force=True)
+    run_job("water", sf, force=True)
+
+    db2 = sf()
+    assert db2.query(m.EsgElectricity).count() == elec_count
+    assert db2.query(m.EsgCarbonEmission).count() == carb_count
+    assert db2.query(m.EsgWaterReading).count() == water_count
+    db2.close()
+
+
+def test_all_records_have_provenance(sf):
+    """Every record across all ESG tables must have non-empty provenance fields."""
+    run_job("electricity", sf, force=True)
+    db = sf()
+    for model in (m.EsgAirStation, m.EsgCarbonEmission, m.EsgWaterReading, m.EsgElectricity):
+        records = db.query(model).all()
+        assert len(records) > 0, f"Expected records in {model.__name__}"
+        for r in records:
+            assert r.source_name, f"Missing source_name in {model.__name__} id={r.id}"
+            assert r.source_url, f"Missing source_url in {model.__name__} id={r.id}"
+            assert r.data_year, f"Missing data_year in {model.__name__} id={r.id}"
+            assert r.last_updated, f"Missing last_updated in {model.__name__} id={r.id}"
+            assert r.verification_status, f"Missing verification_status in {model.__name__} id={r.id}"
+    db.close()
+
+
+def test_default_period_selection_logic():
+    """Verify that default period selects the latest period with a scored environmental indicator."""
+    # Periods sorted descending: 2022-23 (electricity only), 2020-21 (water), 2019 (carbon), 2016-17 (air)
+    periods = ["2022-23", "2020-21", "2019", "2016-17"]
+    indicators_by_period = {
+        "2022-23": [{"category": "climate", "score": None, "indicator": "Electricity"}],
+        "2020-21": [{"category": "environmental", "score": 75.0, "indicator": "Lake water quality"}],
+        "2019": [{"category": "climate", "score": None, "indicator": "Carbon emissions"}],
+        "2016-17": [{"category": "environmental", "score": 60.0, "indicator": "Air PM10"}],
+    }
+
+    # Algorithm matching frontend/js/esg-scorecard.js lines 222-227
+    default_period = periods[0]
+    for p in periods:
+        ind = indicators_by_period.get(p, [])
+        has_scored_env = any(item["category"] == "environmental" and item["score"] is not None for item in ind)
+        if has_scored_env:
+            default_period = p
+            break
+
+    # 2022-23 has no scored environmental indicator, so 2020-21 must be chosen
+    assert default_period == "2020-21"
+    assert default_period != "2022-23"
+

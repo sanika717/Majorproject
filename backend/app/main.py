@@ -29,12 +29,14 @@ from backend.app.routes import (
     auth,
     esg,
     complaints,
+    intelligence,
 )
 
 # 2. DATABASE: run Base.metadata.create_all and ensure_columns ONLY when ENV == "dev"
 if settings.ENV == "dev":
     try:
         Base.metadata.create_all(bind=engine)
+        complaint_model.ensure_complaint_columns(engine)
     except Exception as e:
         print(f"[UrbanPulse] Warning: could not run create_all on startup: {e}")
 
@@ -136,6 +138,9 @@ app.include_router(police.router, prefix=api_v1_prefix)
 app.include_router(auth.router, prefix=api_v1_prefix)
 app.include_router(complaints.router, prefix=api_v1_prefix)
 app.include_router(esg.router, prefix=api_v1_prefix)
+app.include_router(intelligence.router, prefix=api_v1_prefix)
+# Also mount at /api for direct /api/intelligence/... requests
+app.include_router(intelligence.router, prefix="/api")
 
 esg_scheduler = None
 

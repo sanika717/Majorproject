@@ -192,7 +192,9 @@ const UrbanPulseAPI = (function() {
         console.error("[UrbanPulseAPI] Login failed:", err);
         throw err;
       }
-    }
+    },
+
+    baseUrl: API_BASE
   };
 })();
 
