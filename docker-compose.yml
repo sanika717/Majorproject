@@ -1,0 +1,87 @@
+version: "3.9"
+
+services:
+  # ─── PostgreSQL ────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-urbanpulse}
+      POSTGRES_USER: ${POSTGRES_USER:-urbanpulse}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-urbanpulse}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5432:5432"
+
+  # ─── Redis (optional semantic cache — graceful fallback if absent) ──────────
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    ports:
+      - "6379:6379"
+
+  # ─── FastAPI Application ───────────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      ENV: ${ENV:-dev}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-urbanpulse}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-urbanpulse}
+      REDIS_URL: redis://redis:6379/0
+      REDIS_CACHE_TTL: ${REDIS_CACHE_TTL:-86400}
+      REDIS_SIMILARITY_THRESHOLD: ${REDIS_SIMILARITY_THRESHOLD:-0.90}
+
+      # Ollama runs on the host machine — Docker host alias
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen3:8b}
+      OLLAMA_PRIMARY_MODEL: ${OLLAMA_PRIMARY_MODEL:-qwen3:8b}
+      OLLAMA_FALLBACK_MODEL: ${OLLAMA_FALLBACK_MODEL:-}
+      OLLAMA_EMBED_MODEL: ${OLLAMA_EMBED_MODEL:-nomic-embed-text}
+      OLLAMA_TIMEOUT_SECONDS: ${OLLAMA_TIMEOUT_SECONDS:-60}
+
+      # Supabase Auth (public values only — keep secrets in .env, never commit)
+      SUPABASE_URL: ${SUPABASE_URL:-}
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:-}
+      SUPABASE_JWT_SECRET: ${SUPABASE_JWT_SECRET:-}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-}
+
+      # Misc
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:8000}
+      GOOGLE_AQI_API_KEY: ${GOOGLE_AQI_API_KEY:-}
+      DATA_GOV_IN_API_KEY: ${DATA_GOV_IN_API_KEY:-}
+
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount data so live ESG seeds and JSON datasets are available inside container
+      - ./data:/app/data:ro
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/api/v1/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  postgres_data:
+  redis_data:

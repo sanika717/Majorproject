@@ -1,4 +1,5 @@
 import os
+from contextlib import asynccontextmanager
 from pathlib import Path
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
@@ -43,6 +44,40 @@ if settings.ENV == "dev":
 # Rate Limiter setup
 limiter = Limiter(key_func=get_remote_address)
 
+# ESG scheduler (module-level so lifespan can reference it)
+_esg_scheduler = None
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Modern FastAPI lifespan — replaces deprecated @app.on_event."""
+    global _esg_scheduler
+    # ── Startup ──────────────────────────────────────────────────────────────
+    if settings.ENV == "dev":
+        db = SessionLocal()
+        try:
+            AuthService.ensure_default_roles(db)
+            from backend.app.services.esg_service import EsgService
+            from backend.app.services.esg_update.provenance import ensure_columns, stamp_all
+            ensure_columns(engine)
+            EsgService.seed(db)
+            stamp_all(db)
+        except Exception as e:
+            print(f"[UrbanPulse] Warning: dev startup tasks skipped or failed: {e}")
+        finally:
+            db.close()
+
+    from backend.app.services.esg_update import EsgUpdateScheduler
+    _esg_scheduler = EsgUpdateScheduler(SessionLocal)
+    _esg_scheduler.start()
+
+    yield  # ←─ application runs
+
+    # ── Shutdown ─────────────────────────────────────────────────────────────
+    if _esg_scheduler:
+        _esg_scheduler.stop()
+
+
 # 5. Disable /docs and /openapi.json when ENV == "prod"
 is_prod = settings.ENV == "prod"
 
@@ -52,7 +87,8 @@ app = FastAPI(
     description="Evidence-based Smart City Transparency and Civic Intelligence platform backend for Bengaluru.",
     docs_url=None if is_prod else "/docs",
     redoc_url=None if is_prod else "/redoc",
-    openapi_url=None if is_prod else "/openapi.json"
+    openapi_url=None if is_prod else "/openapi.json",
+    lifespan=lifespan,
 )
 
 app.state.limiter = limiter
@@ -144,36 +180,6 @@ app.include_router(intelligence.router, prefix=api_v1_prefix)
 # Also mount at /api for direct /api/intelligence/... requests
 app.include_router(intelligence.router, prefix="/api")
 
-esg_scheduler = None
-
-
-@app.on_event("startup")
-def startup_event():
-    # Only run ensure_columns, seed, default roles when ENV == "dev"
-    if settings.ENV == "dev":
-        db = SessionLocal()
-        try:
-            AuthService.ensure_default_roles(db)
-            from backend.app.services.esg_service import EsgService
-            from backend.app.services.esg_update.provenance import ensure_columns, stamp_all
-            ensure_columns(engine)   # add per-record provenance columns to pre-existing ESG tables
-            EsgService.seed(db)  # no-op if ESG tables are already populated
-            stamp_all(db)
-        except Exception as e:
-            print(f"[UrbanPulse] Warning: dev startup tasks skipped or failed: {e}")
-        finally:
-            db.close()
-
-    from backend.app.services.esg_update import EsgUpdateScheduler
-    global esg_scheduler
-    esg_scheduler = EsgUpdateScheduler(SessionLocal)
-    esg_scheduler.start()    # background thread; set ESG_AUTO_UPDATE=0 to disable
-
-
-@app.on_event("shutdown")
-def shutdown_event():
-    if esg_scheduler:
-        esg_scheduler.stop()
 
 @app.get(f"{api_v1_prefix}/health", tags=["Health"])
 def health_check():

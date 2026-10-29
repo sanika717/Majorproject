@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: urbanpulse_test
+          POSTGRES_USER: urbanpulse
+          POSTGRES_PASSWORD: testpassword
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      ENV: dev
+      DATABASE_URL: postgresql://urbanpulse:testpassword@localhost:5432/urbanpulse_test
+      # Redis is optional — tests gracefully bypass if unavailable
+      REDIS_URL: redis://127.0.0.1:9999/0
+      # Ollama — mocked in unit tests; not required for CI
+      OLLAMA_BASE_URL: http://127.0.0.1:11434
+      OLLAMA_MODEL: qwen3:8b
+      OLLAMA_PRIMARY_MODEL: qwen3:8b
+      OLLAMA_EMBED_MODEL: nomic-embed-text
+      OLLAMA_TIMEOUT_SECONDS: 5
+      # Supabase — not needed for unit tests (mocked)
+      SUPABASE_URL: https://placeholder.supabase.co
+      SUPABASE_ANON_KEY: placeholder
+      SUPABASE_JWT_SECRET: placeholder-secret-at-least-32-chars-long
+      SUPABASE_SERVICE_ROLE_KEY: placeholder
+      ALLOWED_ORIGINS: http://localhost:8000
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r backend/requirements.txt
+
+      - name: Run pytest (unit + API tests, skip slow live-Ollama tests)
+        run: |
+          pytest backend/tests/ \
+            -v \
+            -m "not slow" \
+            --tb=short \
+            --ignore=backend/tests/test_auth_supabase.py
