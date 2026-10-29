@@ -184,23 +184,60 @@ class OllamaClient:
             logger.debug(f"[OllamaClient] Embedding failed: {e}")
         return []
 
-    # ── Status ─────────────────────────────────────────────────────────────
+    # ── Status & Verification ──────────────────────────────────────────────
+
+    def verify_connection(self) -> Tuple[bool, str, Optional[str]]:
+        """
+        Verifies live connection to Ollama and confirms whether a usable model is present.
+        Returns (is_ready, message, active_model_tag).
+        """
+        try:
+            models = self.get_installed_models(force_refresh=True)
+            if not models:
+                return (
+                    False,
+                    f"Connected to Ollama at {settings.OLLAMA_BASE_URL}, but no models are installed.",
+                    None,
+                )
+
+            primary = self.resolve_primary()
+            if primary:
+                return True, f"Ollama operational. Active model: '{primary}'", primary
+
+            fallback = self.resolve_fallback()
+            if fallback:
+                return (
+                    True,
+                    f"Primary model '{settings.OLLAMA_PRIMARY_MODEL}' not found. Using fallback: '{fallback}'",
+                    fallback,
+                )
+
+            return (
+                False,
+                f"Neither primary '{settings.OLLAMA_PRIMARY_MODEL}' nor fallback '{settings.OLLAMA_FALLBACK_MODEL}' is installed. Available: {models}",
+                None,
+            )
+        except Exception as e:
+            return False, f"Could not reach Ollama at {settings.OLLAMA_BASE_URL}: {e}", None
 
     def status(self) -> Dict[str, Any]:
         """Returns connection status and model availability."""
-        installed = self.get_installed_models(force_refresh=True)
+        is_ready, verify_msg, active_model = self.verify_connection()
+        installed = self.get_installed_models()
         primary   = self.resolve_primary()
         fallback  = self.resolve_fallback()
         return {
-            "connected":             bool(installed or primary),
+            "connected":             is_ready,
             "url":                   settings.OLLAMA_BASE_URL,
             "installed_models":      installed,
+            "active_model":          active_model,
             "primary_model":         primary,
             "primary_model_config":  settings.OLLAMA_PRIMARY_MODEL,
             "fallback_model":        fallback,
             "fallback_model_config": settings.OLLAMA_FALLBACK_MODEL,
             "embed_model":           settings.OLLAMA_EMBED_MODEL,
             "timeout_seconds":       settings.OLLAMA_TIMEOUT_SECONDS,
+            "verification_message":  verify_msg,
         }
 
 

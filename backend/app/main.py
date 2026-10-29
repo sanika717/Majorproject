@@ -70,8 +70,10 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             "default-src 'self'; "
             "img-src 'self' data: https:; "
             "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com; "
-            "style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; "
-            "font-src 'self' https://fonts.gstatic.com data:; "
+            # cdn.jsdelivr.net added: FastAPI Swagger UI loads swagger-ui.css from jsdelivr (not unpkg)
+            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://fonts.googleapis.com; "
+            # cdn.jsdelivr.net added: Swagger UI bundles reference fonts from jsdelivr
+            "font-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com data:; "
             "connect-src 'self' https:;"
         )
         if settings.ENV == "prod":

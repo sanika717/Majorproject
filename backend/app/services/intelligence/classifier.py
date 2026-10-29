@@ -19,6 +19,7 @@ Priority rules (evaluated in order):
   8. Mixed → LEVEL_2
 """
 
+import re
 from typing import Tuple
 
 # Level labels
@@ -78,6 +79,43 @@ _EXPLANATION_PREFIXES = (
     "what are the limitations",
 )
 
+# ── Greetings and conversational phrases ──────────────────────────────────────
+_GREETING_WORDS = {
+    "hi", "hello", "hey", "hola", "namaste", "good morning", "good afternoon",
+    "good evening", "howdy", "sup", "what's up", "whats up", "greetings",
+}
+
+_CONVERSATIONAL_PHRASES = {
+    "who are you", "what are you", "what can you do", "help", "how are you",
+    "thank you", "thanks", "thanks a lot", "bye", "goodbye", "see you",
+    "tell me a joke", "what is your name", "who made you", "what do you do",
+}
+
+_FOLLOW_UP_PHRASES = {
+    "tell me more", "elaborate", "can you elaborate", "explain more",
+    "why", "why so", "why is that", "what do you mean", "what else",
+    "what next", "continue", "go on", "what should i do", "recommend something",
+}
+
+
+def is_greeting_or_chit_chat(text: str) -> bool:
+    """Returns True if the user input is a greeting or conversational message."""
+    clean = re.sub(r"[^\w\s]", "", text.lower()).strip()
+    if clean in _GREETING_WORDS or clean in _CONVERSATIONAL_PHRASES:
+        return True
+    first_word = clean.split()[0] if clean else ""
+    if first_word in _GREETING_WORDS:
+        return True
+    return any(clean.startswith(p) for p in _CONVERSATIONAL_PHRASES)
+
+
+def is_follow_up(text: str) -> bool:
+    """Returns True if the user input is a follow-up conversational prompt."""
+    clean = re.sub(r"[^\w\s]", "", text.lower()).strip()
+    if clean in _FOLLOW_UP_PHRASES:
+        return True
+    return any(clean.startswith(p) for p in _FOLLOW_UP_PHRASES)
+
 
 def _has_locality(q: str) -> bool:
     """Returns True if any known Bengaluru locality is mentioned in the lowercased question."""
@@ -93,11 +131,21 @@ def classify_question(question: str, has_locality_evidence: bool = False) -> Tup
     """
     q = question.lower().strip()
 
+    # ── Rule 0a: Greetings & Conversational Chit-Chat ───────────────────────
+    has_loc = _has_locality(q)
+    if is_greeting_or_chit_chat(q) and not has_locality_evidence and not has_loc:
+        return LEVEL_3, "Greeting / conversational message"
+
+    # ── Rule 0b: Follow-up Conversation ─────────────────────────────────────
+    if is_follow_up(q):
+        if has_locality_evidence or has_loc:
+            return LEVEL_2, "Follow-up conversation with locality context — hybrid"
+        return LEVEL_3, "Follow-up conversation — general AI"
+
     local_hits = sum(1 for term in _URBANPULSE_DATA_TERMS if term in q)
     general_hits = sum(1 for term in _GENERAL_AI_TERMS if term in q)
 
     # Count locality name mentions as strong local signals
-    has_loc = _has_locality(q)
     if has_loc:
         local_hits += 2   # boost
 

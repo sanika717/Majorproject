@@ -93,19 +93,90 @@
 
         <div class="controls-bar">
           <div class="control-group">
-            <span class="control-label">Explore Layer:</span>
+            <span class="control-label">Explore Pillar Layer:</span>
             <select id="map-layer-selector" class="custom-select" aria-label="Map layer">
-              <option value="construction" selected>🏗️ Construction (Live EDA — Default)</option>
-              <option value="crime">🚨 Crime & Safety (No area-level pins)</option>
-              <option value="police">🚓 Police Stations (OpenStreetMap)</option>
-              <option value="healthcare">🏥 Hospitals (OpenStreetMap)</option>
-              <option value="parks">🌳 Parks (OpenStreetMap)</option>
-              <option value="education">🏫 Schools & Universities (OpenStreetMap)</option>
-              <option value="transport">🚌 Public Transport (OpenStreetMap)</option>
-              <option value="utilities">💧 Water / Utilities (OpenStreetMap)</option>
-              <option value="government">🏛️ Government Services (OpenStreetMap)</option>
+              <option value="construction" selected>🏗️ Construction &amp; Infrastructure (BBMP Ward Level)</option>
+              <option value="crime">🚨 Crime &amp; Safety (City &amp; Division Records)</option>
+              <option value="police">🚓 Police Stations &amp; Outposts (Mapped KML/OSM)</option>
+              <option value="healthcare">🏥 Hospitals &amp; Clinics (OpenStreetMap)</option>
+              <option value="schools">🏫 Schools (OpenStreetMap)</option>
+              <option value="universities">🎓 Universities &amp; Colleges (OpenStreetMap)</option>
+              <option value="parks">🌳 Parks &amp; Playgrounds (OpenStreetMap)</option>
+              <option value="bus">🚌 Bus Stops &amp; Terminals (BMTC)</option>
+              <option value="metro">🚇 Metro Stations &amp; Entrances (Namma Metro)</option>
+              <option value="railway">🚆 Railway Stations &amp; Trains (Indian Railways)</option>
+              <option value="government">🏛️ Government Offices &amp; Services (OpenStreetMap)</option>
+              <option value="utilities">💧 Water &amp; Other Utilities (BWSSB / BESCOM)</option>
             </select>
           </div>
+        </div>
+      </div>
+
+      <!-- LOCATION SELECTOR TOOLBAR -->
+      <div id="map-location-controls" class="location-toolbar">
+        <div class="location-toolbar-grid">
+          <!-- 1. Search Box -->
+          <div class="location-search-box">
+            <input type="text" id="map-location-search" class="custom-input" placeholder="Search Bengaluru area e.g. Whitefield, Koramangala, Indiranagar, MG Road..." aria-label="Search Bengaluru locality" />
+            <button id="btn-location-search" type="button" class="btn-ctrl btn-ctrl-primary">🔍 Search</button>
+          </div>
+
+          <!-- 2. Radius and Action Buttons -->
+          <div class="location-actions-group">
+            <div class="radius-control-wrap">
+              <label for="map-radius-selector" class="radius-control-label">Search Radius:</label>
+              <select id="map-radius-selector" class="custom-select" style="padding: 7px 12px; font-size: 13px;" aria-label="Search radius">
+                <option value="500">500 m</option>
+                <option value="1000">1 km</option>
+                <option value="2000" selected>2 km (Default)</option>
+                <option value="5000">5 km</option>
+                <option value="10000">10 km</option>
+              </select>
+            </div>
+
+            <button id="btn-gps-location" type="button" class="btn-ctrl btn-ctrl-secondary" title="Request GPS location only on your explicit click">
+              📍 Use My GPS
+            </button>
+            <button id="btn-reset-location" type="button" class="btn-ctrl btn-ctrl-ghost" title="Restore central Bengaluru view without requiring GPS permission">
+              ↺ Reset to Bengaluru
+            </button>
+            <button id="btn-fit-bounds" type="button" class="btn-ctrl btn-ctrl-ghost" title="Fit map view to selected radius circle">
+              🎯 Center Radius
+            </button>
+          </div>
+        </div>
+
+        <!-- Quick Locality Suggestions -->
+        <div class="locality-chips-strip">
+          <span class="chips-label">Quick Areas:</span>
+          <button type="button" class="locality-chip" data-loc="Whitefield">Whitefield</button>
+          <button type="button" class="locality-chip" data-loc="Indiranagar">Indiranagar</button>
+          <button type="button" class="locality-chip" data-loc="Koramangala">Koramangala</button>
+          <button type="button" class="locality-chip" data-loc="HSR Layout">HSR Layout</button>
+          <button type="button" class="locality-chip" data-loc="Electronic City">Electronic City</button>
+          <button type="button" class="locality-chip" data-loc="Jayanagar">Jayanagar</button>
+          <button type="button" class="locality-chip" data-loc="Malleswaram">Malleswaram</button>
+          <button type="button" class="locality-chip" data-loc="Yelahanka">Yelahanka</button>
+          <button type="button" class="locality-chip" data-loc="Central Bengaluru">Vidhana Soudha / Central</button>
+        </div>
+
+        <!-- Live Selected Location Status Bar -->
+        <div class="selected-location-status-bar">
+          <div class="selected-location-info">
+            <span class="pulse-dot"></span>
+            <span id="selected-loc-name" class="selected-loc-name">Selected: Central Bengaluru</span>
+            <span id="selected-loc-coords" class="pill-tag pill-coords">12.9716° N, 77.5946° E</span>
+            <span id="selected-loc-radius" class="pill-tag pill-radius">2 km radius</span>
+          </div>
+          <div id="location-hint" style="font-size: 11px; color: var(--text-muted);">
+            💡 Tip: Drag the orange pin or click anywhere on the map to investigate any Bengaluru area.
+          </div>
+        </div>
+
+        <!-- Error Banner (shown if search fails or geocode unavailable) -->
+        <div id="map-location-error" class="location-error-banner" style="display: none;">
+          <span id="map-location-error-text">Location not found.</span>
+          <button type="button" id="btn-dismiss-error" class="btn-ctrl btn-ctrl-ghost" style="padding: 2px 8px; font-size: 11px;">Dismiss</button>
         </div>
       </div>
 
@@ -127,61 +198,123 @@
         <div id="map-floating-panel" class="map-floating-panel">
           <h3>
             <span>🚨 Crime &amp; Safety</span>
+            <span style="font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 700; background: rgba(239,68,68,0.2); color:#f87171;">City &amp; Division Records</span>
           </h3>
+          <div class="floating-stat-row">
+            <span class="floating-stat-label">Locality / Police Division:</span>
+            <span id="crime-panel-division" class="floating-stat-value">Bengaluru Central</span>
+          </div>
+          <div class="floating-stat-row">
+            <span class="floating-stat-label">Division Cyber Crimes (2023):</span>
+            <span id="crime-panel-cyber" class="floating-stat-value">2,946 cases</span>
+          </div>
+          <div class="floating-stat-row">
+            <span class="floating-stat-label">Historical Crimes (2014-2021 D47):</span>
+            <span class="floating-stat-value">35,971 (15.1% fatal)</span>
+          </div>
+          <div class="floating-stat-row">
+            <span class="floating-stat-label">City Crime Risk Score:</span>
+            <span class="floating-stat-value" style="color: #ef4444;">71.70 / 100 (High Risk)</span>
+          </div>
           <div class="floating-disclaimer">
-            No verified incident locations or ward/locality-level crime dataset is supplied. This map makes no area-specific crime claims and plots no incident markers.
+            <b>🛡️ Verified Scope:</b> Bengaluru City Police releases city-wide and division totals. No localized incident coordinates are provided in verified datasets, so no individual incident pins are invented on this map. See <a href="analytics.html#crime-section" style="color:#38bdf8;">Analytics</a>.
           </div>
         </div>
 
-        <!-- Police locations are OSM-mapped entries, not an official completeness claim. -->
+        <!-- Police locations are OSM and KML mapped entries. -->
         <div id="map-floating-panel-police" class="map-floating-panel" style="display: none;">
           <h3>
-            <span>🚓 Police Locations</span>
-            <span style="font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 700; background: rgba(59,130,246,0.2); color:#60a5fa;">OpenStreetMap</span>
+            <span>🚓 Police Stations</span>
+            <span style="font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 700; background: rgba(59,130,246,0.2); color:#60a5fa;">KSP GIS &amp; OSM</span>
           </h3>
-          <div class="floating-stat-row"><span class="floating-stat-label">Mapped Locations:</span><span id="police-panel-total" class="floating-stat-value">—</span></div>
-          <div class="floating-stat-row"><span class="floating-stat-label">OSM facility type:</span><span class="floating-stat-value">amenity=police</span></div>
+          <div class="floating-stat-row"><span class="floating-stat-label">Stations within Radius:</span><span id="police-panel-total" class="floating-stat-value">—</span></div>
+          <div class="floating-stat-row"><span class="floating-stat-label">Emergency Helpline:</span><span class="floating-stat-value" style="color:#60a5fa; font-weight: 700;">112 (ERSS)</span></div>
+          <div class="floating-stat-row"><span class="floating-stat-label">Control Room:</span><span class="floating-stat-value">080 2294 2222</span></div>
           <div class="floating-disclaimer">
-            Mapped community-contributed locations only; this is not an authoritative or complete police directory.
+            Mapped station locations extracted from Karnataka State Police GIS files and OpenStreetMap. Dial 112 for immediate emergency dispatch.
           </div>
         </div>
 
-        <!-- Floating Construction Info Box: EDA is verified/complete, but there is
-             no ward-boundary/centroid coordinate dataset to plot markers with, so
-             this panel shows real headline KPIs instead of geocoded ward pins. -->
+        <!-- Floating Construction Info Box: Ward-level EDA -->
         <div id="map-floating-panel-construction" class="map-floating-panel" style="display: none;">
           <h3>
             <span>🏗️ Ward Construction Overview</span>
-            <span style="font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 700; background: rgba(245,158,11,0.2); color:#f59e0b;">Live EDA</span>
+            <span style="font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 700; background: rgba(245,158,11,0.2); color:#f59e0b;">BBMP 2025-26</span>
           </h3>
 
           <div class="floating-stat-row">
-            <span class="floating-stat-label">Total Work Orders:</span>
-            <span id="construction-panel-orders" class="floating-stat-value">—</span>
+            <span class="floating-stat-label">Associated BBMP Ward:</span>
+            <span id="construction-panel-wardname" class="floating-stat-value" style="color: #38bdf8;">Ward 111 (Central)</span>
           </div>
           <div class="floating-stat-row">
-            <span class="floating-stat-label">Total Verified Investment:</span>
-            <span id="construction-panel-amount" class="floating-stat-value" style="color: #f59e0b;">—</span>
+            <span class="floating-stat-label">Ward Work Orders:</span>
+            <span id="construction-panel-orders" class="floating-stat-value">22</span>
           </div>
           <div class="floating-stat-row">
-            <span class="floating-stat-label">Wards Covered:</span>
-            <span id="construction-panel-wards" class="floating-stat-value">—</span>
+            <span class="floating-stat-label">Ward Verified Investment:</span>
+            <span id="construction-panel-amount" class="floating-stat-value" style="color: #f59e0b;">₹5.65 Cr</span>
           </div>
           <div class="floating-stat-row">
-            <span class="floating-stat-label">Unique Contractors:</span>
-            <span id="construction-panel-contractors" class="floating-stat-value">—</span>
+            <span class="floating-stat-label">Ward Unique Contractors:</span>
+            <span id="construction-panel-contractors" class="floating-stat-value">18</span>
           </div>
           <div class="floating-stat-row">
-            <span class="floating-stat-label">Development Clusters:</span>
-            <span id="construction-panel-clusters" class="floating-stat-value">—</span>
+            <span class="floating-stat-label">City-wide Coverage:</span>
+            <span id="construction-panel-wards" class="floating-stat-value">198 / 198 official wards</span>
+          </div>
+          <div class="floating-stat-row">
+            <span class="floating-stat-label">Development Cluster:</span>
+            <span id="construction-panel-clusters" class="floating-stat-value">High Development</span>
           </div>
 
           <div class="floating-disclaimer">
             <b>🗺️ Data Scope:</b>
-            These are BBMP 2025-26 government work-order records, not independently confirmed active construction sites. The supplied source has no project coordinates or status field, so no site pins or active/completed claims are shown. See the <a href="analytics.html#construction-section" style="color:#38bdf8;">Analytics page</a> for work-order summaries.
+            These are BBMP 2025-26 government work-order records. The supplied source has no project coordinates or status field, so figures represent ward-level municipal summaries, not exact active site pins.
           </div>
         </div>
 
+      </div>
+
+      <!-- NEARBY PLACES LIST & TRAVEL DIRECTIONS COMPONENT -->
+      <div id="map-nearby-container" class="nearby-places-wrapper">
+        <div class="nearby-header">
+          <div class="nearby-title-wrap">
+            <h3 id="nearby-results-title">📍 Nearby Facilities Around Selected Point</h3>
+            <span id="nearby-results-count" class="badge-count">0 found</span>
+          </div>
+          <div class="nearby-actions">
+            <span id="nearby-data-source" class="pill-tag pill-coords" style="font-size: 11px;">Verified Dataset</span>
+            <button type="button" id="btn-nearby-fit" class="btn-ctrl btn-ctrl-ghost" style="padding: 4px 10px; font-size: 12px;">
+              🎯 Fit to Radius
+            </button>
+          </div>
+        </div>
+
+        <!-- Loading state -->
+        <div id="nearby-loading" class="nearby-loading-state" style="display: none;">
+          <div class="loading-spinner"></div>
+          <div style="font-size: 13px; color: var(--text-secondary);">Querying verified civic facilities within selected radius...</div>
+        </div>
+
+        <!-- Error state -->
+        <div id="nearby-error" class="nearby-error-state" style="display: none;">
+          <div style="font-size: 24px; margin-bottom: 8px;">⚠️</div>
+          <h4 id="nearby-error-title" style="color: #fca5a5; margin-bottom: 6px;">Live Query Unavailable</h4>
+          <p id="nearby-error-msg" style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Overpass API is currently busy; displaying verified local snapshot.</p>
+          <button type="button" id="btn-retry-nearby" class="btn-ctrl btn-ctrl-secondary" style="font-size: 12px; padding: 6px 14px;">↺ Retry Live Query</button>
+        </div>
+
+        <!-- Empty state -->
+        <div id="nearby-empty" class="nearby-empty-state" style="display: none;">
+          <div class="empty-icon">📍</div>
+          <h4 style="font-size: 15px; color: #fff; margin-bottom: 6px;">No Mapped Facilities Found in This Area</h4>
+          <p id="nearby-empty-msg" style="font-size: 13px; color: var(--text-muted); max-width: 440px; margin: 0 auto;">
+            No facilities matching the selected category were found within the chosen search radius. Try expanding the radius to 5 km or 10 km, or select another pillar category.
+          </p>
+        </div>
+
+        <!-- Cards Grid -->
+        <div id="nearby-places-list" class="nearby-places-grid"></div>
       </div>
     </section>
   </main>

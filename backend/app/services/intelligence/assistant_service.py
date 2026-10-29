@@ -41,6 +41,8 @@ from backend.app.services.intelligence.ollama_client import (
 )
 from backend.app.services.intelligence.classifier import (
     classify_question,
+    is_greeting_or_chit_chat,
+    is_follow_up,
     LEVEL_1,
     LEVEL_2,
     LEVEL_3,
@@ -72,15 +74,32 @@ _HYBRID_SYSTEM = (
 
 _GENERAL_SYSTEM = (
     "You are UrbanPulse's AI assistant for urban planning, civic governance, and "
-    "property investment advice. This is a general knowledge question — no specific "
-    "verified UrbanPulse database records are available for it.\n\n"
+    "property investment advice. Answer clearly, concisely, and helpfully using your general knowledge.\n\n"
     "RULES:\n"
-    "1. Answer clearly and helpfully using your general knowledge.\n"
+    "1. Answer helpfully using your general knowledge in clean, friendly natural language.\n"
     "2. Do NOT fabricate Bengaluru-specific statistics, scores, or government data.\n"
     "3. If the user asks about a concept (e.g. ESG, urban planning, safety factors), "
-    "   explain the concept and offer a framework. Do not invent local facts.\n"
-    "4. If the answer would benefit from real local data, mention that the user can "
-    "   ask a locality-specific question (e.g. 'What is the UrbanScore for Whitefield?')."
+    "   explain the concept and offer a structured framework.\n"
+    "4. Mention that the user can explore specific Bengaluru localities (e.g. Whitefield, HSR Layout, "
+    "   Indiranagar, Peenya) for verified UrbanScores and BBMP civic data."
+)
+
+_CONVERSATIONAL_SYSTEM = (
+    "You are the UrbanPulse Intelligence Assistant for Bengaluru civic transparency, "
+    "urban planning, and locality evaluation.\n\n"
+    "RULES:\n"
+    "1. Greet the user warmly, naturally, and concisely in 2-3 sentences.\n"
+    "2. Introduce your capabilities: evaluating Bengaluru localities using UrbanScore, BBMP civil works, "
+    "   police safety infrastructure, crime risk baselines, and environmental/ESG metrics.\n"
+    "3. Suggest 2-3 sample queries the user can ask (e.g. 'Should I buy a house in Whitefield?', 'What is the UrbanScore for HSR Layout?').\n"
+    "4. Do NOT apologize or say 'no records found' when greeting."
+)
+
+_FOLLOW_UP_SYSTEM = (
+    "You are the UrbanPulse Intelligence Assistant for Bengaluru civic transparency and urban planning.\n"
+    "The user is continuing the conversation with a follow-up inquiry. Answer helpfully, objectively, "
+    "and concisely in natural language. Do not fabricate specific statistics or scores. If relevant, "
+    "suggest locality-specific queries (e.g. Whitefield, HSR Layout, Koramangala) for verified data."
 )
 
 
@@ -243,6 +262,107 @@ class IntelligenceAssistantService:
     # ── Level-1: Verified Data Only ────────────────────────────────────────
 
     @classmethod
+    def _try_answer_from_data(cls, question: str, evidence: Dict[str, Any]) -> Tuple[bool, str]:
+        """
+        Attempts to directly answer verified factual data questions from database metrics.
+        Returns (True, answer_text) if the question can be authoritatively answered
+        from existing database records, or (False, "") if it should fall back to Ollama.
+        """
+        q = question.lower().strip()
+        cw = evidence.get("citywide_benchmarks", {})
+        loc_list = evidence.get("evidence_by_locality", [])
+
+        # Speculative / explanatory triggers should route to AI reasoning, not static template
+        speculative_triggers = (
+            "why ", "how come", "how does", "how to", "what causes", "explain why",
+            "what do you think", "should i", "is it good", "is it bad", "process of",
+            "history of", "tell me about the reason"
+        )
+        if any(tr in q for tr in speculative_triggers):
+            return False, ""
+
+        # 1. Total BBMP construction investment & work orders
+        bbmp_terms = ("bbmp", "construction", "work order", "civic work", "civil work", "infrastructure budget")
+        inv_terms = ("investment", "expenditure", "total", "budget", "how much", "how many work orders", "allocation")
+        if any(b in q for b in bbmp_terms) and any(i in q for i in inv_terms) and not loc_list:
+            inv = cw.get("total_construction_investment_cr", 3169.06)
+            orders = cw.get("total_work_orders", 4729)
+            wards = cw.get("total_wards_analyzed", 198)
+            avg_ward = cw.get("average_ward_expenditure_cr", 16.01)
+            ded = cw.get("deductions_scrutiny_rate_pct", 10.08)
+            return True, (
+                f"### Verified BBMP Construction Data (Bengaluru)\n\n"
+                f"According to verified 2025–26 municipal records in the UrbanPulse database:\n\n"
+                f"- **Total Capital Investment**: **₹{inv:,.2f} Crores**\n"
+                f"- **Total Work Orders**: **{orders:,}** projects across {wards} BBMP wards\n"
+                f"- **Average Allocation per Ward**: **₹{avg_ward:,.2f} Cr**\n"
+                f"- **Contractor Scrutiny Deductions Rate**: **{ded}%** across active contracts\n\n"
+                f"*Source: BBMP 2025–26 198 Wards Work-Order Dataset (Open City Bengaluru).*"
+            )
+
+        # 2. Police infrastructure
+        police_terms = ("police", "police station", "outpost", "precinct")
+        count_terms = ("how many", "count", "total", "locations", "mapped", "facilities")
+        if any(p in q for p in police_terms) and any(c in q for c in count_terms) and not loc_list:
+            st = cw.get("mapped_police_locations", 150)
+            return True, (
+                f"### Verified Police Infrastructure (Bengaluru)\n\n"
+                f"According to the Karnataka State Police GIS dataset in the UrbanPulse database:\n\n"
+                f"- **Mapped Police Facilities**: **{st}** police stations and outposts across Bengaluru metropolitan zones.\n"
+                f"- **Precinct Mapping**: Coordinates verified and mapped to municipal zones.\n\n"
+                f"*Source: Karnataka State Police GIS KML Dataset.*"
+            )
+
+        # 3. Crime baseline / risk score
+        crime_terms = ("crime", "d47", "fatal crime", "homicide", "safety baseline")
+        rate_terms = ("risk score", "baseline", "rate", "statistics", "benchmark", "numbers")
+        if any(cr in q for cr in crime_terms) and any(r in q for r in rate_terms) and not loc_list:
+            score = cw.get("city_crime_risk_score", 71.7)
+            fatal = cw.get("fatal_crime_rate_pct", 15.11)
+            return True, (
+                f"### Verified Crime & Safety Baseline (Bengaluru)\n\n"
+                f"Based on the Bengaluru City Police (BCP) Annual Reports D47 Series in the UrbanPulse database:\n\n"
+                f"- **Citywide Crime Risk Score Benchmark**: **{score}/100**\n"
+                f"- **Fatal Crime Severity Rate**: **{fatal}%** of reported incidents\n"
+                f"- **Data Granularity**: Published at citywide and police divisional levels (sub-ward beat incident logs are not published).\n\n"
+                f"*Source: Bengaluru City Police Annual Reports D47 Series.*"
+            )
+
+        # 4. Public complaints
+        complaint_terms = ("complaint", "grievance", "public complaints")
+        comp_count_terms = ("how many", "total", "count", "resolution", "pending", "resolved", "status")
+        if any(c in q for c in complaint_terms) and any(cc in q for cc in comp_count_terms) and not loc_list:
+            total = cw.get("public_complaints_total", 0)
+            res = cw.get("complaints_resolved", 0)
+            pen = cw.get("complaints_pending", 0)
+            rate = cw.get("complaints_resolution_rate_pct", 0.0)
+            return True, (
+                f"### Verified Public Grievances Summary (Bengaluru)\n\n"
+                f"According to the UrbanPulse PostgreSQL grievance database:\n\n"
+                f"- **Total Complaints Logged**: **{total}**\n"
+                f"- **Resolved Complaints**: **{res}** ({rate}% resolution rate)\n"
+                f"- **Pending Action**: **{pen}**\n\n"
+                f"*Source: UrbanPulse PostgreSQL Civic Grievance Database.*"
+            )
+
+        # 5. Locality pure factual metric query (e.g. "how many work orders in Whitefield")
+        if loc_list and len(loc_list) == 1:
+            lev = loc_list[0]
+            loc_name = lev.get("display_name", "Locality")
+            wd = lev.get("ward_data") or {}
+            if any(w in q for w in ("how many work orders", "how many projects", "total budget", "work order count", "expenditure in")):
+                return True, (
+                    f"### Verified BBMP Works for {loc_name}\n\n"
+                    f"- **Total Projects**: **{wd.get('total_work_orders', 0)}**\n"
+                    f"- **Total Expenditure**: **₹{wd.get('total_amount_cr', 0.0):.2f} Cr**\n"
+                    f"- **Road Projects**: **{wd.get('road_projects', 0)}** | **Drain Projects**: **{wd.get('drain_projects', 0)}**\n"
+                    f"- **Unique Registered Contractors**: **{wd.get('unique_contractors', 0)}**\n\n"
+                    f"*Source: BBMP 2025–26 198 Wards Work-Order Dataset.*"
+                )
+
+        return False, ""
+
+    @classmethod
     def _handle_verified_data(
         cls,
         question: str,
@@ -251,26 +371,32 @@ class IntelligenceAssistantService:
         data_version: str,
     ) -> Dict[str, Any]:
         """
-        Returns a data-grounded answer without calling the LLM.
-        Used when the question is fully answerable from UrbanPulse DB records.
+        Attempts to directly answer verified factual data questions from database metrics.
+        If the question cannot be answered directly from the data (e.g. nuanced question,
+        historical question, or explanation about data), automatically falls back to Ollama.
         """
-        primary_ev = (evidence.get("evidence_by_locality") or [None])[0]
-        answer = cls._generate_deterministic_analysis(question, evidence)
-        analysis = cls._build_structured_analysis(evidence, primary_ev)
-        sources = cls._default_sources()
+        can_answer, answer_text = cls._try_answer_from_data(question, evidence)
+        if can_answer:
+            primary_ev = (evidence.get("evidence_by_locality") or [None])[0]
+            analysis = cls._build_structured_analysis(evidence, primary_ev)
+            sources = cls._default_sources()
+            return cls._build_payload(
+                question=question,
+                answer=answer_text,
+                analysis=analysis,
+                sources=sources,
+                evidence=evidence,
+                primary_ev=primary_ev,
+                answer_mode=MODE_VERIFIED,
+                model_used="n/a (verified database)",
+                start_time=start_time,
+                data_version=data_version,
+            )
 
-        return cls._build_payload(
-            question=question,
-            answer=answer,
-            analysis=analysis,
-            sources=sources,
-            evidence=evidence,
-            primary_ev=primary_ev,
-            answer_mode=MODE_VERIFIED,
-            model_used="n/a (data-only)",
-            start_time=start_time,
-            data_version=data_version,
-        )
+        # Data handler cannot directly answer the specific question —
+        # automatically fall back to Ollama with the evidence context!
+        logger.info(f"[Assistant] Data handler cannot directly answer '{question}'. Falling back to Ollama.")
+        return cls._handle_hybrid(question, evidence, start_time, data_version)
 
     # ── Level-2: Hybrid Data + AI ──────────────────────────────────────────
 
@@ -330,7 +456,7 @@ class IntelligenceAssistantService:
             data_version=data_version,
         )
 
-    # ── Level-3: General AI ────────────────────────────────────────────────
+    # ── Level-3: General AI & Conversational ───────────────────────────────
 
     @classmethod
     def _handle_general_ai(
@@ -341,41 +467,79 @@ class IntelligenceAssistantService:
         data_version: str,
     ) -> Dict[str, Any]:
         """
-        No relevant local data — answers using the LLM as a general assistant.
-        If LLM is offline, returns a service-unavailable message.
+        Handles greetings, conversational chit-chat, follow-up messages, and general questions.
+        Uses Ollama for natural language responses. If Ollama is offline, provides
+        a friendly, natural fallback message.
         """
-        user_prompt = (
-            f"User Question: {question}\n\n"
-            "Note: No verified UrbanPulse database records were found that directly "
-            "answer this question.  Please answer using your general knowledge and "
-            "clearly indicate that this is a general answer, not backed by local data."
-        )
+        is_greeting = is_greeting_or_chit_chat(question)
+        is_follow = is_follow_up(question)
+
+        if is_greeting:
+            system_prompt = _CONVERSATIONAL_SYSTEM
+            user_prompt = f"User: {question}"
+        elif is_follow:
+            system_prompt = _FOLLOW_UP_SYSTEM
+            user_prompt = f"User Question: {question}"
+        else:
+            system_prompt = _GENERAL_SYSTEM
+            user_prompt = (
+                f"User Question: {question}\n\n"
+                "Please provide a helpful, natural-language response based on general knowledge. "
+                "Do not invent Bengaluru-specific government numbers or claim to cite database records that do not exist."
+            )
 
         llm_text, model_used, fail_reason = ollama_client.chat_with_fallback(
-            system=_GENERAL_SYSTEM,
+            system=system_prompt,
             user=user_prompt,
-            temperature=0.4,   # slightly more conversational for general Q&A
+            temperature=0.4,   # conversational for general Q&A
         )
 
         if llm_text:
             answer = llm_text
             answer_mode = MODE_GENERAL_AI
         else:
-            answer = (
-                "⚠️ **AI Service Unavailable**\n\n"
-                "Both the primary (Qwen3:8b) and fallback AI models are currently unreachable.\n\n"
-                "For Bengaluru-specific civic data, you can ask questions like:\n"
-                "- *What is the UrbanScore for Whitefield?*\n"
-                "- *Total BBMP construction investment in Bengaluru?*\n"
-                "- *Should I buy a house in Koramangala?*\n\n"
-                "These will be answered from verified UrbanPulse datasets without the AI model."
-            )
-            answer_mode = MODE_DATA_ONLY
-            model_used = "none"
+            if is_greeting:
+                answer = (
+                    "Hello! I am the **UrbanPulse Intelligence Assistant**.\n\n"
+                    "I can help you evaluate Bengaluru localities, check BBMP infrastructure investments, "
+                    "examine crime safety baselines, track environmental and ESG indicators, and calculate "
+                    "multi-dimensional **UrbanScores** for property and living decisions.\n\n"
+                    "*Here are a few things you can ask me:*\n"
+                    "- *'Should I buy a house in Whitefield?'*\n"
+                    "- *'What is the UrbanScore for HSR Layout?'*\n"
+                    "- *'Total BBMP construction investment in Bengaluru?'*\n"
+                    "- *'Is Koramangala safe for a family?'*\n"
+                    "- *'Compare Whitefield and HSR Layout'*"
+                )
+                answer_mode = MODE_GENERAL_AI
+                model_used = "none"
+            elif is_follow:
+                answer = (
+                    "⚠️ **AI Service Unavailable**\n\n"
+                    "The local Ollama AI model is currently unreachable to process follow-up conversational messages.\n\n"
+                    "However, verified UrbanPulse database queries remain fully operational. You can ask factual questions like:\n"
+                    "- *What is the UrbanScore for Whitefield?*\n"
+                    "- *Total BBMP construction investment in Bengaluru?*\n"
+                    "- *How many police stations in Bengaluru?*"
+                )
+                answer_mode = MODE_DATA_ONLY
+                model_used = "none"
+            else:
+                answer = (
+                    "⚠️ **AI Service Unavailable**\n\n"
+                    "Both the primary (Qwen3:8b) and fallback AI models are currently unreachable.\n\n"
+                    "For Bengaluru-specific civic data, you can ask questions like:\n"
+                    "- *What is the UrbanScore for Whitefield?*\n"
+                    "- *Total BBMP construction investment in Bengaluru?*\n"
+                    "- *Should I buy a house in Koramangala?*\n\n"
+                    "These will be answered from verified UrbanPulse datasets without the AI model."
+                )
+                answer_mode = MODE_DATA_ONLY
+                model_used = "none"
 
-        # For general questions there are no verified data sources to cite
+        # For general questions and greetings, attach clear attribution
         sources = (
-            ["[General AI answer — no UrbanPulse database records are cited for this response]"]
+            ["[General AI answer — based on general AI knowledge, not local database records]"]
             if answer_mode == MODE_GENERAL_AI
             else []
         )
