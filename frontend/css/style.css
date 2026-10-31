@@ -1190,18 +1190,6 @@ body {
   filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.9) saturate(0.55);
 }
 
-.page-dashboard .dashboard-kpi-strip {
-  padding-top: 20px;
-}
-
-.page-dashboard .dashboard-kpi-strip .kpi-grid {
-  margin-bottom: 0;
-}
-
-.page-dashboard .dashboard-kpi-strip .kpi-card {
-  padding: 14px 18px;
-}
-
 .page-dashboard .map-section {
   padding-top: 16px;
 }

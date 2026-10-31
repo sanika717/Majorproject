@@ -55,33 +55,6 @@
 
   <main class="container">
 
-    <!-- High-level verified KPIs only (values filled from the verified datasets by js/dashboard.js).
-         Full analytics live on the Analytics page. -->
-    <section id="dashboard-kpis" class="dashboard-kpi-strip" aria-label="Verified headline figures">
-      <div class="kpi-grid">
-        <div class="kpi-card glass-panel">
-          <div class="kpi-header"><span class="kpi-title">Construction Work Orders</span><div class="kpi-icon" style="color: var(--accent-cyan);">🏗️</div></div>
-          <div id="dash-kpi-orders" class="kpi-value">—</div>
-          <div class="kpi-subtext"><span>BBMP 2025-26 ward work orders</span></div>
-        </div>
-        <div class="kpi-card glass-panel">
-          <div class="kpi-header"><span class="kpi-title">Verified Construction Investment</span><div class="kpi-icon" style="color: var(--accent-amber);">💰</div></div>
-          <div id="dash-kpi-amount" class="kpi-value" style="color: var(--accent-amber);">—</div>
-          <div class="kpi-subtext"><span>Sum of work-order amounts</span></div>
-        </div>
-        <div class="kpi-card glass-panel">
-          <div class="kpi-header"><span class="kpi-title">Recorded Crimes</span><div class="kpi-icon" style="color: #ef4444;">🚨</div></div>
-          <div id="dash-kpi-crimes" class="kpi-value" style="color: #ef4444;">—</div>
-          <div class="kpi-subtext"><span id="dash-kpi-crimes-period">No area-level breakdown supplied</span></div>
-        </div>
-        <div class="kpi-card glass-panel">
-          <div class="kpi-header"><span class="kpi-title">Mapped Police Locations</span><div class="kpi-icon" style="color: var(--accent-blue);">🚓</div></div>
-          <div id="dash-kpi-police" class="kpi-value" style="color: var(--accent-blue);">—</div>
-          <div class="kpi-subtext"><span>OpenStreetMap amenity=police entries</span></div>
-        </div>
-      </div>
-    </section>
-
     <!-- ONE centralized Leaflet map (OpenStreetMap tiles, no API key). Construction is the default layer. -->
     <section id="map-section" class="section map-section">
       <div class="section-header">
