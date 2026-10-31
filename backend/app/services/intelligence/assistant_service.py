@@ -2,34 +2,32 @@
 UrbanPulse Intelligence Assistant Service — Three-Level Hybrid Answering.
 
 Level 1 — Verified UrbanPulse Data
-    Citywide stats (construction totals, crime risk, police count) are presented
-    directly from PostgreSQL without any LLM call.
+    Citywide and locality stats are presented directly from PostgreSQL / verified datasets
+    without any LLM call when answering pure factual queries.
 
 Level 2 — Hybrid: UrbanPulse Data + AI Interpretation
-    Evidence is retrieved from the database.  Qwen3:8b (primary) or Mistral
-    (fallback) synthesises an interpretation, investment analysis, or explanation
-    grounded strictly in the retrieved evidence.
+    Evidence is retrieved from the database. Primary (qwen3:4b) synthesizes an
+    interpretation grounded strictly in the retrieved evidence.
 
 Level 3 — General AI Answer
-    No relevant local UrbanPulse data found.  Qwen / Mistral answers the general
-    question directly.  The response is clearly labelled "General AI Answer" so
-    the user knows it is not backed by the UrbanPulse datasets.
+    No relevant local UrbanPulse data found or conceptual question. Answering uses general AI.
 
 Key guarantees
   - No statistic, score, or citation is fabricated.
-  - If both LLMs are offline, a data-only deterministic answer is returned.
-  - Redis semantic cache is checked before any LLM call and updated after.
+  - If LLMs are offline or time out, a data-only deterministic message is returned.
+  - Cache is checked with exact sha256 matching before LLM calls and stored only for real answers.
 """
 
 import re
 import time
+import json
 import logging
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Tuple, Iterator
 from datetime import datetime
 from sqlalchemy.orm import Session
 
 from backend.app.core.config import settings
-from backend.app.services.intelligence.cache import semantic_cache
+from backend.app.services.intelligence.cache import semantic_cache, normalize_query_text
 from backend.app.services.intelligence.retriever import EvidenceRetriever, LOCALITY_WARD_MAP
 from backend.app.services.intelligence.urban_score import UrbanScoreEngine
 from backend.app.services.intelligence.ollama_client import (
@@ -51,61 +49,42 @@ from backend.app.services.intelligence.classifier import (
 logger = logging.getLogger("urbanpulse.intelligence.assistant")
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Prompt templates
+# Prompt templates (Concise, strictly < 1500 chars, grounded in evidence)
 # ──────────────────────────────────────────────────────────────────────────────
 
 _HYBRID_SYSTEM = (
     "You are the UrbanPulse Intelligence Assistant for Bengaluru civic transparency.\n"
-    "You are given VERIFIED DATABASE EVIDENCE retrieved from real government datasets.\n\n"
-    "STRICT RULES:\n"
-    "1. Ground every claim, score, and metric strictly in the evidence provided.\n"
-    "2. NEVER fabricate numbers, percentages, dataset citations, or government statistics.\n"
-    "3. Do not label any locality absolutely safe or unsafe. Never guarantee investment returns.\n"
-    "4. For property/investment questions, structure your response as:\n"
-    "   - UrbanScore & component summary\n"
-    "   - Reasons to consider (evidence-backed)\n"
-    "   - Reasons for caution (evidence-backed)\n"
-    "   - Data gaps and limitations\n"
-    "   - Actionable next steps\n"
-    "5. Clearly state when data is missing or incomplete.\n"
-    "6. Cite the sources provided in the evidence block.\n"
-    "7. Keep general market observations separate from verified local data."
+    "Ground every claim, score, and metric strictly in the provided verified evidence.\n"
+    "RULES:\n"
+    "1. Never fabricate numbers, percentages, citations, or government statistics.\n"
+    "2. Do not label any locality absolutely safe or unsafe; never guarantee investment returns.\n"
+    "3. Structure property/investment answers with concise bullets: summary, pros, caution, limitations.\n"
+    "4. State data limitations honestly and cite sources from the evidence block.\n"
+    "5. Keep general observations separate from verified local data.\n"
+    "6. Answer in at most 150 words, short bullets, no preamble."
 )
 
 _GENERAL_SYSTEM = (
     "You are UrbanPulse's AI assistant for urban planning, civic governance, and "
-    "property investment advice. Answer clearly, concisely, and helpfully using your general knowledge.\n\n"
+    "property investment advice. Answer clearly and concisely using general knowledge.\n"
     "RULES:\n"
-    "1. Answer helpfully using your general knowledge in clean, friendly natural language.\n"
-    "2. Do NOT fabricate Bengaluru-specific statistics, scores, or government data.\n"
-    "3. If the user asks about a concept (e.g. ESG, urban planning, safety factors), "
-    "   explain the concept and offer a structured framework.\n"
-    "4. Mention that the user can explore specific Bengaluru localities (e.g. Whitefield, HSR Layout, "
-    "   Indiranagar, Peenya) for verified UrbanScores and BBMP civic data."
-)
-
-_CONVERSATIONAL_SYSTEM = (
-    "You are the UrbanPulse Intelligence Assistant for Bengaluru civic transparency, "
-    "urban planning, and locality evaluation.\n\n"
-    "RULES:\n"
-    "1. Greet the user warmly, naturally, and concisely in 2-3 sentences.\n"
-    "2. Introduce your capabilities: evaluating Bengaluru localities using UrbanScore, BBMP civil works, "
-    "   police safety infrastructure, crime risk baselines, and environmental/ESG metrics.\n"
-    "3. Suggest 2-3 sample queries the user can ask (e.g. 'Should I buy a house in Whitefield?', 'What is the UrbanScore for HSR Layout?').\n"
-    "4. Do NOT apologize or say 'no records found' when greeting."
+    "1. Do NOT fabricate Bengaluru-specific statistics, scores, or government data.\n"
+    "2. If the user asks about an urban or civic concept, explain it with a structured framework.\n"
+    "3. Mention specific Bengaluru localities (e.g. Whitefield, HSR Layout, Indiranagar) can be queried for verified UrbanScores.\n"
+    "4. Answer in at most 150 words, short bullets, no preamble."
 )
 
 _FOLLOW_UP_SYSTEM = (
-    "You are the UrbanPulse Intelligence Assistant for Bengaluru civic transparency and urban planning.\n"
-    "The user is continuing the conversation with a follow-up inquiry. Answer helpfully, objectively, "
-    "and concisely in natural language. Do not fabricate specific statistics or scores. If relevant, "
-    "suggest locality-specific queries (e.g. Whitefield, HSR Layout, Koramangala) for verified data."
+    "You are the UrbanPulse Intelligence Assistant for Bengaluru civic transparency.\n"
+    "Answer follow-up questions objectively and concisely based on general knowledge.\n"
+    "Do not fabricate specific statistics or scores. Mention localities for verified data.\n"
+    "Answer in at most 150 words, short bullets, no preamble."
 )
 
 
 class IntelligenceAssistantService:
 
-    # ── Embedding ──────────────────────────────────────────────────────────
+    # ── Embedding (Kept for compatibility, not in request path) ────────────
 
     @staticmethod
     def get_embedding(text: str) -> List[float]:
@@ -192,98 +171,33 @@ class IntelligenceAssistantService:
         else:
             lines.append(
                 "No specific Bengaluru ward or locality was identified in the question. "
-                "Presenting general citywide intelligence only."
+                "Answer the user's actual question directly using general knowledge, apply citywide figures only when relevant, "
+                "and ask which locality or ward they would like to evaluate if the question needs one."
             )
 
         return "\n".join(lines)
 
-    # ── Three-Level Answering ──────────────────────────────────────────────
-
-    @classmethod
-    def answer_question(
-        cls,
-        db: Session,
-        question: str,
-        locality: Optional[str] = None,
-        explicit_locality: Optional[str] = None,
-        use_cache: bool = True,
-    ) -> Dict[str, Any]:
-        """
-        Main entry point.  Routes the question through the 3-level strategy and
-        returns a unified structured payload.
-        """
-        start_time = time.time()
-        question = question.strip()
-        target_locality = locality or explicit_locality
-
-        # ── 1. Embedding + Redis cache check ──────────────────────────────
-        data_version = EvidenceRetriever.compute_data_version(db)
-        embedding = cls.get_embedding(question) if use_cache else []
-
-        if embedding and use_cache:
-            cached_res, sim, cache_status = semantic_cache.get_semantic_match(
-                question, embedding, data_version
-            )
-            if cached_res:
-                cached_res["cached"]           = True
-                cached_res["cache_status"]     = cache_status
-                cached_res["cache_similarity"] = sim
-                cached_res["latency_ms"]       = round((time.time() - start_time) * 1000, 1)
-                return cached_res
-
-        # ── 2. Retrieve verified database evidence ─────────────────────────
-        evidence = EvidenceRetriever.retrieve_for_query(db, question, target_locality)
-        has_locality_ev = bool(evidence.get("evidence_by_locality"))
-
-        # ── 3. Classify the question ───────────────────────────────────────
-        level, level_reason = classify_question(question, has_locality_evidence=has_locality_ev)
-        logger.info(f"[Assistant] Level={level} ({level_reason}) Q={question!r:.80}")
-
-        # ── 4. Route to the right handler ─────────────────────────────────
-        if level == LEVEL_1:
-            result = cls._handle_verified_data(question, evidence, start_time, data_version)
-        elif level == LEVEL_2:
-            result = cls._handle_hybrid(question, evidence, start_time, data_version)
-        else:  # LEVEL_3
-            result = cls._handle_general_ai(question, evidence, start_time, data_version)
-
-        # ── 5. Store in Redis ──────────────────────────────────────────────
-        if embedding and use_cache and semantic_cache.is_online:
-            semantic_cache.store(
-                query=question,
-                query_embedding=embedding,
-                response=result,
-                supporting_datasets=result.get("sources", []),
-                data_version=data_version,
-            )
-
-        return result
-
-    # ── Level-1: Verified Data Only ────────────────────────────────────────
+    # ── Deterministic Answers from Data & Locality ─────────────────────────
 
     @classmethod
     def _try_answer_from_data(cls, question: str, evidence: Dict[str, Any]) -> Tuple[bool, str]:
         """
         Attempts to directly answer verified factual data questions from database metrics.
         Returns (True, answer_text) if the question can be authoritatively answered
-        from existing database records, or (False, "") if it should fall back to Ollama.
+        from existing database records, or (False, "") if it should route to the LLM path.
         """
         q = question.lower().strip()
         cw = evidence.get("citywide_benchmarks", {})
         loc_list = evidence.get("evidence_by_locality", [])
 
-        # Speculative / explanatory triggers should route to AI reasoning, not static template
-        speculative_triggers = (
-            "why ", "how come", "how does", "how to", "what causes", "explain why",
-            "what do you think", "should i", "is it good", "is it bad", "process of",
-            "history of", "tell me about the reason"
-        )
-        if any(tr in q for tr in speculative_triggers):
+        # Send questions requiring comparison, advice, safety, or explanation to LLM
+        llm_triggers = ("compare", "should", "safe", "better", "vs", "why", "explain")
+        if any(tr in q for tr in llm_triggers):
             return False, ""
 
         # 1. Total BBMP construction investment & work orders
-        bbmp_terms = ("bbmp", "construction", "work order", "civic work", "civil work", "infrastructure budget")
-        inv_terms = ("investment", "expenditure", "total", "budget", "how much", "how many work orders", "allocation")
+        bbmp_terms = ("bbmp", "construction", "work order", "civic work", "civil work")
+        inv_terms = ("investment", "expenditure", "budget", "how much was spent", "total spent")
         if any(b in q for b in bbmp_terms) and any(i in q for i in inv_terms) and not loc_list:
             inv = cw.get("total_construction_investment_cr", 3169.06)
             orders = cw.get("total_work_orders", 4729)
@@ -300,9 +214,9 @@ class IntelligenceAssistantService:
                 f"*Source: BBMP 2025–26 198 Wards Work-Order Dataset (Open City Bengaluru).*"
             )
 
-        # 2. Police infrastructure
-        police_terms = ("police", "police station", "outpost", "precinct")
-        count_terms = ("how many", "count", "total", "locations", "mapped", "facilities")
+        # 2. Police infrastructure count
+        police_terms = ("police station", "police outpost", "police infrastructure", "police facilities")
+        count_terms = ("how many", "count", "number of", "total")
         if any(p in q for p in police_terms) and any(c in q for c in count_terms) and not loc_list:
             st = cw.get("mapped_police_locations", 150)
             return True, (
@@ -314,9 +228,8 @@ class IntelligenceAssistantService:
             )
 
         # 3. Crime baseline / risk score
-        crime_terms = ("crime", "d47", "fatal crime", "homicide", "safety baseline")
-        rate_terms = ("risk score", "baseline", "rate", "statistics", "benchmark", "numbers")
-        if any(cr in q for cr in crime_terms) and any(r in q for r in rate_terms) and not loc_list:
+        crime_terms = ("crime baseline", "crime risk score", "d47", "fatal crime rate")
+        if any(cr in q for cr in crime_terms) and not loc_list:
             score = cw.get("city_crime_risk_score", 71.7)
             fatal = cw.get("fatal_crime_rate_pct", 15.11)
             return True, (
@@ -324,13 +237,13 @@ class IntelligenceAssistantService:
                 f"Based on the Bengaluru City Police (BCP) Annual Reports D47 Series in the UrbanPulse database:\n\n"
                 f"- **Citywide Crime Risk Score Benchmark**: **{score}/100**\n"
                 f"- **Fatal Crime Severity Rate**: **{fatal}%** of reported incidents\n"
-                f"- **Data Granularity**: Published at citywide and police divisional levels (sub-ward beat incident logs are not published).\n\n"
+                f"- **Data Granularity**: Published at citywide and police divisional levels.\n\n"
                 f"*Source: Bengaluru City Police Annual Reports D47 Series.*"
             )
 
-        # 4. Public complaints
-        complaint_terms = ("complaint", "grievance", "public complaints")
-        comp_count_terms = ("how many", "total", "count", "resolution", "pending", "resolved", "status")
+        # 4. Public complaints summary
+        complaint_terms = ("public complaints", "grievances", "civic complaints")
+        comp_count_terms = ("how many", "total", "count", "resolution rate")
         if any(c in q for c in complaint_terms) and any(cc in q for cc in comp_count_terms) and not loc_list:
             total = cw.get("public_complaints_total", 0)
             res = cw.get("complaints_resolved", 0)
@@ -345,22 +258,237 @@ class IntelligenceAssistantService:
                 f"*Source: UrbanPulse PostgreSQL Civic Grievance Database.*"
             )
 
-        # 5. Locality pure factual metric query (e.g. "how many work orders in Whitefield")
-        if loc_list and len(loc_list) == 1:
-            lev = loc_list[0]
-            loc_name = lev.get("display_name", "Locality")
-            wd = lev.get("ward_data") or {}
-            if any(w in q for w in ("how many work orders", "how many projects", "total budget", "work order count", "expenditure in")):
-                return True, (
-                    f"### Verified BBMP Works for {loc_name}\n\n"
-                    f"- **Total Projects**: **{wd.get('total_work_orders', 0)}**\n"
-                    f"- **Total Expenditure**: **₹{wd.get('total_amount_cr', 0.0):.2f} Cr**\n"
-                    f"- **Road Projects**: **{wd.get('road_projects', 0)}** | **Drain Projects**: **{wd.get('drain_projects', 0)}**\n"
-                    f"- **Unique Registered Contractors**: **{wd.get('unique_contractors', 0)}**\n\n"
-                    f"*Source: BBMP 2025–26 198 Wards Work-Order Dataset.*"
-                )
-
         return False, ""
+
+    @classmethod
+    def _try_answer_deterministic_locality(
+        cls,
+        question: str,
+        evidence: Dict[str, Any]
+    ) -> Tuple[bool, str, Optional[Dict[str, Any]], Optional[Dict[str, Any]]]:
+        """
+        Answers simple locality questions without the LLM:
+        - 1 locality detected: asks for UrbanScore/score (without 'should', 'why', 'explain')
+        - 2 localities detected: asks to compare (without 'should', 'why', 'explain')
+        Returns (can_answer, answer_text, primary_ev, analysis_dict)
+        """
+        q = question.lower().strip()
+        reasoning_words = ("should", "why", "explain", "advice", "recommend", "pros and cons", "is it good", "is it better", "worth buying")
+        if any(w in q for w in reasoning_words):
+            return False, "", None, None
+
+        loc_list = evidence.get("evidence_by_locality", [])
+        if not loc_list:
+            return False, "", None, None
+
+        # Case 1: 1 locality asking for UrbanScore / score
+        if len(loc_list) == 1:
+            score_terms = ("urbanscore", "urban score", "score", "rating")
+            if any(st in q for st in score_terms):
+                ev = loc_list[0]
+                name = ev["display_name"]
+                us = ev.get("urban_score", {})
+                score = us.get("urban_score", "N/A")
+                tier = us.get("tier", "N/A")
+                cov = us.get("data_coverage_pct", "N/A")
+                comps = us.get("components", {})
+
+                lines = [
+                    f"### Verified UrbanScore: {name}\n",
+                    f"- **Overall UrbanScore**: **{score}/100** ({tier})",
+                    f"- **Data Coverage**: {cov}% (Confidence: {us.get('confidence', 'N/A')})\n",
+                    "#### Component Breakdown:",
+                ]
+                for c_name, c_data in comps.items():
+                    sc = c_data.get("score")
+                    sc_str = f"{sc}/100" if sc is not None else "Data Unavailable"
+                    lines.append(f"- **{c_name.replace('_', ' ').capitalize()}**: {sc_str}")
+
+                lines.append("\n*Methodology: Safety 25% · Infrastructure 25% · Environment 20% · Social 15% · Governance 15%.*")
+                answer_text = "\n".join(lines)
+                analysis = cls._build_structured_analysis(evidence, ev)
+                return True, answer_text, ev, analysis
+
+        # Case 2: 2 localities asking to compare
+        if len(loc_list) >= 2:
+            compare_terms = ("compare", " vs ", " vs. ", "versus", "difference between", "comparison")
+            if any(ct in q for ct in compare_terms) or q.startswith("compare"):
+                ev1, ev2 = loc_list[0], loc_list[1]
+                name1, name2 = ev1["display_name"], ev2["display_name"]
+                us1, us2 = ev1.get("urban_score", {}), ev2.get("urban_score", {})
+                s1 = us1.get("urban_score", 0.0)
+                s2 = us2.get("urban_score", 0.0)
+                t1 = us1.get("tier", "N/A")
+                t2 = us2.get("tier", "N/A")
+
+                c1 = us1.get("components", {})
+                c2 = us2.get("components", {})
+
+                def comp_sc(comps, key):
+                    sc = comps.get(key, {}).get("score")
+                    return f"{sc}/100" if sc is not None else "Unavailable"
+
+                diff = round(abs(s1 - s2), 1)
+                leader = name1 if s1 >= s2 else name2
+
+                lines = [
+                    f"### Locality Comparison: {name1} vs {name2}\n",
+                    f"| Dimension | {name1} | {name2} |",
+                    "| --- | --- | --- |",
+                    f"| **Overall UrbanScore** | **{s1}/100** ({t1}) | **{s2}/100** ({t2}) |",
+                    f"| Safety (25%) | {comp_sc(c1, 'safety')} | {comp_sc(c2, 'safety')} |",
+                    f"| Infrastructure (25%) | {comp_sc(c1, 'infrastructure')} | {comp_sc(c2, 'infrastructure')} |",
+                    f"| Environment (20%) | {comp_sc(c1, 'environment')} | {comp_sc(c2, 'environment')} |",
+                    f"| Social Infra (15%) | {comp_sc(c1, 'social_infrastructure')} | {comp_sc(c2, 'social_infrastructure')} |",
+                    f"| Governance (15%) | {comp_sc(c1, 'governance')} | {comp_sc(c2, 'governance')} |\n",
+                    f"*{leader} leads by {diff} points. All indicators derived from verified BBMP, BCP, and GIS datasets.*"
+                ]
+                answer_text = "\n".join(lines)
+                analysis = cls._build_structured_analysis(evidence, ev1)
+                return True, answer_text, ev1, analysis
+
+        return False, "", None, None
+
+    # ── Greeting Instant Answer (No LLM Call) ──────────────────────────────
+
+    @classmethod
+    def _handle_greeting(cls, question: str, start_time: float, data_version: str) -> Dict[str, Any]:
+        """Provides an instant conversational greeting without any LLM latency."""
+        answer = (
+            "Hello! I am the **UrbanPulse Intelligence Assistant**.\n\n"
+            "I can help you evaluate Bengaluru localities, check BBMP infrastructure investments, "
+            "examine crime safety baselines, track environmental indicators, and calculate "
+            "multi-dimensional **UrbanScores** for property and living decisions.\n\n"
+            "*Here are a few things you can ask me:*\n"
+            "- *'What is the UrbanScore for Whitefield?'*\n"
+            "- *'Compare Whitefield and HSR Layout'*\n"
+            "- *'Total BBMP construction investment in Bengaluru?'*\n"
+            "- *'Is Koramangala safe for a family?'*"
+        )
+        payload = cls._build_payload(
+            question=question,
+            answer=answer,
+            analysis=None,
+            sources=["[UrbanPulse Conversational Assistant]"],
+            evidence={},
+            primary_ev=None,
+            answer_mode=MODE_GENERAL_AI,
+            model_used="none",
+            start_time=start_time,
+            data_version=data_version,
+        )
+        return payload
+
+    # ── Main Entry Point ───────────────────────────────────────────────────
+
+    @classmethod
+    def answer_question(
+        cls,
+        db: Session,
+        question: str,
+        locality: Optional[str] = None,
+        explicit_locality: Optional[str] = None,
+        use_cache: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Main entry point. Routes the question through the 3-level strategy and
+        returns a unified structured payload.
+        """
+        start_time = time.time()
+        question = question.strip()
+        target_locality = locality or explicit_locality
+
+        data_version = EvidenceRetriever.compute_data_version(db)
+
+        # ── 1. Fast exact cache check (no LLM embedding call) ─────────────
+        if use_cache:
+            cached_res, sim, cache_status = semantic_cache.get_match(question, data_version)
+            if cached_res:
+                cached_res["cached"]           = True
+                cached_res["cache_status"]     = cache_status
+                cached_res["cache_similarity"] = sim
+                cached_res["latency_ms"]       = round((time.time() - start_time) * 1000, 1)
+                logger.info(
+                    f"[Intelligence Request] Level=CACHE | Model={cached_res.get('model')} | "
+                    f"Cached=True | Latency={cached_res.get('latency_ms')}ms"
+                )
+                return cached_res
+
+        # ── 2. Greeting check (Instant, NO LLM call) ───────────────────────
+        if is_greeting_or_chit_chat(question):
+            result = cls._handle_greeting(question, start_time, data_version)
+            logger.info(
+                f"[Intelligence Request] Level=GREETING | Model=none | "
+                f"Cached=False | Latency={result.get('latency_ms')}ms"
+            )
+            return result
+
+        # ── 3. Retrieve verified database evidence ─────────────────────────
+        evidence = EvidenceRetriever.retrieve_for_query(db, question, target_locality)
+        has_locality_ev = bool(evidence.get("evidence_by_locality"))
+
+        # ── 4. Deterministic locality answer (UrbanScore / Compare) ───────
+        can_det, det_text, det_ev, det_analysis = cls._try_answer_deterministic_locality(question, evidence)
+        if can_det:
+            result = cls._build_payload(
+                question=question,
+                answer=det_text,
+                analysis=det_analysis,
+                sources=cls._default_sources(),
+                evidence=evidence,
+                primary_ev=det_ev,
+                answer_mode=MODE_VERIFIED,
+                model_used="n/a (verified database)",
+                start_time=start_time,
+                data_version=data_version,
+            )
+            if use_cache and semantic_cache.is_online:
+                semantic_cache.store(question, result, result.get("sources", []), data_version)
+            logger.info(
+                f"[Intelligence Request] Level=DETERMINISTIC_LOCALITY | Model={result.get('model')} | "
+                f"Cached=False | Latency={result.get('latency_ms')}ms"
+            )
+            return result
+
+        # ── 5. Classify the question ───────────────────────────────────────
+        level, level_reason = classify_question(question, has_locality_evidence=has_locality_ev)
+        logger.info(f"[Assistant] Level={level} ({level_reason}) Q={question!r:.80}")
+
+        # ── 6. Route to handler ───────────────────────────────────────────
+        fail_reason = ""
+        if level == LEVEL_1:
+            result = cls._handle_verified_data(question, evidence, start_time, data_version)
+        elif level == LEVEL_2:
+            result = cls._handle_hybrid(question, evidence, start_time, data_version)
+        else:  # LEVEL_3
+            result = cls._handle_general_ai(question, evidence, start_time, data_version)
+
+        # ── 7. Store in Redis only for real answers ───────────────────────
+        # Store only if: not MODE_DATA_ONLY, model_used != 'none', no fail_reason, not greeting
+        ans_mode = result.get("answer_mode", "")
+        model_used = result.get("model", "")
+        is_real_answer = (
+            ans_mode != MODE_DATA_ONLY
+            and model_used not in ("none", "")
+            and not is_greeting_or_chit_chat(question)
+        )
+        if use_cache and semantic_cache.is_online and is_real_answer:
+            semantic_cache.store(
+                query=question,
+                response=result,
+                supporting_datasets=result.get("sources", []),
+                data_version=data_version,
+            )
+
+        # ── 8. Log one line per request ────────────────────────────────────
+        logger.info(
+            f"[Intelligence Request] Level={level} | Model={model_used} | "
+            f"Cached=False | Latency={result.get('latency_ms')}ms"
+        )
+
+        return result
+
+    # ── Level-1: Verified Data Only ────────────────────────────────────────
 
     @classmethod
     def _handle_verified_data(
@@ -370,11 +498,7 @@ class IntelligenceAssistantService:
         start_time: float,
         data_version: str,
     ) -> Dict[str, Any]:
-        """
-        Attempts to directly answer verified factual data questions from database metrics.
-        If the question cannot be answered directly from the data (e.g. nuanced question,
-        historical question, or explanation about data), automatically falls back to Ollama.
-        """
+        """Directly answers factual data questions or routes to hybrid."""
         can_answer, answer_text = cls._try_answer_from_data(question, evidence)
         if can_answer:
             primary_ev = (evidence.get("evidence_by_locality") or [None])[0]
@@ -393,9 +517,7 @@ class IntelligenceAssistantService:
                 data_version=data_version,
             )
 
-        # Data handler cannot directly answer the specific question —
-        # automatically fall back to Ollama with the evidence context!
-        logger.info(f"[Assistant] Data handler cannot directly answer '{question}'. Falling back to Ollama.")
+        logger.info(f"[Assistant] Data handler falling back to hybrid for '{question}'.")
         return cls._handle_hybrid(question, evidence, start_time, data_version)
 
     # ── Level-2: Hybrid Data + AI ──────────────────────────────────────────
@@ -408,20 +530,28 @@ class IntelligenceAssistantService:
         start_time: float,
         data_version: str,
     ) -> Dict[str, Any]:
-        """
-        Retrieves DB evidence and asks the LLM to interpret it.
-        If LLM is unavailable, falls back to deterministic data answer.
-        """
+        """Retrieves DB evidence and asks LLM to interpret it."""
         primary_ev = (evidence.get("evidence_by_locality") or [None])[0]
         evidence_text = cls.format_prompt_evidence(evidence)
+        loc_list = evidence.get("evidence_by_locality", [])
 
-        user_prompt = (
-            f"User Question: {question}\n\n"
-            f"{evidence_text}\n\n"
-            "Provide a comprehensive, objective, evidence-grounded response. "
-            "Clearly separate verified facts from general observations. "
-            "State data limitations honestly."
-        )
+        if loc_list:
+            user_prompt = (
+                f"User Question: {question}\n\n"
+                f"{evidence_text}\n\n"
+                "Provide an objective, evidence-grounded response. "
+                "Clearly separate verified facts from general observations. "
+                "State data limitations honestly. Answer in at most 150 words, short bullets, no preamble."
+            )
+        else:
+            user_prompt = (
+                f"User Question: {question}\n\n"
+                f"{evidence_text}\n\n"
+                "Answer the user's actual question directly using general knowledge. "
+                "Use citywide figures only when relevant to the question. "
+                "If the question needs a specific locality, ask which locality or ward they would like to evaluate. "
+                "Answer in at most 150 words, short bullets, no preamble."
+            )
 
         llm_text, model_used, fail_reason = ollama_client.chat_with_fallback(
             system=_HYBRID_SYSTEM,
@@ -433,7 +563,6 @@ class IntelligenceAssistantService:
             answer = llm_text
             answer_mode = MODE_HYBRID
         else:
-            # LLM unavailable — return deterministic data answer, note the mode
             answer = cls._generate_deterministic_analysis(question, evidence)
             answer_mode = MODE_DATA_ONLY
             model_used = "none"
@@ -466,78 +595,39 @@ class IntelligenceAssistantService:
         start_time: float,
         data_version: str,
     ) -> Dict[str, Any]:
-        """
-        Handles greetings, conversational chit-chat, follow-up messages, and general questions.
-        Uses Ollama for natural language responses. If Ollama is offline, provides
-        a friendly, natural fallback message.
-        """
-        is_greeting = is_greeting_or_chit_chat(question)
+        """Handles general questions using LLM."""
         is_follow = is_follow_up(question)
 
-        if is_greeting:
-            system_prompt = _CONVERSATIONAL_SYSTEM
-            user_prompt = f"User: {question}"
-        elif is_follow:
+        if is_follow:
             system_prompt = _FOLLOW_UP_SYSTEM
-            user_prompt = f"User Question: {question}"
+            user_prompt = f"User Question: {question}\n\nAnswer in at most 150 words, short bullets, no preamble."
         else:
             system_prompt = _GENERAL_SYSTEM
             user_prompt = (
                 f"User Question: {question}\n\n"
                 "Please provide a helpful, natural-language response based on general knowledge. "
-                "Do not invent Bengaluru-specific government numbers or claim to cite database records that do not exist."
+                "Do not invent Bengaluru-specific government numbers or claim to cite database records that do not exist. "
+                "Answer in at most 150 words, short bullets, no preamble."
             )
 
         llm_text, model_used, fail_reason = ollama_client.chat_with_fallback(
             system=system_prompt,
             user=user_prompt,
-            temperature=0.4,   # conversational for general Q&A
+            temperature=0.3,
         )
 
         if llm_text:
             answer = llm_text
             answer_mode = MODE_GENERAL_AI
         else:
-            if is_greeting:
-                answer = (
-                    "Hello! I am the **UrbanPulse Intelligence Assistant**.\n\n"
-                    "I can help you evaluate Bengaluru localities, check BBMP infrastructure investments, "
-                    "examine crime safety baselines, track environmental and ESG indicators, and calculate "
-                    "multi-dimensional **UrbanScores** for property and living decisions.\n\n"
-                    "*Here are a few things you can ask me:*\n"
-                    "- *'Should I buy a house in Whitefield?'*\n"
-                    "- *'What is the UrbanScore for HSR Layout?'*\n"
-                    "- *'Total BBMP construction investment in Bengaluru?'*\n"
-                    "- *'Is Koramangala safe for a family?'*\n"
-                    "- *'Compare Whitefield and HSR Layout'*"
-                )
-                answer_mode = MODE_GENERAL_AI
-                model_used = "none"
-            elif is_follow:
-                answer = (
-                    "⚠️ **AI Service Unavailable**\n\n"
-                    "The local Ollama AI model is currently unreachable to process follow-up conversational messages.\n\n"
-                    "However, verified UrbanPulse database queries remain fully operational. You can ask factual questions like:\n"
-                    "- *What is the UrbanScore for Whitefield?*\n"
-                    "- *Total BBMP construction investment in Bengaluru?*\n"
-                    "- *How many police stations in Bengaluru?*"
-                )
-                answer_mode = MODE_DATA_ONLY
-                model_used = "none"
-            else:
-                answer = (
-                    "⚠️ **AI Service Unavailable**\n\n"
-                    "Both the primary (Qwen3:8b) and fallback AI models are currently unreachable.\n\n"
-                    "For Bengaluru-specific civic data, you can ask questions like:\n"
-                    "- *What is the UrbanScore for Whitefield?*\n"
-                    "- *Total BBMP construction investment in Bengaluru?*\n"
-                    "- *Should I buy a house in Koramangala?*\n\n"
-                    "These will be answered from verified UrbanPulse datasets without the AI model."
-                )
-                answer_mode = MODE_DATA_ONLY
-                model_used = "none"
+            answer = (
+                "The AI model did not respond in time, please retry.\n\n"
+                "For verified Bengaluru civic metrics, you can ask about specific localities (e.g. Whitefield, HSR Layout) "
+                "or BBMP construction totals."
+            )
+            answer_mode = MODE_DATA_ONLY
+            model_used = "none"
 
-        # For general questions and greetings, attach clear attribution
         sources = (
             ["[General AI answer — based on general AI knowledge, not local database records]"]
             if answer_mode == MODE_GENERAL_AI
@@ -556,6 +646,150 @@ class IntelligenceAssistantService:
             start_time=start_time,
             data_version=data_version,
         )
+
+    # ── Streaming Preparation (Pure in-memory outside generator) ───────────
+
+    @classmethod
+    def prepare_stream_question(
+        cls,
+        db: Session,
+        question: str,
+        locality: Optional[str] = None,
+        explicit_locality: Optional[str] = None,
+        use_cache: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Executes ALL database lookups and non-LLM checks synchronously.
+        The DB session is completely done when this function returns.
+        Returns a dict indicating either an instant result or parameters for streaming.
+        """
+        start_time = time.time()
+        question = question.strip()
+        target_locality = locality or explicit_locality
+        data_version = EvidenceRetriever.compute_data_version(db)
+
+        # 1. Cache hit
+        if use_cache:
+            cached_res, sim, cache_status = semantic_cache.get_match(question, data_version)
+            if cached_res:
+                cached_res["cached"]           = True
+                cached_res["cache_status"]     = cache_status
+                cached_res["cache_similarity"] = sim
+                cached_res["latency_ms"]       = round((time.time() - start_time) * 1000, 1)
+                return {"is_instant": True, "payload": cached_res}
+
+        # 2. Greeting check
+        if is_greeting_or_chit_chat(question):
+            res = cls._handle_greeting(question, start_time, data_version)
+            return {"is_instant": True, "payload": res}
+
+        # 3. Retrieve DB evidence (done strictly here, while DB session is open)
+        evidence = EvidenceRetriever.retrieve_for_query(db, question, target_locality)
+        has_locality_ev = bool(evidence.get("evidence_by_locality"))
+
+        # 4. Deterministic locality answer (UrbanScore / Compare)
+        can_det, det_text, det_ev, det_analysis = cls._try_answer_deterministic_locality(question, evidence)
+        if can_det:
+            res = cls._build_payload(
+                question=question,
+                answer=det_text,
+                analysis=det_analysis,
+                sources=cls._default_sources(),
+                evidence=evidence,
+                primary_ev=det_ev,
+                answer_mode=MODE_VERIFIED,
+                model_used="n/a (verified database)",
+                start_time=start_time,
+                data_version=data_version,
+            )
+            if use_cache and semantic_cache.is_online:
+                semantic_cache.store(question, res, res.get("sources", []), data_version)
+            return {"is_instant": True, "payload": res}
+
+        # 5. Data templates check
+        level, level_reason = classify_question(question, has_locality_evidence=has_locality_ev)
+        if level == LEVEL_1:
+            can_ans, ans_text = cls._try_answer_from_data(question, evidence)
+            if can_ans:
+                primary_ev = (evidence.get("evidence_by_locality") or [None])[0]
+                analysis = cls._build_structured_analysis(evidence, primary_ev)
+                res = cls._build_payload(
+                    question=question,
+                    answer=ans_text,
+                    analysis=analysis,
+                    sources=cls._default_sources(),
+                    evidence=evidence,
+                    primary_ev=primary_ev,
+                    answer_mode=MODE_VERIFIED,
+                    model_used="n/a (verified database)",
+                    start_time=start_time,
+                    data_version=data_version,
+                )
+                if use_cache and semantic_cache.is_online:
+                    semantic_cache.store(question, res, res.get("sources", []), data_version)
+                return {"is_instant": True, "payload": res}
+            level = LEVEL_2
+
+        # 6. Prepare LLM prompt and parameters for streaming
+        primary_ev = (evidence.get("evidence_by_locality") or [None])[0]
+        loc_list = evidence.get("evidence_by_locality", [])
+
+        if level == LEVEL_2:
+            system_prompt = _HYBRID_SYSTEM
+            evidence_text = cls.format_prompt_evidence(evidence)
+            if loc_list:
+                user_prompt = (
+                    f"User Question: {question}\n\n"
+                    f"{evidence_text}\n\n"
+                    "Provide an objective, evidence-grounded response. "
+                    "Clearly separate verified facts from general observations. "
+                    "State data limitations honestly. Answer in at most 150 words, short bullets, no preamble."
+                )
+            else:
+                user_prompt = (
+                    f"User Question: {question}\n\n"
+                    f"{evidence_text}\n\n"
+                    "Answer the user's actual question directly using general knowledge. "
+                    "Use citywide figures only when relevant to the question. "
+                    "If the question needs a specific locality, ask which locality or ward they would like to evaluate. "
+                    "Answer in at most 150 words, short bullets, no preamble."
+                )
+            analysis = cls._build_structured_analysis(evidence, primary_ev)
+            sources = cls._default_sources()
+            answer_mode = MODE_HYBRID
+        else:
+            is_follow = is_follow_up(question)
+            system_prompt = _FOLLOW_UP_SYSTEM if is_follow else _GENERAL_SYSTEM
+            user_prompt = (
+                f"User Question: {question}\n\n"
+                "Please provide a helpful, natural-language response based on general knowledge. "
+                "Do not invent Bengaluru-specific government numbers or claim to cite database records that do not exist. "
+                "Answer in at most 150 words, short bullets, no preamble."
+            )
+            analysis = None
+            sources = ["[General AI answer — based on general AI knowledge, not local database records]"]
+            answer_mode = MODE_GENERAL_AI
+
+        target_model = ollama_client.resolve_primary() or ollama_client.resolve_fallback()
+
+        return {
+            "is_instant": False,
+            "stream_context": {
+                "question": question,
+                "system": system_prompt,
+                "user": user_prompt,
+                "model": target_model,
+                "answer_mode": answer_mode,
+                "level": level,
+                "evidence": evidence,
+                "primary_ev": primary_ev,
+                "analysis": analysis,
+                "sources": sources,
+                "start_time": start_time,
+                "data_version": data_version,
+                "use_cache": use_cache,
+            }
+        }
 
     # ── Shared Helpers ─────────────────────────────────────────────────────
 
@@ -705,16 +939,11 @@ class IntelligenceAssistantService:
         if not loc_list:
             cw = evidence.get("citywide_benchmarks", {})
             return (
-                "### UrbanPulse Intelligence Overview\n\n"
-                "**Verified citywide data for Bengaluru (from the UrbanPulse PostgreSQL database):**\n\n"
-                f"- **BBMP Construction**: ₹{cw.get('total_construction_investment_cr', 3169.06)} Cr verified "
-                f"investment across {cw.get('total_work_orders', 4729)} work orders in 198 wards.\n"
-                f"- **Crime Risk (BCP D47)**: Risk score {cw.get('city_crime_risk_score', 71.7)}/100 "
-                f"with a {cw.get('fatal_crime_rate_pct', 15.11)}% fatal crime severity rate.\n"
-                f"- **Police Infrastructure**: {cw.get('mapped_police_locations', 150)} stations and "
-                "outposts mapped across the city.\n\n"
-                "_For a localized UrbanScore and decision analysis, specify a locality such as "
-                "Whitefield, HSR Layout, Bellandur, or Koramangala._"
+                "The AI model did not respond in time, please retry.\n\n"
+                f"Citywide verified benchmark: ₹{cw.get('total_construction_investment_cr', 3169.06)} Cr construction across "
+                f"{cw.get('total_work_orders', 4729)} BBMP work orders; "
+                f"Crime Risk Score {cw.get('city_crime_risk_score', 71.7)}/100; "
+                f"{cw.get('mapped_police_locations', 150)} police stations mapped."
             )
 
         ev    = loc_list[0]

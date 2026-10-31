@@ -41,7 +41,7 @@ class AskResponse(BaseModel):
     cache_status: str = "miss"
     similarity: Optional[float] = None
     cache_similarity: Optional[float] = None
-    model: str = "qwen3:8b"
+    model: str = "qwen3:4b"
     latency_ms: float = 0.0
 
 

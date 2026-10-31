@@ -4,9 +4,11 @@ Strictly grounded in verified PostgreSQL civic datasets and Ollama qwen3:8b.
 """
 
 import time
+import json
 import logging
 from typing import List, Optional, Dict, Any
 from fastapi import APIRouter, Depends, Query, HTTPException, status
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
 from backend.app.db.session import get_db
@@ -21,6 +23,8 @@ from backend.app.services.intelligence.assistant_service import assistant_servic
 from backend.app.services.intelligence.retriever import evidence_retriever
 from backend.app.services.intelligence.urban_score import calculate_urban_score
 from backend.app.services.intelligence.cache import semantic_cache
+from backend.app.services.intelligence.ollama_client import ollama_client, MODE_DATA_ONLY
+from backend.app.services.intelligence.classifier import is_greeting_or_chit_chat, LEVEL_2
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +70,109 @@ def ask_assistant(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Intelligence assistant error: {str(exc)}"
         )
+
+
+@router.post("/ask/stream", summary="Streaming Q&A: ndjson token deltas + final structured AskResponse")
+def ask_assistant_stream(
+    request: AskRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Streaming response for UrbanPulse Intelligence queries:
+    - Token deltas emitted as `{"delta": "..."}\n` (application/x-ndjson)
+    - Final payload emitted as `{"done": true, "payload": <AskResponse>}\n`
+    - Instant answers (greetings, data templates, cache hits, deterministic locality)
+      emit a single `{"done": true, "payload": ...}\n` line.
+    - All DB operations complete before the stream generator is constructed.
+    """
+    if not request.question or not request.question.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Question cannot be empty."
+        )
+
+    # 1. Complete ALL database queries and non-LLM evaluations synchronously
+    prep = assistant_service.prepare_stream_question(
+        db=db,
+        question=request.question,
+        locality=request.locality,
+        use_cache=request.enable_cache
+    )
+
+    def event_stream():
+        if prep.get("is_instant"):
+            payload = prep["payload"]
+            logger.info(
+                f"[Intelligence Stream Instant] Mode={payload.get('answer_mode')} | "
+                f"Model={payload.get('model')} | Cached={payload.get('cached')} | "
+                f"Latency={payload.get('latency_ms')}ms"
+            )
+            yield json.dumps({"done": True, "payload": payload}) + "\n"
+            return
+
+        ctx = prep["stream_context"]
+        target_model = ctx.get("model")
+        question_text = ctx["question"]
+        collected_chunks = []
+
+        if target_model:
+            for delta in ollama_client.stream_chat(
+                model=target_model,
+                system=ctx["system"],
+                user=ctx["user"],
+                temperature=0.2 if ctx.get("level") == LEVEL_2 else 0.3
+            ):
+                collected_chunks.append(delta)
+                yield json.dumps({"delta": delta}) + "\n"
+
+        full_answer = "".join(collected_chunks).strip()
+        if full_answer:
+            answer_mode = ctx["answer_mode"]
+            model_used = target_model
+            fail_reason = ""
+        else:
+            full_answer = assistant_service._generate_deterministic_analysis(question_text, ctx["evidence"])
+            answer_mode = MODE_DATA_ONLY
+            model_used = "none"
+            fail_reason = "stream_failed"
+
+        final_payload = assistant_service._build_payload(
+            question=question_text,
+            answer=full_answer,
+            analysis=ctx["analysis"],
+            sources=ctx["sources"],
+            evidence=ctx["evidence"],
+            primary_ev=ctx["primary_ev"],
+            answer_mode=answer_mode,
+            model_used=model_used,
+            start_time=ctx["start_time"],
+            data_version=ctx["data_version"]
+        )
+
+        # Cache only for real answers
+        if (
+            ctx["use_cache"]
+            and semantic_cache.is_online
+            and answer_mode != MODE_DATA_ONLY
+            and model_used not in ("none", "")
+            and not fail_reason
+            and not is_greeting_or_chit_chat(question_text)
+        ):
+            semantic_cache.store(
+                query=question_text,
+                response=final_payload,
+                supporting_datasets=final_payload.get("sources", []),
+                data_version=ctx["data_version"]
+            )
+
+        logger.info(
+            f"[Intelligence Stream] Level={ctx.get('level')} | Model={model_used} | "
+            f"Cached=False | Latency={final_payload.get('latency_ms')}ms"
+        )
+
+        yield json.dumps({"done": True, "payload": final_payload}) + "\n"
+
+    return StreamingResponse(event_stream(), media_type="application/x-ndjson")
 
 
 @router.get("/urban-score", response_model=UrbanScoreResponse, summary="Calculate verified UrbanScore for a locality")

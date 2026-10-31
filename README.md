@@ -54,7 +54,7 @@ cp .env.example .env
 
 # 2. Ensure Ollama is running on the host with the required models
 ollama serve &
-ollama pull qwen3:8b
+ollama pull qwen3:4b
 ollama pull nomic-embed-text
 
 # 3. Start everything
@@ -97,7 +97,7 @@ python -m backend.scripts.seed_esg   # optional — seeds ESG live data
 
 # 6. Start Ollama (in a separate terminal)
 ollama serve
-ollama pull qwen3:8b
+ollama pull qwen3:4b
 ollama pull nomic-embed-text
 
 # 7. Start the backend (serves frontend too)
@@ -131,8 +131,8 @@ uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 --reload
 Three-level answering strategy — all grounded in the project's PostgreSQL datasets:
 
 1. **Verified UrbanPulse Data** — construction/crime/ESG facts answered directly from DB records
-2. **Hybrid (Data + AI)** — UrbanScore + Qwen3:8b interpretation for locality/property questions
-3. **General AI** — Urban planning concepts answered by Qwen3:8b; clearly labelled, no fake citations
+2. **Hybrid (Data + AI)** — UrbanScore + Qwen3:4b interpretation for locality/property questions
+3. **General AI** — Urban planning concepts answered by Qwen3:4b; clearly labelled, no fake citations
 
 When Ollama is offline, the assistant degrades gracefully to **data-only mode** and returns a deterministic answer from the database. Redis semantic cache is optional — the service bypasses it transparently if Redis is unavailable.
 
@@ -159,7 +159,7 @@ See [`.env.example`](.env.example) for the full list. Key variables:
 | `DATABASE_URL` | PostgreSQL connection string |
 | `POSTGRES_PASSWORD` | Required when using Docker Compose |
 | `OLLAMA_BASE_URL` | Ollama server URL (`http://127.0.0.1:11434` locally) |
-| `OLLAMA_PRIMARY_MODEL` | Primary LLM (`qwen3:8b`) |
+| `OLLAMA_PRIMARY_MODEL` | Primary LLM (`qwen3:4b`) |
 | `REDIS_URL` | Optional Redis URL for semantic cache |
 | `SUPABASE_*` | Supabase auth credentials (optional — JWT auth) |
 | `GOOGLE_AQI_API_KEY` | Optional live AQI feed |
@@ -185,7 +185,7 @@ See [`.env.example`](.env.example) for the full list. Key variables:
 |-------|-----------|
 | Backend | FastAPI, SQLAlchemy, PostgreSQL 15 |
 | Auth | Supabase + PyJWT |
-| AI | Ollama (qwen3:8b), nomic-embed-text, Redis |
+| AI | Ollama (qwen3:4b), nomic-embed-text, Redis |
 | Frontend | Plain HTML, Vanilla CSS, Vanilla JS, Leaflet |
 | Container | Docker + Docker Compose |
 | CI | GitHub Actions |

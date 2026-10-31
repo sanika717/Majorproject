@@ -2,7 +2,7 @@
  * UrbanPulse – Intelligence Assistant (Backend-Connected)
  *
  * Flow: User types question → POST /api/v1/intelligence/ask
- *       → Receives structured UrbanScore + Qwen3:8b answer
+ *       → Receives structured UrbanScore + Qwen3:4b answer
  *       → Renders UrbanScore card, decision analysis, sources
  *
  * All data comes exclusively from verified PostgreSQL datasets via the backend.
@@ -261,38 +261,118 @@
     return html || "No answer returned from the backend.";
   }
 
-  // ─── API Call ──────────────────────────────────────────────────────────────
+  // ─── API Call (Streaming with Fallback) ────────────────────────────────────
   function askBackend(question, typing) {
     var body = JSON.stringify({ question: question, enable_cache: true });
 
-    fetch(API_BASE + "/ask", {
+    function fallbackPost() {
+      fetch(API_BASE + "/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: body
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        if (typing && typing.parentNode) typing.parentNode.removeChild(typing);
+
+        if (data.detail) {
+          assistantMsg(
+            '<div style="color:#f87171;font-size:13px">⚠ Backend error: ' + esc(data.detail) + '</div>'
+          );
+          setStatus("Error from backend", false);
+          return;
+        }
+
+        var mode = data.answer_mode || "";
+        var modeStr = mode ? " [" + mode + "]" : "";
+        assistantMsg(renderResponse(data));
+        setStatus("Ready" + modeStr, true);
+      })
+      .catch(function(err) {
+        if (typing && typing.parentNode) typing.parentNode.removeChild(typing);
+        assistantMsg(
+          '<div style="color:#f87171;font-size:13px">⚠ Could not reach the UrbanPulse backend. Please ensure the server is running on port 8000.<br><small>Error: ' + esc(String(err)) + '</small></div>'
+        );
+        setStatus("Backend unavailable", false);
+      });
+    }
+
+    if (!window.fetch || !window.ReadableStream) {
+      fallbackPost();
+      return;
+    }
+
+    var streamedText = "";
+    var streamContainer = null;
+    var receivedDone = false;
+
+    fetch(API_BASE + "/ask/stream", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: body
     })
-    .then(function(res) { return res.json(); })
-    .then(function(data) {
-      if (typing && typing.parentNode) typing.parentNode.removeChild(typing);
+    .then(function(response) {
+      if (!response.ok || !response.body) {
+        throw new Error("Streaming error: HTTP " + response.status);
+      }
+      var reader = response.body.getReader();
+      var decoder = new TextDecoder("utf-8");
+      var buffer = "";
 
-      if (data.detail) {
-        assistantMsg(
-          '<div style="color:#f87171;font-size:13px">⚠ Backend error: ' + esc(data.detail) + '</div>'
-        );
-        setStatus("Error from backend", false);
-        return;
+      function readChunk() {
+        return reader.read().then(function(result) {
+          if (result.done) {
+            if (!receivedDone && streamedText) {
+              // Completed stream without explicit done payload
+              if (typing && typing.parentNode) typing.parentNode.removeChild(typing);
+              assistantMsg(renderAnswer(streamedText));
+            }
+            return;
+          }
+          buffer += decoder.decode(result.value, { stream: true });
+          var lines = buffer.split("\n");
+          buffer = lines.pop();
+
+          for (var i = 0; i < lines.length; i++) {
+            var line = lines[i].trim();
+            if (!line) continue;
+            try {
+              var parsed = JSON.parse(line);
+              if (parsed.delta) {
+                if (typing) {
+                  if (!streamContainer) {
+                    typing.innerHTML = '<div class="streaming-text" style="font-size:13px;line-height:1.7;color:var(--text-secondary)"></div>';
+                    streamContainer = typing.querySelector(".streaming-text");
+                  }
+                  streamedText += parsed.delta;
+                  if (streamContainer) {
+                    streamContainer.innerHTML = renderAnswer(streamedText);
+                    messagesEl.scrollTop = messagesEl.scrollHeight;
+                  }
+                }
+              }
+              if (parsed.done && parsed.payload) {
+                receivedDone = true;
+                if (typing && typing.parentNode) typing.parentNode.removeChild(typing);
+                var mode = parsed.payload.answer_mode || "";
+                var modeStr = mode ? " [" + mode + "]" : "";
+                assistantMsg(renderResponse(parsed.payload));
+                setStatus("Ready" + modeStr, true);
+                return;
+              }
+            } catch (err) {
+              console.warn("[Assistant Stream] Line parse issue:", err);
+            }
+          }
+          return readChunk();
+        });
       }
 
-      var mode = data.answer_mode || "";
-      var modeStr = mode ? " [" + mode + "]" : "";
-      assistantMsg(renderResponse(data));
-      setStatus("Ready" + modeStr, true);
+      return readChunk();
     })
-    .catch(function(err) {
-      if (typing && typing.parentNode) typing.parentNode.removeChild(typing);
-      assistantMsg(
-        '<div style="color:#f87171;font-size:13px">⚠ Could not reach the UrbanPulse backend. Please ensure the server is running on port 8000.<br><small>Error: ' + esc(String(err)) + '</small></div>'
-      );
-      setStatus("Backend unavailable", false);
+    .catch(function(streamErr) {
+      console.warn("[Assistant] Streaming failed, falling back to /ask:", streamErr);
+      fallbackPost();
     });
   }
 
@@ -320,7 +400,7 @@
         var modelOk   = d.model && (d.model.connected || d.model.primary_model);
         var cacheOk   = d.cache && d.cache.connected;
         var locs      = d.localities_indexed || 0;
-        var primary   = (d.model && (d.model.primary_model || d.model.target_model)) || "qwen3:8b";
+        var primary   = (d.model && (d.model.primary_model || d.model.target_model)) || "qwen3:4b";
         var fallback  = d.model && d.model.fallback_model ? " ➔ " + d.model.fallback_model : "";
         var modelStr  = modelOk ? "✅ " + primary + fallback : "⚠ Ollama offline";
         var cacheStr  = cacheOk ? " · Redis ✅" : " · Redis bypassed";

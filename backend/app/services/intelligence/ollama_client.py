@@ -2,17 +2,18 @@
 UrbanPulse Ollama Client — Dynamic Model Resolution & Three-Level Answering Strategy.
 
 Level 1: Verified UrbanPulse Data  (handled upstream by EvidenceRetriever)
-Level 2: Primary model (qwen3:8b) — preferred general + hybrid reasoning
-Level 3: Fallback model (mistral or whatever is installed) — if Level 2 fails/times out
+Level 2: Primary model (qwen3:4b) — preferred general + hybrid reasoning
+Level 3: Fallback model (mistral or whatever is installed) — if Level 2 fails
 
 Model tags are discovered dynamically from /api/tags so no hardcoded assumptions are made.
 """
 
+import json
 import re
 import time
 import logging
 import requests
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Dict, Any, List, Optional, Tuple, Iterator
 
 from backend.app.core.config import settings
 
@@ -35,7 +36,9 @@ class OllamaClient:
     Wraps the Ollama REST API with:
     - Dynamic installed-model discovery
     - Primary → Fallback model selection
-    - Per-request timeout
+    - Per-request timeout (30s)
+    - Fallback skipped on primary timeout
+    - Streaming response support
     - Graceful degradation when Ollama is offline
     """
 
@@ -75,7 +78,7 @@ class OllamaClient:
     def resolve_model(self, preferred: str) -> Optional[str]:
         """
         Finds the best matching installed model for a preferred tag.
-        E.g. "qwen3:8b" matches "qwen3:8b", "mistral" matches "mistral:7b", etc.
+        E.g. "qwen3:4b" matches "qwen3:4b", "mistral" matches "mistral:7b", etc.
         Returns None if no suitable model found.
         """
         installed = self.get_installed_models()
@@ -103,6 +106,49 @@ class OllamaClient:
 
     # ── Chat Call ──────────────────────────────────────────────────────────
 
+    def _chat_internal(
+        self,
+        model: str,
+        system: str,
+        user: str,
+        temperature: float = 0.3,
+        top_p: float = 0.9,
+        timeout: Optional[int] = None
+    ) -> Tuple[Optional[str], str, bool]:
+        """
+        Internal chat call returning (clean_text, model, is_timed_out).
+        """
+        timeout = timeout or settings.OLLAMA_TIMEOUT_SECONDS
+        url = f"{settings.OLLAMA_BASE_URL.rstrip('/')}/api/chat"
+        payload = {
+            "model": model,
+            "messages": [
+                {"role": "system", "content": system},
+                {"role": "user",   "content": user},
+            ],
+            "stream": False,
+            "think": False,
+            "keep_alive": "30m",
+            "options": {
+                "temperature": temperature,
+                "top_p": top_p,
+                "num_predict": 220,
+                "num_ctx": 4096,
+            },
+        }
+        try:
+            resp = requests.post(url, json=payload, timeout=timeout)
+            if resp.status_code == 200:
+                raw = resp.json().get("message", {}).get("content", "")
+                clean = _strip_thinking_tags(raw)
+                return clean, model, False
+        except requests.exceptions.Timeout:
+            logger.warning(f"[OllamaClient] Timeout calling model '{model}' (>{timeout}s)")
+            return None, model, True
+        except Exception as e:
+            logger.warning(f"[OllamaClient] Chat call failed for model '{model}': {e}")
+        return None, model, False
+
     def chat(
         self,
         model: str,
@@ -116,29 +162,8 @@ class OllamaClient:
         Calls Ollama /api/chat with the given model.
         Returns (clean_text, model_used) or (None, model) on failure.
         """
-        timeout = timeout or settings.OLLAMA_TIMEOUT_SECONDS
-        url = f"{settings.OLLAMA_BASE_URL.rstrip('/')}/api/chat"
-        payload = {
-            "model": model,
-            "messages": [
-                {"role": "system",  "content": system},
-                {"role": "user",    "content": user},
-            ],
-            "stream": False,
-            "think": False,
-            "options": {"temperature": temperature, "top_p": top_p, "num_predict": 450},
-        }
-        try:
-            resp = requests.post(url, json=payload, timeout=timeout)
-            if resp.status_code == 200:
-                raw = resp.json().get("message", {}).get("content", "")
-                clean = _strip_thinking_tags(raw)
-                return clean, model
-        except requests.exceptions.Timeout:
-            logger.warning(f"[OllamaClient] Timeout calling model '{model}' (>{timeout}s)")
-        except Exception as e:
-            logger.warning(f"[OllamaClient] Chat call failed for model '{model}': {e}")
-        return None, model
+        text, mod, _ = self._chat_internal(model, system, user, temperature, top_p, timeout)
+        return text, mod
 
     def chat_with_fallback(
         self,
@@ -148,25 +173,102 @@ class OllamaClient:
         top_p: float = 0.9,
     ) -> Tuple[Optional[str], str, str]:
         """
-        Tries primary model, falls back to fallback model if primary fails.
-        Returns (response_text, model_used, fail_reason)
-        where fail_reason is '' on success or a short description on failure.
+        Tries primary model.
+        If primary model times out, skips fallback to minimize latency.
+        Otherwise falls back if primary fails or is not found.
+        Returns (response_text, model_used, fail_reason).
         """
         primary = self.resolve_primary()
         if primary:
-            text, model = self.chat(primary, system, user, temperature, top_p)
+            text, model, timed_out = self._chat_internal(primary, system, user, temperature, top_p)
             if text:
                 return text, model, ""
+            if timed_out:
+                logger.warning(f"[OllamaClient] Primary '{primary}' timed out. Skipping fallback model.")
+                return None, "none", "primary_timed_out"
 
         fallback = self.resolve_fallback()
         if fallback:
-            logger.info(f"[OllamaClient] Primary failed, trying fallback '{fallback}'")
-            text, model = self.chat(fallback, system, user, temperature, top_p)
+            logger.info(f"[OllamaClient] Primary unavailable or failed, trying fallback '{fallback}'")
+            text, model, _ = self._chat_internal(fallback, system, user, temperature, top_p)
             if text:
                 return text, model, "primary_failed"
 
         logger.error("[OllamaClient] Both primary and fallback models unavailable")
         return None, "none", "ollama_unavailable"
+
+    # ── Streaming ──────────────────────────────────────────────────────────
+
+    def stream_chat(
+        self,
+        model: str,
+        system: str,
+        user: str,
+        temperature: float = 0.3,
+        top_p: float = 0.9,
+        timeout: Optional[int] = None
+    ) -> Iterator[str]:
+        """
+        Streams token deltas from Ollama /api/chat.
+        Yields clean delta strings.
+        """
+        timeout = timeout or settings.OLLAMA_TIMEOUT_SECONDS
+        url = f"{settings.OLLAMA_BASE_URL.rstrip('/')}/api/chat"
+        payload = {
+            "model": model,
+            "messages": [
+                {"role": "system", "content": system},
+                {"role": "user",   "content": user},
+            ],
+            "stream": True,
+            "think": False,
+            "keep_alive": "30m",
+            "options": {
+                "temperature": temperature,
+                "top_p": top_p,
+                "num_predict": 220,
+                "num_ctx": 4096,
+            },
+        }
+
+        in_think_block = False
+        try:
+            resp = requests.post(url, json=payload, timeout=timeout, stream=True)
+            if resp.status_code != 200:
+                logger.warning(f"[OllamaClient] Stream chat non-200: {resp.status_code}")
+                return
+
+            for line in resp.iter_lines(decode_unicode=True):
+                if not line:
+                    continue
+                try:
+                    data = json.loads(line)
+                    delta = data.get("message", {}).get("content", "")
+                    if not delta:
+                        continue
+
+                    # Filter <think> blocks if present in stream
+                    if "<think>" in delta:
+                        in_think_block = True
+                        delta = delta.split("<think>", 1)[0]
+                    if in_think_block:
+                        if "</think>" in delta:
+                            in_think_block = False
+                            delta = delta.split("</think>", 1)[1]
+                        else:
+                            continue
+
+                    if delta:
+                        yield delta
+
+                    if data.get("done", False):
+                        break
+                except Exception:
+                    continue
+        except requests.exceptions.Timeout:
+            logger.warning(f"[OllamaClient] Stream timeout calling model '{model}' (>{timeout}s)")
+        except Exception as e:
+            logger.warning(f"[OllamaClient] Stream failed for model '{model}': {e}")
 
     # ── Embedding ──────────────────────────────────────────────────────────
 

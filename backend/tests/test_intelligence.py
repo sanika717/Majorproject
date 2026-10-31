@@ -125,10 +125,10 @@ class TestOllamaClient:
         def side_effect(*args, **kwargs):
             call_count[0] += 1
             if call_count[0] == 1:
-                raise req.exceptions.Timeout("primary timeout")
+                raise req.exceptions.ConnectionError("primary connection refused")
             return mock_ok
 
-        with patch.object(oc, "resolve_primary", return_value="qwen3:8b"), \
+        with patch.object(oc, "resolve_primary", return_value="qwen3:4b"), \
              patch.object(oc, "resolve_fallback", return_value="mistral:latest"), \
              patch("requests.post", side_effect=side_effect):
             text, model, reason = oc.chat_with_fallback("sys", "user")
@@ -136,12 +136,23 @@ class TestOllamaClient:
         assert model == "mistral:latest"
         assert reason == "primary_failed"
 
+    def test_chat_with_fallback_skips_fallback_on_primary_timeout(self):
+        oc = OllamaClient()
+        import requests as req
+        with patch.object(oc, "resolve_primary", return_value="qwen3:4b"), \
+             patch.object(oc, "resolve_fallback", return_value="mistral:latest"), \
+             patch("requests.post", side_effect=req.exceptions.Timeout("primary timeout")):
+            text, model, reason = oc.chat_with_fallback("sys", "user")
+        assert text is None
+        assert model == "none"
+        assert reason == "primary_timed_out"
+
     def test_chat_with_fallback_returns_none_when_all_fail(self):
         import requests as req
         oc = OllamaClient()
-        with patch.object(oc, "resolve_primary", return_value="qwen3:8b"), \
+        with patch.object(oc, "resolve_primary", return_value="qwen3:4b"), \
              patch.object(oc, "resolve_fallback", return_value="mistral:latest"), \
-             patch("requests.post", side_effect=req.exceptions.Timeout("timeout")):
+             patch("requests.post", side_effect=req.exceptions.ConnectionError("offline")):
             text, model, reason = oc.chat_with_fallback("sys", "user")
         assert text is None
         assert model == "none"
@@ -515,7 +526,75 @@ class TestIntelligenceAPI:
 
 
 # ═══════════════════════════════════════════════════════════════════
-# 7. Live Qwen3 Integration (slow — opt-in only)
+# 7. AI Assistant Fixes & Enhancements Verification
+# ═══════════════════════════════════════════════════════════════════
+
+class TestAssistantFixes:
+    """Tests for assistant fixes: caching rules, greetings, comparisons, distinct answers."""
+
+    def test_failed_llm_answer_is_not_cached(self):
+        """A failed LLM answer (MODE_DATA_ONLY / fail_reason / model='none') must never be cached."""
+        with patch("backend.app.services.intelligence.assistant_service.ollama_client.chat_with_fallback",
+                   return_value=(None, "none", "primary_timed_out")), \
+             patch("backend.app.services.intelligence.assistant_service.semantic_cache.store") as mock_store:
+            resp = client.post("/api/v1/intelligence/ask", json={"question": "What is the future of urban sprawl in Bengaluru?"})
+            assert resp.status_code == 200
+            data = resp.json()
+            assert data["answer_mode"] == "Verified UrbanPulse Data (AI Unavailable)"
+            mock_store.assert_not_called()
+
+    def test_two_different_questions_return_different_answers(self):
+        """Two different questions should not return the exact same hardcoded text."""
+        with patch("backend.app.services.intelligence.assistant_service.ollama_client.chat_with_fallback",
+                   side_effect=[
+                       ("Answer for question 1 about urban zoning laws.", "qwen3:4b", ""),
+                       ("Answer for question 2 about rainwater harvesting techniques.", "qwen3:4b", "")
+                   ]):
+            resp1 = client.post("/api/v1/intelligence/ask", json={"question": "Tell me about urban zoning laws.", "enable_cache": False})
+            resp2 = client.post("/api/v1/intelligence/ask", json={"question": "How does rainwater harvesting work?", "enable_cache": False})
+            assert resp1.status_code == 200
+            assert resp2.status_code == 200
+            assert resp1.json()["answer"] != resp2.json()["answer"]
+
+    def test_greeting_makes_no_llm_call(self):
+        """Greetings should return instant friendly response without invoking ollama_client."""
+        with patch("backend.app.services.intelligence.assistant_service.ollama_client.chat_with_fallback") as mock_chat, \
+             patch("backend.app.services.intelligence.assistant_service.ollama_client.chat") as mock_chat_direct:
+            resp = client.post("/api/v1/intelligence/ask", json={"question": "Hello! How can you help me?"})
+            assert resp.status_code == 200
+            mock_chat.assert_not_called()
+            mock_chat_direct.assert_not_called()
+            d = resp.json()
+            assert "UrbanPulse Intelligence Assistant" in d["answer"]
+
+    def test_compare_whitefield_and_hsr_layout_makes_no_llm_call(self):
+        """'Compare Whitefield and HSR Layout' should return deterministic comparison from DB without calling LLM."""
+        with patch("backend.app.services.intelligence.assistant_service.ollama_client.chat_with_fallback") as mock_chat, \
+             patch("backend.app.services.intelligence.assistant_service.ollama_client.chat") as mock_chat_direct:
+            resp = client.post("/api/v1/intelligence/ask", json={"question": "Compare Whitefield and HSR Layout", "enable_cache": False})
+            assert resp.status_code == 200
+            mock_chat.assert_not_called()
+            mock_chat_direct.assert_not_called()
+            d = resp.json()
+            assert "Whitefield" in d["answer"]
+            assert "HSR Layout" in d["answer"]
+            assert "UrbanScore" in d["answer"]
+
+    def test_streaming_endpoint_returns_ndjson(self):
+        """Test POST /api/v1/intelligence/ask/stream returns application/x-ndjson with done payload."""
+        import json
+        resp = client.post("/api/v1/intelligence/ask/stream", json={"question": "Hello"})
+        assert resp.status_code == 200
+        assert "application/x-ndjson" in resp.headers.get("content-type", "")
+        lines = [line for line in resp.text.strip().split("\n") if line]
+        assert len(lines) >= 1
+        last_obj = json.loads(lines[-1])
+        assert last_obj.get("done") is True
+        assert "payload" in last_obj
+
+
+# ═══════════════════════════════════════════════════════════════════
+# 8. Live Qwen3 Integration (slow — opt-in only)
 # ═══════════════════════════════════════════════════════════════════
 
 @pytest.mark.slow

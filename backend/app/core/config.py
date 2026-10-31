@@ -67,11 +67,11 @@ class Settings(BaseSettings):
 
     # UrbanPulse Intelligence Assistant & Semantic Cache Configuration
     OLLAMA_BASE_URL: str = "http://127.0.0.1:11434"
-    OLLAMA_MODEL: str = "qwen3:8b"           # legacy alias
-    OLLAMA_PRIMARY_MODEL: str = "qwen3:8b"   # Level-2 preferred general model
+    OLLAMA_MODEL: str = "qwen3:4b"           # legacy alias
+    OLLAMA_PRIMARY_MODEL: str = "qwen3:4b"   # Level-2 preferred general model
     OLLAMA_FALLBACK_MODEL: str = "mistral"   # Level-3 fallback
     OLLAMA_EMBED_MODEL: str = "nomic-embed-text"
-    OLLAMA_TIMEOUT_SECONDS: int = 90         # Per-request LLM timeout
+    OLLAMA_TIMEOUT_SECONDS: int = 30         # Per-request LLM timeout
     REDIS_URL: str = "redis://127.0.0.1:6379/0"
     REDIS_CACHE_TTL: int = 86400             # 24 hours
     REDIS_SIMILARITY_THRESHOLD: float = 0.90
