@@ -262,3 +262,318 @@ def test_admin_authority_review_workflow(complaints_db):
     assert tracked["department"] == "Bengaluru City Police - Traffic Management Center"
     assert tracked["admin_notes"] == review_payload["admin_notes"]
     assert tracked["priority"] == "CRITICAL"
+
+
+def test_admin_endpoints_auth_gate(complaints_db):
+    """Verifies that non-admin gets 403 and no token gets 401 on dashboard, events, and export endpoints."""
+    client = TestClient(app)
+    admin_token = complaints_db["admin_token"]
+    citizen_token = complaints_db["citizen_token"]
+
+    # Submit one complaint to obtain a ticket_id
+    c = client.post("/api/v1/complaints/", json={
+        "category": "Roads & Potholes",
+        "description": "Hazardous road section requiring attention on 80 Feet Road.",
+        "location": "Indiranagar Ward 80"
+    }).json()
+    ticket_id = c["ticket_id"]
+
+    endpoints = [
+        f"/api/v1/complaints/admin/dashboard",
+        f"/api/v1/complaints/{ticket_id}/events",
+        f"/api/v1/complaints/admin/export.csv"
+    ]
+
+    for ep in endpoints:
+        # 1. No token -> 401 Unauthorized
+        res_no_token = client.get(ep)
+        assert res_no_token.status_code == 401, f"{ep} did not return 401 without auth token"
+
+        # 2. Citizen token (non-admin) -> 403 Forbidden
+        res_citizen = client.get(ep, headers={"Authorization": f"Bearer {citizen_token}"})
+        assert res_citizen.status_code == 403, f"{ep} did not return 403 with citizen token"
+
+        # 3. Admin token -> 200 OK
+        res_admin = client.get(ep, headers={"Authorization": f"Bearer {admin_token}"})
+        assert res_admin.status_code == 200, f"{ep} did not return 200 with admin token"
+
+
+def test_sla_overdue_computation_fixed_timestamps():
+    """Verifies exact overdue computation for each priority tier using fixed timestamps."""
+    from datetime import datetime, timedelta
+    from backend.app.services.complaint_service import compute_sla_status
+
+    start_time = datetime(2026, 10, 1, 10, 0, 0)
+
+    # 1. CRITICAL: 24h SLA
+    # At 23 hours: not overdue
+    is_ov, h_ov = compute_sla_status("CRITICAL", "SUBMITTED", start_time, ref_time=start_time + timedelta(hours=23))
+    assert not is_ov
+    assert h_ov == 0.0
+    # At 26.5 hours: overdue by 2.5 hours
+    is_ov, h_ov = compute_sla_status("CRITICAL", "IN_PROGRESS", start_time, ref_time=start_time + timedelta(hours=26.5))
+    assert is_ov
+    assert h_ov == 2.5
+
+    # 2. HIGH: 72h SLA
+    # At 71 hours: not overdue
+    is_ov, h_ov = compute_sla_status("HIGH", "UNDER_REVIEW", start_time, ref_time=start_time + timedelta(hours=71))
+    assert not is_ov
+    # At 76 hours: overdue by 4.0 hours
+    is_ov, h_ov = compute_sla_status("HIGH", "UNDER_REVIEW", start_time, ref_time=start_time + timedelta(hours=76))
+    assert is_ov
+    assert h_ov == 4.0
+
+    # 3. MEDIUM: 168h SLA
+    # At 160 hours: not overdue
+    is_ov, h_ov = compute_sla_status("MEDIUM", "SUBMITTED", start_time, ref_time=start_time + timedelta(hours=160))
+    assert not is_ov
+    # At 173 hours: overdue by 5.0 hours
+    is_ov, h_ov = compute_sla_status("MEDIUM", "SUBMITTED", start_time, ref_time=start_time + timedelta(hours=173))
+    assert is_ov
+    assert h_ov == 5.0
+
+    # 4. LOW: 336h SLA
+    # At 330 hours: not overdue
+    is_ov, h_ov = compute_sla_status("LOW", "SUBMITTED", start_time, ref_time=start_time + timedelta(hours=330))
+    assert not is_ov
+    # At 340 hours: overdue by 4.0 hours
+    is_ov, h_ov = compute_sla_status("LOW", "SUBMITTED", start_time, ref_time=start_time + timedelta(hours=340))
+    assert is_ov
+    assert h_ov == 4.0
+
+    # 5. Completed complaints (RESOLVED or REJECTED) are never overdue
+    is_ov, h_ov = compute_sla_status("CRITICAL", "RESOLVED", start_time, ref_time=start_time + timedelta(hours=100))
+    assert not is_ov
+    assert h_ov == 0.0
+
+    is_ov, h_ov = compute_sla_status("CRITICAL", "REJECTED", start_time, ref_time=start_time + timedelta(hours=100))
+    assert not is_ov
+    assert h_ov == 0.0
+
+
+def test_status_change_writes_event_and_sets_clears_resolved_at(complaints_db):
+    """Verifies ComplaintEvent creation on each status transition and resolved_at set/clear behavior."""
+    client = TestClient(app)
+    admin_token = complaints_db["admin_token"]
+    db = complaints_db["db"]
+
+    # 1. Submission writes initial event
+    res = client.post("/api/v1/complaints/", json={
+        "category": "Drainage & Flooding",
+        "description": "Drain overflowing across entire road segment.",
+        "location": "BTM Layout Ward 176"
+    })
+    assert res.status_code == 201
+    ticket_id = res.json()["ticket_id"]
+
+    events_res = client.get(f"/api/v1/complaints/{ticket_id}/events", headers={"Authorization": f"Bearer {admin_token}"})
+    assert events_res.status_code == 200
+    events = events_res.json()
+    assert len(events) == 1
+    assert events[0]["to_status"] == "SUBMITTED"
+    assert events[0]["from_status"] == "SUBMITTED"
+
+    complaint = db.query(Complaint).filter(Complaint.ticket_id == ticket_id).first()
+    assert complaint.resolved_at is None
+
+    # 2. Transition to IN_PROGRESS via admin review
+    client.patch(
+        f"/api/v1/complaints/{ticket_id}/admin-review",
+        json={"status": "IN_PROGRESS", "admin_notes": "Assigned to storm drain engineering team."},
+        headers={"Authorization": f"Bearer {admin_token}"}
+    )
+    db.refresh(complaint)
+    assert complaint.status == ComplaintStatus.IN_PROGRESS
+    assert complaint.resolved_at is None
+
+    events = client.get(f"/api/v1/complaints/{ticket_id}/events", headers={"Authorization": f"Bearer {admin_token}"}).json()
+    assert len(events) == 2
+    assert events[1]["from_status"] == "SUBMITTED"
+    assert events[1]["to_status"] == "IN_PROGRESS"
+    assert events[1]["actor"] == "admin@urbanpulse.org"
+
+    # 3. Transition to RESOLVED -> sets resolved_at
+    client.patch(
+        f"/api/v1/complaints/{ticket_id}/admin-review",
+        json={"status": "RESOLVED", "admin_notes": "Drain cleared and verified."},
+        headers={"Authorization": f"Bearer {admin_token}"}
+    )
+    db.refresh(complaint)
+    assert complaint.status == ComplaintStatus.RESOLVED
+    assert complaint.resolved_at is not None
+
+    events = client.get(f"/api/v1/complaints/{ticket_id}/events", headers={"Authorization": f"Bearer {admin_token}"}).json()
+    assert len(events) == 3
+    assert events[2]["to_status"] == "RESOLVED"
+
+    # 4. Move status back to UNDER_REVIEW -> clears resolved_at
+    client.patch(
+        f"/api/v1/complaints/{ticket_id}/status",
+        json={"status": "UNDER_REVIEW", "admin_notes": "Reopening ticket due to citizen follow-up."},
+        headers={"Authorization": f"Bearer {admin_token}"}
+    )
+    db.refresh(complaint)
+    assert complaint.status == ComplaintStatus.UNDER_REVIEW
+    assert complaint.resolved_at is None
+
+    events = client.get(f"/api/v1/complaints/{ticket_id}/events", headers={"Authorization": f"Bearer {admin_token}"}).json()
+    assert len(events) == 4
+    assert events[3]["from_status"] == "RESOLVED"
+    assert events[3]["to_status"] == "UNDER_REVIEW"
+
+
+def test_dashboard_totals_match_seeded_rows(complaints_db):
+    """Verifies that GET /api/v1/complaints/admin/dashboard returns exact grouped SQL aggregates."""
+    from datetime import datetime, timedelta
+    client = TestClient(app)
+    admin_token = complaints_db["admin_token"]
+    db = complaints_db["db"]
+
+    # Clear complaints for exact counts
+    db.query(Complaint).delete()
+    db.commit()
+
+    now = datetime.utcnow()
+
+    # Seed 1: CRITICAL open, overdue (created 30 hours ago)
+    c1 = Complaint(
+        ticket_id="UP-2026-TEST01",
+        category="Roads & Potholes",
+        description="Dangerous sinkhole",
+        priority="CRITICAL",
+        ward="Ward 100",
+        department="BBMP Roads Infrastructure",
+        status=ComplaintStatus.IN_PROGRESS,
+        created_at=now - timedelta(hours=30),
+        updated_at=now
+    )
+    # Seed 2: CRITICAL open, not overdue (created 10 hours ago)
+    c2 = Complaint(
+        ticket_id="UP-2026-TEST02",
+        category="Safety & Policing",
+        description="Hazardous power line",
+        priority="CRITICAL",
+        ward="Ward 100",
+        department="BESCOM (Electricity Supply)",
+        status=ComplaintStatus.SUBMITTED,
+        created_at=now - timedelta(hours=10),
+        updated_at=now
+    )
+    # Seed 3: HIGH, resolved within SLA (resolved in 20 hours, SLA 72h)
+    c3 = Complaint(
+        ticket_id="UP-2026-TEST03",
+        category="Garbage & Sanitation",
+        description="Garbage clearance",
+        priority="HIGH",
+        ward="Ward 101",
+        department="BBMP Solid Waste Management",
+        status=ComplaintStatus.RESOLVED,
+        created_at=now - timedelta(days=2),
+        resolved_at=now - timedelta(days=2) + timedelta(hours=20),
+        updated_at=now
+    )
+    # Seed 4: LOW, rejected
+    c4 = Complaint(
+        ticket_id="UP-2026-TEST04",
+        category="Street Lights",
+        description="Request for new pole",
+        priority="LOW",
+        ward="Ward 102",
+        department="BESCOM (Electricity Supply)",
+        status=ComplaintStatus.REJECTED,
+        created_at=now - timedelta(days=5),
+        updated_at=now
+    )
+    # Seed 5: MEDIUM, under review, not overdue (created 20 hours ago, SLA 168h)
+    c5 = Complaint(
+        ticket_id="UP-2026-TEST05",
+        category="Roads & Potholes",
+        description="Minor pothole patch",
+        priority="MEDIUM",
+        ward="Ward 100",
+        department="BBMP Roads Infrastructure",
+        status=ComplaintStatus.UNDER_REVIEW,
+        created_at=now - timedelta(hours=20),
+        updated_at=now
+    )
+
+    db.add_all([c1, c2, c3, c4, c5])
+    db.commit()
+
+    res = client.get("/api/v1/complaints/admin/dashboard", headers={"Authorization": f"Bearer {admin_token}"})
+    assert res.status_code == 200
+    data = res.json()
+
+    # Totals
+    totals = data["totals"]
+    assert totals["total"] == 5
+    assert totals["submitted"] == 1
+    assert totals["under_review"] == 1
+    assert totals["in_progress"] == 1
+    assert totals["resolved"] == 1
+    assert totals["rejected"] == 1
+    assert totals["overdue"] == 1  # Only c1 is overdue
+    assert totals["critical_open"] == 2  # c1 and c2
+
+    # SLA
+    sla = data["sla"]
+    assert sla["compliance_pct"] == 100.0  # c3 was resolved within SLA
+    assert sla["avg_resolution_hours"] == 20.0
+
+    # By Priority
+    pri = data["by_priority"]
+    assert pri["CRITICAL"] == 2
+    assert pri["HIGH"] == 1
+    assert pri["MEDIUM"] == 1
+    assert pri["LOW"] == 1
+
+    # Most Overdue
+    most_overdue = data["most_overdue"]
+    assert len(most_overdue) == 1
+    assert most_overdue[0]["ticket_id"] == "UP-2026-TEST01"
+    assert most_overdue[0]["hours_overdue"] > 0
+
+    # Department open vs resolved
+    dept_map = {d["label"]: d for d in data["by_department"]}
+    assert dept_map["BBMP Roads Infrastructure"]["open"] == 2  # c1 and c5
+    assert dept_map["BBMP Solid Waste Management"]["resolved"] == 1  # c3
+
+
+def test_csv_export_excludes_identity_fields(complaints_db):
+    """Verifies that export.csv honors filters and excludes all identity/contact columns and values."""
+    client = TestClient(app)
+    admin_token = complaints_db["admin_token"]
+    db = complaints_db["db"]
+
+    # Submit a complaint with explicit name and contact
+    res = client.post("/api/v1/complaints/", json={
+        "category": "Water Supply & Sewage",
+        "description": "Severely contaminated municipal tap water.",
+        "location": "Malleswaram Ward 65",
+        "name": "Citizen Confidential Name",
+        "contact": "confidential_phone_99999",
+        "hide_identity": False
+    })
+    assert res.status_code == 201
+
+    export_res = client.get("/api/v1/complaints/admin/export.csv", headers={"Authorization": f"Bearer {admin_token}"})
+    assert export_res.status_code == 200
+    assert "text/csv" in export_res.headers.get("content-type", "")
+
+    csv_text = export_res.text
+    lines = csv_text.strip().splitlines()
+    header = lines[0].split(",")
+
+    # Expected columns
+    expected_header = [
+        "ticket_id", "category", "ward", "department", "priority",
+        "status", "created_at", "resolved_at", "is_overdue"
+    ]
+    assert header == expected_header
+
+    # Ensure zero sensitive terms appear in header or data
+    forbidden_terms = ["name", "contact", "phone", "email", "secret_hash", "pseudonym", "Citizen Confidential Name", "confidential_phone_99999"]
+    for term in forbidden_terms:
+        assert term.lower() not in csv_text.lower()
+

@@ -166,6 +166,64 @@ See [`.env.example`](.env.example) for the full list. Key variables:
 
 ---
 
+## Creating an Administrator User
+
+UrbanPulse uses verified server-side role-based access control (RBAC). Admin roles are validated against the PostgreSQL `users` table or trusted Supabase `app_metadata` (`role: "admin"`).
+
+### Method 1 — Interactive Python CLI (Database-backed)
+
+Run the following command in your terminal with the virtual environment activated:
+
+```bash
+python -c "
+from backend.app.db.session import SessionLocal
+from backend.app.models.user import User, UserRole
+from backend.app.services.auth_service import _hash_password
+
+with SessionLocal() as db:
+    email = 'admin@urbanpulse.org'
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        user = User(
+            username='admin',
+            email=email,
+            hashed_password=_hash_password('AdminPass123!'),
+            role=UserRole.ADMIN,
+            is_active=True
+        )
+        db.add(user)
+        print(f'Admin user created: {email}')
+    else:
+        user.role = UserRole.ADMIN
+        print(f'Existing user {email} promoted to ADMIN.')
+    db.commit()
+"
+```
+
+### Method 2 — Direct PostgreSQL SQL Query
+
+```sql
+-- Promote an existing user to admin
+UPDATE users SET role = 'admin' WHERE email = 'your_email@example.com';
+
+-- Or verify role status
+SELECT id, username, email, role, is_active FROM users;
+```
+
+### Method 3 — Supabase Auth (App Metadata)
+
+In the Supabase Dashboard:
+1. Navigate to **Authentication** > **Users**.
+2. Select your user account.
+3. Edit **Raw App Metadata** to include:
+   ```json
+   {
+     "role": "admin"
+   }
+   ```
+4. Sign in via `/frontend/admin-login.html`.
+
+
 ## Dataset Sources
 
 | Dataset | Source | Coverage |

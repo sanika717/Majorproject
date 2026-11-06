@@ -35,6 +35,25 @@ class ComplaintSubmitResponse(BaseModel):
     created_at: datetime
     message: str = "Please save your tracking secret. It will not be shown again."
 
+class ComplaintTimelineItem(BaseModel):
+    status: str
+    at: datetime
+
+    class Config:
+        from_attributes = True
+
+class ComplaintEventResponse(BaseModel):
+    id: int
+    complaint_id: int
+    actor: Optional[str] = None
+    from_status: str
+    to_status: str
+    note: Optional[str] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
 class ComplaintResponse(BaseModel):
     id: int
     ticket_id: str
@@ -52,8 +71,12 @@ class ComplaintResponse(BaseModel):
     status: ComplaintStatus
     created_at: datetime
     updated_at: datetime
+    resolved_at: Optional[datetime] = None
+    is_overdue: bool = False
+    hours_overdue: Optional[float] = None
     admin_notes: Optional[str] = None
     image_url: Optional[str] = None
+    timeline: Optional[list[ComplaintTimelineItem]] = None
 
     class Config:
         from_attributes = True
@@ -74,3 +97,4 @@ class ComplaintAdminUpdate(BaseModel):
     public_safety_impact: Optional[bool] = None
     affected_area_impact: Optional[int] = Field(None, ge=1, le=5)
     admin_notes: Optional[str] = Field(None, max_length=2000)
+

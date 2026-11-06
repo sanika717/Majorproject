@@ -45,11 +45,13 @@ class Complaint(Base):
     admin_notes = Column(Text, nullable=True)
     image_url = Column(String(500), nullable=True)
 
+    resolved_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
     # One-to-one relationship to separate contact table (Strict Privacy Protection)
     contact_info = relationship("ComplaintContact", back_populates="complaint", uselist=False, cascade="all, delete-orphan")
+    events = relationship("ComplaintEvent", back_populates="complaint", cascade="all, delete-orphan", order_by="ComplaintEvent.created_at")
 
     def __repr__(self):
         return f"<Complaint {self.ticket_id}: {self.category} [{self.status}] Pri:{self.priority}>"
@@ -66,9 +68,27 @@ class ComplaintContact(Base):
     complaint = relationship("Complaint", back_populates="contact_info")
 
 
+class ComplaintEvent(Base):
+    """Logs lifecycle transitions and administrative actions for complaints."""
+    __tablename__ = "complaint_events"
+
+    id = Column(Integer, primary_key=True, index=True)
+    complaint_id = Column(Integer, ForeignKey("complaints.id", ondelete="CASCADE"), nullable=False, index=True)
+    actor = Column(String(150), nullable=True)
+    from_status = Column(String(50), nullable=False)
+    to_status = Column(String(50), nullable=False)
+    note = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    complaint = relationship("Complaint", back_populates="events")
+
+    def __repr__(self):
+        return f"<ComplaintEvent {self.complaint_id}: {self.from_status} -> {self.to_status} by {self.actor}>"
+
+
 def ensure_complaint_columns(target_engine):
     """
-    Ensures that newly introduced columns exist in the PostgreSQL / SQLite complaints table.
+    Ensures that newly introduced columns and tables exist in the PostgreSQL / SQLite database.
     Safe and idempotent migration without dropping any existing records.
     """
     try:
@@ -93,6 +113,17 @@ def ensure_complaint_columns(target_engine):
                 conn.execute(text("ALTER TABLE complaints ADD COLUMN affected_area_impact INTEGER DEFAULT 2 NOT NULL"))
             if "priority_score" not in existing_cols:
                 conn.execute(text("ALTER TABLE complaints ADD COLUMN priority_score INTEGER DEFAULT 5 NOT NULL"))
+            if "resolved_at" not in existing_cols:
+                conn.execute(text("ALTER TABLE complaints ADD COLUMN resolved_at TIMESTAMP WITH TIME ZONE"))
+                conn.execute(text("UPDATE complaints SET resolved_at = updated_at WHERE status = 'RESOLVED' AND resolved_at IS NULL"))
+            else:
+                # Still ensure backfill if any rows are RESOLVED without resolved_at
+                conn.execute(text("UPDATE complaints SET resolved_at = updated_at WHERE status = 'RESOLVED' AND resolved_at IS NULL"))
+
+            # Check if complaint_events table exists
+            if "complaint_events" not in insp.get_table_names():
+                ComplaintEvent.__table__.create(bind=conn, checkfirst=True)
+
             conn.commit()
     except Exception as e:
         print(f"[UrbanPulse] Note on complaint schema migration: {e}")

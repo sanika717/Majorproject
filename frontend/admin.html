@@ -12,8 +12,73 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
+  <!-- Chart.js Pinned from jsdelivr CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.js" integrity="sha384-sitkSLEO56SJYRloHWybrHos3JVvByQSlOZYJ1HiExytjxUlVOernDbpQcOgwtW8" crossorigin="anonymous"></script>
+
   <!-- App Stylesheet -->
   <link rel="stylesheet" href="css/style.css">
+
+  <style>
+    /* Consistent Status Badge Colors */
+    .status-badge-SUBMITTED {
+      background: rgba(148, 163, 184, 0.15) !important;
+      color: #cbd5e1 !important;
+      border: 1px solid rgba(148, 163, 184, 0.3) !important;
+    }
+    .status-badge-UNDER_REVIEW {
+      background: rgba(245, 158, 11, 0.15) !important;
+      color: #fbbf24 !important;
+      border: 1px solid rgba(245, 158, 11, 0.3) !important;
+    }
+    .status-badge-IN_PROGRESS {
+      background: rgba(59, 130, 246, 0.15) !important;
+      color: #60a5fa !important;
+      border: 1px solid rgba(59, 130, 246, 0.3) !important;
+    }
+    .status-badge-RESOLVED {
+      background: rgba(16, 185, 129, 0.15) !important;
+      color: #34d399 !important;
+      border: 1px solid rgba(16, 185, 129, 0.3) !important;
+    }
+    .status-badge-REJECTED {
+      background: rgba(239, 68, 68, 0.15) !important;
+      color: #f87171 !important;
+      border: 1px solid rgba(239, 68, 68, 0.3) !important;
+    }
+    .status-badge-OVERDUE {
+      border: 1.5px solid #ef4444 !important;
+      color: #f87171 !important;
+      background: rgba(239, 68, 68, 0.1) !important;
+      font-weight: 700 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 4px !important;
+    }
+
+    /* Print Styles */
+    @media print {
+      body {
+        background: #fff !important;
+        color: #000 !important;
+      }
+      .app-header, .admin-nav-tabs, #adm-review-modal, #admin-signout-btn, .btn, #adm-refresh-btn, .form-input, .kpi-subtext, #adm-export-csv-btn, #adm-print-btn {
+        display: none !important;
+      }
+      .glass-panel {
+        border: 1px solid #ddd !important;
+        box-shadow: none !important;
+        background: #fff !important;
+        color: #000 !important;
+      }
+      #view-tab-overview, #view-tab-complaints {
+        display: block !important;
+      }
+      table, th, td {
+        color: #000 !important;
+        border-color: #ddd !important;
+      }
+    }
+  </style>
 </head>
 <body class="page-admin">
 
@@ -41,7 +106,7 @@
     </div>
   </header>
 
-  <main class="container" style="max-width: 1000px; padding: 48px 24px;">
+  <main class="container" style="max-width: 1100px; padding: 36px 24px;">
 
     <!-- Verification Loading State -->
     <div id="admin-loading-view" style="text-align: center; padding: 80px 20px;">
@@ -67,7 +132,7 @@
         <a href="dashboard.html" class="btn btn-primary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
           <span>← Return to Public Dashboard</span>
         </a>
-        <a href="login.html?type=admin" class="btn" style="text-decoration: none; padding: 10px 20px; border-radius: 10px; border: 1px solid rgba(244, 63, 94, 0.4); background: rgba(244, 63, 94, 0.15); color: #f87171; font-weight: 700; font-size: 14px; display: inline-flex; align-items: center; gap: 8px;">
+        <a href="admin-login.html" class="btn" style="text-decoration: none; padding: 10px 20px; border-radius: 10px; border: 1px solid rgba(244, 63, 94, 0.4); background: rgba(244, 63, 94, 0.15); color: #f87171; font-weight: 700; font-size: 14px; display: inline-flex; align-items: center; gap: 8px;">
           <span>Switch Administrator Account →</span>
         </a>
       </div>
@@ -77,104 +142,172 @@
     <div id="admin-authorized-view" style="display: none;">
 
       <!-- Verified Banner Card -->
-      <div class="glass-panel" style="padding: 32px; border-color: rgba(244, 63, 94, 0.35); box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(244, 63, 94, 0.1); margin-bottom: 30px; position: relative; overflow: hidden;">
+      <div class="glass-panel" style="padding: 24px 30px; border-color: rgba(244, 63, 94, 0.35); box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4); margin-bottom: 24px; position: relative; overflow: hidden;">
         <div style="position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #f43f5e, #fb923c);"></div>
 
-        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
           <div>
-            <div style="display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px; border-radius: 999px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--accent-emerald); font-size: 12px; font-weight: 700; margin-bottom: 12px;">
+            <div style="display: inline-flex; align-items: center; gap: 8px; padding: 3px 10px; border-radius: 999px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--accent-emerald); font-size: 11px; font-weight: 700; margin-bottom: 8px;">
               <span class="pulse-dot"></span>
               <span>VERIFIED ADMINISTRATOR SESSION ACTIVE</span>
             </div>
-            <h2 style="font-family: var(--font-display); font-size: 26px; font-weight: 800; color: #fff; margin-bottom: 8px;">
-              Civic Administration Gateway
+            <h2 style="font-family: var(--font-display); font-size: 22px; font-weight: 800; color: #fff; margin: 0 0 4px;">
+              UrbanPulse Civic Grievance Operations
             </h2>
-            <p style="color: var(--text-secondary); font-size: 14px; line-height: 1.5; max-width: 650px;">
-              Role-based access control (RBAC) has verified your credentials against the backend authentication service. All administrative actions within this zone require verified authorization claims.
+            <p style="color: var(--text-secondary); font-size: 13px; line-height: 1.4; margin: 0;">
+              Admin: <span id="admin-email-display" style="color: #fff; font-weight: 600;">—</span> &bull; 
+              <span id="verified-time" style="color: var(--text-muted);">Verified: Active</span>
             </p>
           </div>
 
-          <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 14px 18px; text-align: right;">
-            <div style="font-size: 11px; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px;">SECURITY CLEARANCE</div>
-            <div style="font-size: 18px; font-weight: 800; color: #f43f5e; font-family: var(--font-display);">ADMINISTRATOR</div>
-            <div id="verified-time" style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Verified: Active</div>
-          </div>
-        </div>
-
-        <!-- Verified User Details Grid -->
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--border-subtle);">
-          <div style="background: rgba(30, 41, 59, 0.5); padding: 14px 18px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
-            <div style="font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Authenticated Admin Email</div>
-            <div id="admin-email-display" style="font-size: 14px; font-weight: 600; color: #fff; margin-top: 4px; word-break: break-all;">—</div>
-          </div>
-
-          <div style="background: rgba(30, 41, 59, 0.5); padding: 14px 18px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
-            <div style="font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Backend Token Verification</div>
-            <div style="font-size: 14px; font-weight: 600; color: var(--accent-emerald); margin-top: 4px; display: flex; align-items: center; gap: 6px;">
-              <span>✓</span> FastAPI Token Verified
-            </div>
-          </div>
-
-          <div style="background: rgba(30, 41, 59, 0.5); padding: 14px 18px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
-            <div style="font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Access Protection Policy</div>
-            <div style="font-size: 14px; font-weight: 600; color: var(--accent-cyan); margin-top: 4px;">
-              Strict RBAC Enforced
-            </div>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <button id="adm-print-btn" class="btn btn-sm btn-outline" style="padding: 6px 14px; font-size: 12px; font-weight: 600; cursor: pointer;">
+              🖨️ Print Report
+            </button>
+            <button id="adm-export-csv-btn" class="btn btn-sm" style="background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8; padding: 6px 14px; font-size: 12px; font-weight: 600; cursor: pointer; border-radius: var(--radius-sm);">
+              📥 Download CSV
+            </button>
           </div>
         </div>
       </div>
 
+      <!-- Navigation Tabs: Overview vs Complaints -->
+      <div class="admin-nav-tabs" style="display: flex; gap: 8px; margin-bottom: 24px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px;">
+        <button id="tab-btn-overview" class="btn btn-sm" style="background: rgba(244, 63, 94, 0.2); border: 1px solid #f43f5e; color: #fff; font-weight: 700; padding: 8px 18px; border-radius: var(--radius-sm); cursor: pointer; transition: var(--transition-fast);">
+          📊 Overview
+        </button>
+        <button id="tab-btn-complaints" class="btn btn-sm" style="background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-subtle); color: var(--text-secondary); font-weight: 600; padding: 8px 18px; border-radius: var(--radius-sm); cursor: pointer; transition: var(--transition-fast);">
+          📋 Complaints
+        </button>
+      </div>
+
       <!-- =========================================================================
-           AUTHORITY GRIEVANCE & COMPLAINTS OPERATIONS CENTER
+           TAB 1: OVERVIEW & ANALYTICS DASHBOARD
            ========================================================================= -->
-      <section class="section" style="margin-top: 10px;">
-        <div class="section-header" style="margin-bottom: 20px;">
-          <div class="section-title-wrap">
-            <span class="section-badge badge-active" style="background: rgba(244, 63, 94, 0.15); border-color: rgba(244, 63, 94, 0.3); color: #f43f5e;">⚡ Live Operational Console</span>
-            <h2 class="section-title" style="font-size: 22px;">📢 Public Grievance Authority Review & Operations</h2>
-            <p class="section-desc">Review submitted civic complaints, assign municipal departments, update resolution statuses, issue public remarks, and calibrate priority based on objective severity, public safety threats, and affected area impact.</p>
+      <section id="view-tab-overview" style="display: block;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <h3 style="font-size: 18px; font-weight: 700; color: #fff; margin: 0;">Operational Intelligence Overview</h3>
+            <p style="font-size: 12px; color: var(--text-muted); margin: 2px 0 0;">Live metrics, SLA compliance, departmental performance, and overdue tracking.</p>
+          </div>
+          <div style="font-size: 12px; color: var(--text-muted); background: rgba(15, 23, 42, 0.6); padding: 4px 12px; border-radius: 6px; border: 1px solid var(--border-subtle);">
+            🕒 Last updated: <span id="dash-last-updated" style="color: #38bdf8; font-weight: 600;">—</span>
           </div>
         </div>
 
-        <!-- Authority KPI Metric Cards -->
-        <div class="kpi-grid" style="margin-bottom: 24px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+        <!-- 6 KPI Cards -->
+        <div class="kpi-grid" style="margin-bottom: 24px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));">
           <div class="kpi-card glass-panel">
-            <div class="kpi-header"><span class="kpi-title">Total Lodged</span><div class="kpi-icon">📬</div></div>
-            <div id="adm-kpi-total" class="kpi-value">0</div>
-            <div class="kpi-subtext"><span>All civic grievances</span></div>
+            <div class="kpi-header"><span class="kpi-title">Open Complaints</span><div class="kpi-icon">📬</div></div>
+            <div id="dash-kpi-open" class="kpi-value">0</div>
+            <div class="kpi-subtext"><span>Active in queue</span></div>
+          </div>
+          <div class="kpi-card glass-panel" style="border-color: rgba(239, 68, 68, 0.35);">
+            <div class="kpi-header"><span class="kpi-title">Overdue</span><div class="kpi-icon" style="color: #ef4444;">⚠️</div></div>
+            <div id="dash-kpi-overdue" class="kpi-value" style="color: #f87171;">0</div>
+            <div class="kpi-subtext"><span>Breached SLA</span></div>
+          </div>
+          <div class="kpi-card glass-panel" style="border-color: rgba(244, 63, 94, 0.35);">
+            <div class="kpi-header"><span class="kpi-title">Critical Open</span><div class="kpi-icon" style="color: #f43f5e;">🚨</div></div>
+            <div id="dash-kpi-critical" class="kpi-value" style="color: #f43f5e;">0</div>
+            <div class="kpi-subtext"><span>High hazard urgency</span></div>
           </div>
           <div class="kpi-card glass-panel">
-            <div class="kpi-header"><span class="kpi-title">Pending Review</span><div class="kpi-icon" style="color: var(--text-secondary);">🔍</div></div>
-            <div id="adm-kpi-submitted" class="kpi-value" style="color: var(--text-secondary);">0</div>
-            <div class="kpi-subtext"><span>Newly submitted</span></div>
-          </div>
-          <div class="kpi-card glass-panel">
-            <div class="kpi-header"><span class="kpi-title">Under Review</span><div class="kpi-icon" style="color: var(--accent-amber);">⏳</div></div>
-            <div id="adm-kpi-review" class="kpi-value" style="color: var(--accent-amber);">0</div>
-            <div class="kpi-subtext"><span>Initial assessment</span></div>
-          </div>
-          <div class="kpi-card glass-panel">
-            <div class="kpi-header"><span class="kpi-title">Active In Progress</span><div class="kpi-icon" style="color: var(--accent-blue);">🔧</div></div>
-            <div id="adm-kpi-progress" class="kpi-value" style="color: var(--accent-blue);">0</div>
-            <div class="kpi-subtext"><span>Dispatched to crews</span></div>
-          </div>
-          <div class="kpi-card glass-panel">
-            <div class="kpi-header"><span class="kpi-title">Resolved</span><div class="kpi-icon" style="color: var(--accent-emerald);">✅</div></div>
-            <div id="adm-kpi-resolved" class="kpi-value" style="color: var(--accent-emerald);">0</div>
+            <div class="kpi-header"><span class="kpi-title">Resolved</span><div class="kpi-icon" style="color: #10b981;">✅</div></div>
+            <div id="dash-kpi-resolved" class="kpi-value" style="color: #10b981;">0</div>
             <div class="kpi-subtext"><span>Verified closure</span></div>
           </div>
           <div class="kpi-card glass-panel">
-            <div class="kpi-header"><span class="kpi-title">Critical / Safety</span><div class="kpi-icon" style="color: #f43f5e;">🚨</div></div>
-            <div id="adm-kpi-critical" class="kpi-value" style="color: #f43f5e;">0</div>
-            <div class="kpi-subtext"><span>Urgent hazard tier</span></div>
+            <div class="kpi-header"><span class="kpi-title">SLA Compliance</span><div class="kpi-icon" style="color: #38bdf8;">🎯</div></div>
+            <div id="dash-kpi-sla" class="kpi-value" style="color: #38bdf8;">—</div>
+            <div class="kpi-subtext"><span>Within SLA window</span></div>
+          </div>
+          <div class="kpi-card glass-panel">
+            <div class="kpi-header"><span class="kpi-title">Avg Resolution</span><div class="kpi-icon" style="color: var(--accent-amber);">⏱️</div></div>
+            <div id="dash-kpi-avg-time" class="kpi-value" style="color: var(--accent-amber);">—</div>
+            <div class="kpi-subtext"><span>Resolution duration</span></div>
           </div>
         </div>
 
+        <!-- Charts Grid Row 1: Status Doughnut & Category Bar -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 20px; margin-bottom: 24px;">
+          <!-- Status Doughnut -->
+          <div class="glass-panel" style="padding: 20px;">
+            <h4 style="font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 14px;">Status Distribution</h4>
+            <div style="height: 240px; position: relative;">
+              <canvas id="chart-status-doughnut"></canvas>
+            </div>
+          </div>
+          <!-- Category Bar Chart -->
+          <div class="glass-panel" style="padding: 20px;">
+            <h4 style="font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 14px;">Complaints by Category</h4>
+            <div style="height: 240px; position: relative;">
+              <canvas id="chart-category-bar"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts Grid Row 2: Top 10 Wards & 30-Day Trend -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 20px; margin-bottom: 24px;">
+          <!-- Top 10 Wards -->
+          <div class="glass-panel" style="padding: 20px;">
+            <h4 style="font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 14px;">Top 10 Active Wards</h4>
+            <div style="height: 240px; position: relative;">
+              <canvas id="chart-ward-bar"></canvas>
+            </div>
+          </div>
+          <!-- 30-Day Trend Line -->
+          <div class="glass-panel" style="padding: 20px;">
+            <h4 style="font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 14px;">30-Day Trend: Lodged vs Resolved</h4>
+            <div style="height: 240px; position: relative;">
+              <canvas id="chart-trend-line"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Department Table: Open vs Resolved -->
+        <div class="glass-panel" style="padding: 20px; margin-bottom: 24px;">
+          <h4 style="font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 12px;">Departmental Resolution Performance</h4>
+          <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+              <thead>
+                <tr style="background: rgba(15, 23, 42, 0.7); border-bottom: 1px solid var(--border-subtle); color: var(--text-muted); font-size: 11px; text-transform: uppercase;">
+                  <th style="padding: 10px 16px;">Department</th>
+                  <th style="padding: 10px 16px;">Open</th>
+                  <th style="padding: 10px 16px;">Resolved</th>
+                  <th style="padding: 10px 16px;">Resolution Progress</th>
+                </tr>
+              </thead>
+              <tbody id="dash-dept-tbody">
+                <tr><td colspan="4" style="text-align: center; padding: 20px; color: var(--text-muted);">Loading departments...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Most Overdue List -->
+        <div class="glass-panel" style="padding: 20px; margin-bottom: 30px; border-color: rgba(239, 68, 68, 0.3);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
+            <div>
+              <h4 style="font-size: 14px; font-weight: 700; color: #f87171; margin: 0;">⚠️ Most Overdue Grievances (Top 10)</h4>
+              <p style="font-size: 12px; color: var(--text-muted); margin: 2px 0 0;">Priority action queue: Grievances exceeding defined service level agreements.</p>
+            </div>
+          </div>
+          <div id="dash-overdue-list">
+            <div style="text-align: center; padding: 20px; color: var(--text-muted);">Loading overdue grievances...</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================================================================
+           TAB 2: COMPLAINTS QUEUE & ACTIONS
+           ========================================================================= -->
+      <section id="view-tab-complaints" style="display: none;">
         <!-- Filter & Search Console -->
         <div class="glass-panel" style="padding: 18px 24px; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between;">
           <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; flex: 1; min-width: 280px;">
-            <input type="text" id="adm-search-filter" class="form-input" placeholder="🔍 Search Ticket ID, Ward, keyword…" style="max-width: 260px; padding: 8px 14px; font-size: 13px;">
-            <select id="adm-status-filter" class="form-input" style="max-width: 170px; padding: 8px 12px; font-size: 13px;">
+            <input type="text" id="adm-search-filter" class="form-input" placeholder="🔍 Search Ticket ID, Ward, keyword…" style="max-width: 240px; padding: 8px 14px; font-size: 13px;">
+            <select id="adm-status-filter" class="form-input" style="max-width: 150px; padding: 8px 12px; font-size: 13px;">
               <option value="">All Statuses</option>
               <option value="SUBMITTED">Submitted</option>
               <option value="UNDER_REVIEW">Under Review</option>
@@ -182,18 +315,23 @@
               <option value="RESOLVED">Resolved</option>
               <option value="REJECTED">Rejected</option>
             </select>
-            <select id="adm-priority-filter" class="form-input" style="max-width: 160px; padding: 8px 12px; font-size: 13px;">
+            <select id="adm-priority-filter" class="form-input" style="max-width: 150px; padding: 8px 12px; font-size: 13px;">
               <option value="">All Priorities</option>
               <option value="CRITICAL">🚨 Critical</option>
               <option value="HIGH">⚠️ High</option>
               <option value="MEDIUM">⚡ Medium</option>
               <option value="LOW">ℹ️ Low</option>
             </select>
-            <select id="adm-dept-filter" class="form-input" style="max-width: 220px; padding: 8px 12px; font-size: 13px;">
+            <select id="adm-overdue-filter" class="form-input" style="max-width: 160px; padding: 8px 12px; font-size: 13px;">
+              <option value="">All Timelines</option>
+              <option value="true">⚠️ Overdue Only</option>
+              <option value="false">Compliant Only</option>
+            </select>
+            <select id="adm-dept-filter" class="form-input" style="max-width: 190px; padding: 8px 12px; font-size: 13px;">
               <option value="">All Departments</option>
               <option value="BBMP Roads">BBMP Roads Infrastructure</option>
               <option value="Stormwater">BBMP Stormwater Drains</option>
-              <option value="BWSSB">BWSSB (Water & Sewage)</option>
+              <option value="BWSSB">BWSSB (Water &amp; Sewage)</option>
               <option value="BESCOM">BESCOM (Electricity)</option>
               <option value="Solid Waste">BBMP Solid Waste</option>
               <option value="Town Planning">BBMP Town Planning</option>
@@ -214,7 +352,7 @@
                 <th style="padding: 14px 18px;">Category &amp; Location</th>
                 <th style="padding: 14px 18px;">Priority &amp; Score</th>
                 <th style="padding: 14px 18px;">Assigned Department</th>
-                <th style="padding: 14px 18px;">Status</th>
+                <th style="padding: 14px 18px;">Status &amp; SLA</th>
                 <th style="padding: 14px 18px;">Submitted</th>
                 <th style="padding: 14px 18px; text-align: right;">Action</th>
               </tr>
@@ -254,6 +392,14 @@
               <span>👤 Complainant: <b id="modal-citizen" style="color: #94a3b8;">—</b></span>
             </div>
             <div style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.5; margin-top: 6px;" id="modal-desc">—</div>
+          </div>
+
+          <!-- Lifecycle Events Timeline (From events endpoint) -->
+          <div style="margin-bottom: 20px;">
+            <span style="font-size: 12px; font-weight: 700; color: #fff; text-transform: uppercase; letter-spacing: 0.5px;">📜 Ticket Lifecycle Audit Timeline</span>
+            <div id="modal-events-timeline" style="margin-top: 8px; background: rgba(15, 23, 42, 0.5); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px 16px; max-height: 160px; overflow-y: auto;">
+              <div style="color: var(--text-muted); font-size: 12px;">Loading timeline...</div>
+            </div>
           </div>
 
           <!-- Review Form -->
@@ -372,6 +518,15 @@
 
   </main>
 
+  <!-- Official Footer -->
+  <footer class="app-footer" style="margin-top: 40px; padding: 24px 0; border-top: 1px solid var(--border-subtle); text-align: center;">
+    <div class="container">
+      <div style="font-size: 12px; color: var(--text-muted);">
+        Academic project, not an official government portal
+      </div>
+    </div>
+  </footer>
+
   <!-- Supabase JS CDN (UMD bundle) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -379,6 +534,7 @@
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>
   <script src="js/auth.js"></script>
+  <script src="js/admin-dashboard.js"></script>
 
   <!-- Admin Operations Controller -->
   <script>
@@ -391,12 +547,39 @@
       const signoutBtn = document.getElementById("admin-signout-btn");
       const verifiedTime = document.getElementById("verified-time");
 
-      signoutBtn.onclick = () => UrbanPulseAuth.signOut("login.html?type=admin");
+      // Tab Buttons & Views
+      const tabBtnOverview = document.getElementById("tab-btn-overview");
+      const tabBtnComplaints = document.getElementById("tab-btn-complaints");
+      const viewOverview = document.getElementById("view-tab-overview");
+      const viewComplaints = document.getElementById("view-tab-complaints");
+
+      // Print & Export Buttons
+      const printBtn = document.getElementById("adm-print-btn");
+      const exportCsvBtn = document.getElementById("adm-export-csv-btn");
+
+      signoutBtn.onclick = () => UrbanPulseAuth.signOut("admin-login.html");
+      if (printBtn) {
+        printBtn.onclick = () => window.print();
+      }
+
+      // Auto sign-out after 30 minutes of inactivity
+      let inactivityTimeout = null;
+      function resetInactivity() {
+        if (inactivityTimeout) clearTimeout(inactivityTimeout);
+        inactivityTimeout = setTimeout(() => {
+          alert("Admin session expired due to 30 minutes of inactivity. Redirecting to login.");
+          UrbanPulseAuth.signOut("admin-login.html");
+        }, 30 * 60 * 1000);
+      }
+      ["mousemove", "keydown", "click", "scroll"].forEach(evt => {
+        window.addEventListener(evt, resetInactivity, { passive: true });
+      });
+      resetInactivity();
 
       // Verify Session
       const session = await UrbanPulseAuth.getSession();
       if (!session || !session.access_token) {
-        window.location.href = "login.html?type=admin&redirect=admin.html";
+        window.location.href = "admin-login.html";
         return;
       }
 
@@ -413,7 +596,7 @@
             verifiedTime.textContent = "Verified: " + new Date().toLocaleTimeString("en-IN", { hour12: true });
           }
           authorizedView.style.display = "block";
-          initAdminComplaintsConsole(token);
+          initAdminConsole(token);
         } else {
           deniedUserEmail.textContent = (session.user && session.user.email) || "Citizen Account";
           deniedView.style.display = "block";
@@ -423,310 +606,437 @@
         deniedUserEmail.textContent = (session.user && session.user.email) || "Citizen Account";
         deniedView.style.display = "block";
       }
-    });
 
-    /**
-     * Initializes the Authority Complaints Console
-     */
-    function initAdminComplaintsConsole(token) {
-      const isHttp = window.location.protocol.startsWith("http");
-      const host = window.location.hostname || "127.0.0.1";
-      const port = window.location.port;
-      const apiBase = isHttp && port === "8000" ? "/api/v1" : `http://${host}:8000/api/v1`;
-
-      let currentComplaints = [];
-      let activeComplaint = null;
-
-      const tbody = document.getElementById("adm-complaints-tbody");
-      const searchInput = document.getElementById("adm-search-filter");
-      const statusFilter = document.getElementById("adm-status-filter");
-      const priorityFilter = document.getElementById("adm-priority-filter");
-      const deptFilter = document.getElementById("adm-dept-filter");
-      const refreshBtn = document.getElementById("adm-refresh-btn");
-
-      // Modal elements
-      const modal = document.getElementById("adm-review-modal");
-      const modalClose = document.getElementById("modal-close-btn");
-      const modalCancel = document.getElementById("modal-cancel-btn");
-      const reviewForm = document.getElementById("adm-review-form");
-      const modalTicketId = document.getElementById("modal-ticket-id");
-      const modalCategory = document.getElementById("modal-category");
-      const modalLocation = document.getElementById("modal-location");
-      const modalCitizen = document.getElementById("modal-citizen");
-      const modalDesc = document.getElementById("modal-desc");
-      const revStatus = document.getElementById("rev-status");
-      const revDept = document.getElementById("rev-dept");
-      const revSeverity = document.getElementById("rev-severity");
-      const revSeverityVal = document.getElementById("rev-severity-val");
-      const revArea = document.getElementById("rev-area");
-      const revAreaVal = document.getElementById("rev-area-val");
-      const revSafety = document.getElementById("rev-safety");
-      const revScoreBadge = document.getElementById("rev-score-badge");
-      const revPriorityOverride = document.getElementById("rev-priority-override");
-      const revNotes = document.getElementById("rev-notes");
-      const modalAlert = document.getElementById("modal-alert");
-      const submitBtn = document.getElementById("rev-submit-btn");
-
-      const SEV_LABELS = {
-        1: "1 — Minor / Cosmetic",
-        2: "2 — Moderate / Routine",
-        3: "3 — Significant Disruption",
-        4: "4 — Severe Hazard",
-        5: "5 — Critical Threat / Emergency"
-      };
-
-      const AREA_LABELS = {
-        1: "1 — Spot / Single Building",
-        2: "2 — Street / Block Level",
-        3: "3 — Neighborhood / Layout",
-        4: "4 — Ward Main Corridor",
-        5: "5 — Arterial Highway / Inter-Ward"
-      };
-
-      function updateScorePreview() {
-        const sev = parseInt(revSeverity.value, 10) || 2;
-        const area = parseInt(revArea.value, 10) || 2;
-        const safety = revSafety.checked;
-        const safetyPts = safety ? 5 : 0;
-        const score = Math.round((sev * 2.0) + safetyPts + (area * 1.5));
-
-        revSeverityVal.textContent = SEV_LABELS[sev] || `${sev}`;
-        revAreaVal.textContent = AREA_LABELS[area] || `${area}`;
-
-        let autoPri = "LOW";
-        let col = "var(--accent-cyan)";
-        if (score >= 15) { autoPri = "CRITICAL"; col = "#f43f5e"; }
-        else if (score >= 11) { autoPri = "HIGH"; col = "#ef4444"; }
-        else if (score >= 7) { autoPri = "MEDIUM"; col = "#f59e0b"; }
-
-        const override = revPriorityOverride.value;
-        const finalPri = override || autoPri;
-
-        revScoreBadge.textContent = `Calculated Score: ${score} | Priority: ${finalPri}`;
-        revScoreBadge.style.color = col;
-        revScoreBadge.style.borderColor = `${col}60`;
+      /**
+       * Tab Switching Handler
+       */
+      function switchTab(target) {
+        if (target === "overview") {
+          viewOverview.style.display = "block";
+          viewComplaints.style.display = "none";
+          tabBtnOverview.style.background = "rgba(244, 63, 94, 0.2)";
+          tabBtnOverview.style.borderColor = "#f43f5e";
+          tabBtnOverview.style.color = "#fff";
+          tabBtnComplaints.style.background = "rgba(255, 255, 255, 0.05)";
+          tabBtnComplaints.style.borderColor = "var(--border-subtle)";
+          tabBtnComplaints.style.color = "var(--text-secondary)";
+          if (window.UrbanPulseAdminDashboard) {
+            window.UrbanPulseAdminDashboard.loadDashboard(token, openReviewModalForTicket);
+          }
+        } else {
+          viewOverview.style.display = "none";
+          viewComplaints.style.display = "block";
+          tabBtnComplaints.style.background = "rgba(244, 63, 94, 0.2)";
+          tabBtnComplaints.style.borderColor = "#f43f5e";
+          tabBtnComplaints.style.color = "#fff";
+          tabBtnOverview.style.background = "rgba(255, 255, 255, 0.05)";
+          tabBtnOverview.style.borderColor = "var(--border-subtle)";
+          tabBtnOverview.style.color = "var(--text-secondary)";
+        }
       }
 
-      revSeverity.addEventListener("input", updateScorePreview);
-      revArea.addEventListener("input", updateScorePreview);
-      revSafety.addEventListener("change", updateScorePreview);
-      revPriorityOverride.addEventListener("change", updateScorePreview);
+      tabBtnOverview.onclick = () => switchTab("overview");
+      tabBtnComplaints.onclick = () => switchTab("complaints");
 
-      // Load Statistics
-      async function loadStats() {
-        try {
-          const res = await fetch(`${apiBase}/complaints/stats`, {
-            headers: { "Authorization": `Bearer ${token}` }
-          });
-          if (!res.ok) return;
-          const s = await res.json();
-          document.getElementById("adm-kpi-total").textContent = s.total || 0;
-          document.getElementById("adm-kpi-submitted").textContent = (s.by_status && s.by_status.SUBMITTED) || 0;
-          document.getElementById("adm-kpi-review").textContent = (s.by_status && s.by_status.UNDER_REVIEW) || 0;
-          document.getElementById("adm-kpi-progress").textContent = (s.by_status && s.by_status.IN_PROGRESS) || 0;
-          document.getElementById("adm-kpi-resolved").textContent = (s.by_status && s.by_status.RESOLVED) || 0;
-          document.getElementById("adm-kpi-critical").textContent = (s.by_priority && s.by_priority.CRITICAL) || 0;
-        } catch (_) {}
-      }
+      let openReviewModalForTicket = () => {};
 
-      // Load Complaints Table
-      async function loadComplaints() {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="7" style="padding: 30px; text-align: center; color: var(--text-muted);">
-              <div class="spinner" style="width: 22px; height: 22px; border-width: 2px; margin: 0 auto 8px;"></div>
-              Fetching complaints queue…
-            </td>
-          </tr>
-        `;
+      /**
+       * Initializes Authority Operations Console
+       */
+      function initAdminConsole(token) {
+        const isHttp = window.location.protocol.startsWith("http");
+        const host = window.location.hostname || "127.0.0.1";
+        const port = window.location.port;
+        const apiBase = isHttp && port === "8000" ? "/api/v1" : `http://${host}:8000/api/v1`;
 
-        try {
-          const params = new URLSearchParams();
-          if (statusFilter.value) params.append("status", statusFilter.value);
-          if (priorityFilter.value) params.append("priority", priorityFilter.value);
-          if (deptFilter.value) params.append("department", deptFilter.value);
-          if (searchInput.value.trim()) params.append("search", searchInput.value.trim());
+        let currentComplaints = [];
+        let activeComplaint = null;
 
-          const res = await fetch(`${apiBase}/complaints/?${params.toString()}`, {
-            headers: {
-              "Authorization": `Bearer ${token}`,
-              "Accept": "application/json"
+        const tbody = document.getElementById("adm-complaints-tbody");
+        const searchInput = document.getElementById("adm-search-filter");
+        const statusFilter = document.getElementById("adm-status-filter");
+        const priorityFilter = document.getElementById("adm-priority-filter");
+        const overdueFilter = document.getElementById("adm-overdue-filter");
+        const deptFilter = document.getElementById("adm-dept-filter");
+        const refreshBtn = document.getElementById("adm-refresh-btn");
+
+        // Modal elements
+        const modal = document.getElementById("adm-review-modal");
+        const modalClose = document.getElementById("modal-close-btn");
+        const modalCancel = document.getElementById("modal-cancel-btn");
+        const modalTicketId = document.getElementById("modal-ticket-id");
+        const modalCategory = document.getElementById("modal-category");
+        const modalLocation = document.getElementById("modal-location");
+        const modalCitizen = document.getElementById("modal-citizen");
+        const modalDesc = document.getElementById("modal-desc");
+        const modalAlert = document.getElementById("modal-alert");
+        const modalEventsTimeline = document.getElementById("modal-events-timeline");
+
+        // Modal Form Inputs
+        const reviewForm = document.getElementById("adm-review-form");
+        const revStatus = document.getElementById("rev-status");
+        const revDept = document.getElementById("rev-dept");
+        const revSeverity = document.getElementById("rev-severity");
+        const revSeverityVal = document.getElementById("rev-severity-val");
+        const revArea = document.getElementById("rev-area");
+        const revAreaVal = document.getElementById("rev-area-val");
+        const revSafety = document.getElementById("rev-safety");
+        const revScoreBadge = document.getElementById("rev-score-badge");
+        const revPriorityOverride = document.getElementById("rev-priority-override");
+        const revNotes = document.getElementById("rev-notes");
+        const submitBtn = document.getElementById("rev-submit-btn");
+
+        // Export CSV Handler
+        if (exportCsvBtn) {
+          exportCsvBtn.onclick = async () => {
+            const params = new URLSearchParams();
+            if (searchInput.value.trim()) params.set("search", searchInput.value.trim());
+            if (statusFilter.value) params.set("status", statusFilter.value);
+            if (priorityFilter.value) params.set("priority", priorityFilter.value);
+            if (deptFilter.value) params.set("department", deptFilter.value);
+            if (overdueFilter && overdueFilter.value) params.set("is_overdue", overdueFilter.value);
+
+            try {
+              exportCsvBtn.textContent = "Generating CSV...";
+              exportCsvBtn.disabled = true;
+
+              const res = await fetch(`${apiBase}/complaints/admin/export.csv?${params.toString()}`, {
+                headers: { "Authorization": `Bearer ${token}` }
+              });
+
+              if (!res.ok) throw new Error(`Export failed: ${res.status}`);
+              const blob = await res.blob();
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = `complaints_export_${new Date().toISOString().slice(0,10)}.csv`;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              window.URL.revokeObjectURL(url);
+            } catch (err) {
+              alert("CSV Export error: " + err.message);
+            } finally {
+              exportCsvBtn.textContent = "📥 Download CSV";
+              exportCsvBtn.disabled = false;
             }
-          });
+          };
+        }
 
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          currentComplaints = await res.json();
+        // Calculation labels
+        const severityLabels = {
+          1: "1 — Minor / Cosmetic",
+          2: "2 — Moderate Defect",
+          3: "3 — Substantial Disruption",
+          4: "4 — Severe Impairment",
+          5: "5 — Critical Life Threat"
+        };
+        const areaLabels = {
+          1: "1 — Local Spot / Single Property",
+          2: "2 — Street / Block Segment",
+          3: "3 — Residential Layout",
+          4: "4 — Ward-wide Corridor",
+          5: "5 — Major Arterial Highway"
+        };
 
-          if (!currentComplaints.length) {
-            tbody.innerHTML = `
-              <tr>
-                <td colspan="7" style="padding: 40px 20px; text-align: center; color: var(--text-muted);">
-                  <div style="font-size: 28px; margin-bottom: 8px;">📭</div>
-                  <div style="font-weight: 600; color: var(--text-secondary);">No complaints matching current filters</div>
-                  <div style="font-size: 12px; margin-top: 4px;">All queues are processed. New citizen submissions will populate here.</div>
-                </td>
-              </tr>
-            `;
+        function updateScorePreview() {
+          const sev = parseInt(revSeverity.value, 10) || 2;
+          const area = parseInt(revArea.value, 10) || 2;
+          const safety = revSafety.checked;
+
+          revSeverityVal.textContent = severityLabels[sev] || `${sev}`;
+          revAreaVal.textContent = areaLabels[area] || `${area}`;
+
+          if (revPriorityOverride.value) {
+            revScoreBadge.textContent = `MANUAL OVERRIDE: ${revPriorityOverride.value}`;
+            revScoreBadge.style.color = "#fbbf24";
+            revScoreBadge.style.borderColor = "rgba(245,158,11,0.5)";
             return;
           }
 
-          tbody.innerHTML = currentComplaints.map(c => {
-            const priColor = c.priority === "CRITICAL" ? "#f43f5e" : (c.priority === "HIGH" ? "#ef4444" : (c.priority === "MEDIUM" ? "#f59e0b" : "var(--accent-cyan)"));
-            const statusColor = c.status === "RESOLVED" ? "var(--accent-emerald)" : (c.status === "IN_PROGRESS" ? "var(--accent-blue)" : (c.status === "UNDER_REVIEW" ? "var(--accent-amber)" : (c.status === "REJECTED" ? "#ef4444" : "var(--text-secondary)")));
-            const dateStr = c.created_at ? new Date(c.created_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "—";
-            const locationStr = c.ward && c.location && !c.location.includes(c.ward) ? `${c.ward} • ${c.location}` : (c.location || c.ward || "Bengaluru");
+          const raw = (sev * 2.0) + (safety ? 5.0 : 0) + (area * 1.5);
+          const score = Math.round(raw);
+
+          let pri = "LOW";
+          let priColor = "#38bdf8";
+          if (score >= 15) {
+            pri = "CRITICAL";
+            priColor = "#f43f5e";
+          } else if (score >= 11) {
+            pri = "HIGH";
+            priColor = "#fb923c";
+          } else if (score >= 7) {
+            pri = "MEDIUM";
+            priColor = "#38bdf8";
+          }
+
+          revScoreBadge.textContent = `Score: ${score} | Priority: ${pri}`;
+          revScoreBadge.style.color = priColor;
+          revScoreBadge.style.borderColor = `${priColor}50`;
+        }
+
+        revSeverity.addEventListener("input", updateScorePreview);
+        revArea.addEventListener("input", updateScorePreview);
+        revSafety.addEventListener("change", updateScorePreview);
+        revPriorityOverride.addEventListener("change", updateScorePreview);
+
+        async function loadComplaints() {
+          const params = new URLSearchParams();
+          if (searchInput.value.trim()) params.set("search", searchInput.value.trim());
+          if (statusFilter.value) params.set("status", statusFilter.value);
+          if (priorityFilter.value) params.set("priority", priorityFilter.value);
+          if (deptFilter.value) params.set("department", deptFilter.value);
+          if (overdueFilter && overdueFilter.value) params.set("overdue", overdueFilter.value);
+          params.set("limit", "100");
+
+          tbody.innerHTML = `<tr><td colspan="7" style="padding: 36px 20px; text-align: center; color: var(--text-muted);"><div class="spinner" style="width: 24px; height: 24px; border-width: 2px; margin: 0 auto 10px;"></div>Refreshing complaints queue…</td></tr>`;
+
+          try {
+            const res = await fetch(`${apiBase}/complaints/?${params.toString()}`, {
+              headers: {
+                "Authorization": `Bearer ${token}`,
+                "Accept": "application/json"
+              }
+            });
+
+            if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+
+            currentComplaints = await res.json();
+            renderTable(currentComplaints);
+          } catch (err) {
+            tbody.innerHTML = `<tr><td colspan="7" style="padding: 24px; text-align: center; color: #f87171;">⚠️ Failed to load complaints: ${err.message}</td></tr>`;
+          }
+        }
+
+        function renderTable(complaints) {
+          if (!complaints || complaints.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" style="padding: 36px 20px; text-align: center; color: var(--text-muted);">No civic grievances match the current filter criteria.</td></tr>`;
+            return;
+          }
+
+          tbody.innerHTML = complaints.map(c => {
+            const priColor = c.priority === "CRITICAL" ? "#f43f5e" : (c.priority === "HIGH" ? "#fb923c" : "#38bdf8");
+            const submittedDate = new Date(c.created_at).toLocaleDateString("en-IN", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+            const statusClass = `status-badge-${c.status}`;
+
+            // Consistent Status Badge Colors & Overdue Badge
+            const statusBadges = `
+              <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                <span class="badge ${statusClass}" style="padding: 3px 8px; border-radius: 4px; font-weight: 700; font-size: 11px;">
+                  ${c.status}
+                </span>
+                ${c.is_overdue ? `
+                  <span class="badge status-badge-OVERDUE" style="padding: 2px 6px; border-radius: 4px; font-size: 10px;">
+                    ⚠️ OVERDUE
+                  </span>
+                ` : ""}
+              </div>
+            `;
 
             return `
-              <tr style="border-bottom: 1px solid var(--border-subtle); transition: background 0.15s ease;" onmouseenter="this.style.background='rgba(255,255,255,0.03)'" onmouseleave="this.style.background='transparent'">
-                <td style="padding: 14px 18px; font-family: monospace; font-weight: 700; color: #38bdf8;">${c.ticket_id}</td>
-                <td style="padding: 14px 18px;">
-                  <div style="font-weight: 600; color: #fff;">${c.category}</div>
-                  <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;">📍 ${locationStr}</div>
+              <tr style="border-bottom: 1px solid var(--border-subtle); transition: background 0.15s ease;">
+                <td style="padding: 12px 18px; font-family: monospace; font-weight: 700; color: #fff;">
+                  ${c.ticket_id}
                 </td>
-                <td style="padding: 14px 18px;">
-                  <span style="font-size: 11px; padding: 3px 8px; border-radius: 4px; font-weight: 700; background: ${priColor}15; border: 1px solid ${priColor}40; color: ${priColor};">
-                    ${c.priority || "MEDIUM"} (${c.priority_score || 5})
-                  </span>
+                <td style="padding: 12px 18px;">
+                  <div style="font-weight: 600; color: #fff; margin-bottom: 2px;">${c.category}</div>
+                  <div style="font-size: 11.5px; color: var(--text-muted);">📍 ${c.ward ? c.ward : (c.location || "Bengaluru Urban")}</div>
                 </td>
-                <td style="padding: 14px 18px; font-size: 12.5px; color: var(--text-secondary); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                <td style="padding: 12px 18px;">
+                  <div style="display: inline-flex; align-items: center; gap: 6px;">
+                    <span style="display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; color: ${priColor}; border: 1px solid ${priColor}40; background: ${priColor}15;">
+                      ${c.priority}
+                    </span>
+                    <span style="font-size: 11px; color: var(--text-muted); font-family: monospace;">(${c.priority_score || 5} pts)</span>
+                  </div>
+                </td>
+                <td style="padding: 12px 18px; color: var(--text-secondary); font-size: 12px;">
                   ${c.department || "BBMP Civic Administration"}
                 </td>
-                <td style="padding: 14px 18px;">
-                  <span style="font-size: 11px; padding: 3px 8px; border-radius: 4px; font-weight: 700; background: ${statusColor}15; border: 1px solid ${statusColor}40; color: ${statusColor};">
-                    ${c.status}
-                  </span>
+                <td style="padding: 12px 18px;">
+                  ${statusBadges}
                 </td>
-                <td style="padding: 14px 18px; font-size: 11.5px; color: var(--text-muted);">${dateStr}</td>
-                <td style="padding: 14px 18px; text-align: right;">
-                  <button class="btn btn-sm" onclick="openReviewModal('${c.ticket_id}')" style="background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.35); color: #f43f5e; cursor: pointer; padding: 5px 12px; font-size: 12px; font-weight: 700; border-radius: var(--radius-sm);">
-                    Review ⚡
+                <td style="padding: 12px 18px; color: var(--text-muted); font-size: 12px;">
+                  ${submittedDate}
+                </td>
+                <td style="padding: 12px 18px; text-align: right;">
+                  <button class="btn btn-sm btn-outline adm-review-btn" data-ticket="${c.ticket_id}" style="padding: 4px 10px; font-size: 12px; cursor: pointer;">
+                    Review →
                   </button>
                 </td>
               </tr>
             `;
           }).join("");
 
-        } catch (err) {
-          tbody.innerHTML = `
-            <tr>
-              <td colspan="7" style="padding: 24px; text-align: center; color: #ef4444;">
-                ⚠️ Failed to load complaints: ${err.message}
-              </td>
-            </tr>
-          `;
-        }
-      }
-
-      window.openReviewModal = function(ticketId) {
-        activeComplaint = currentComplaints.find(c => c.ticket_id === ticketId);
-        if (!activeComplaint) return;
-
-        modalAlert.style.display = "none";
-        modalTicketId.textContent = activeComplaint.ticket_id;
-        modalCategory.textContent = activeComplaint.category;
-        modalLocation.textContent = activeComplaint.ward && activeComplaint.location ? `${activeComplaint.ward} • ${activeComplaint.location}` : (activeComplaint.location || activeComplaint.ward || "Bengaluru");
-        modalCitizen.textContent = activeComplaint.name || "Anonymous Citizen";
-        modalDesc.textContent = activeComplaint.description || "";
-
-        revStatus.value = activeComplaint.status || "SUBMITTED";
-        if (activeComplaint.department) {
-          revDept.value = activeComplaint.department;
-        }
-
-        revSeverity.value = activeComplaint.severity_level || 2;
-        revArea.value = activeComplaint.affected_area_impact || 2;
-        revSafety.checked = Boolean(activeComplaint.public_safety_impact);
-        revPriorityOverride.value = "";
-        revNotes.value = activeComplaint.admin_notes || "";
-
-        updateScorePreview();
-        modal.style.display = "block";
-      };
-
-      function closeModal() {
-        modal.style.display = "none";
-        activeComplaint = null;
-      }
-
-      modalClose.onclick = closeModal;
-      modalCancel.onclick = closeModal;
-      window.onclick = (e) => { if (e.target === modal) closeModal(); };
-
-      // Review Form Submission
-      reviewForm.onsubmit = async (e) => {
-        e.preventDefault();
-        if (!activeComplaint) return;
-
-        submitBtn.disabled = true;
-        submitBtn.textContent = "Publishing Update…";
-        modalAlert.style.display = "none";
-
-        try {
-          const payload = {
-            status: revStatus.value,
-            department: revDept.value,
-            severity_level: parseInt(revSeverity.value, 10),
-            affected_area_impact: parseInt(revArea.value, 10),
-            public_safety_impact: revSafety.checked,
-            admin_notes: revNotes.value.trim() || null
-          };
-
-          if (revPriorityOverride.value) {
-            payload.priority = revPriorityOverride.value;
-          }
-
-          const res = await fetch(`${apiBase}/complaints/${activeComplaint.ticket_id}/admin-review`, {
-            method: "PATCH",
-            headers: {
-              "Authorization": `Bearer ${token}`,
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify(payload)
+          document.querySelectorAll(".adm-review-btn").forEach(btn => {
+            btn.onclick = () => openModalForTicket(btn.dataset.ticket);
           });
-
-          if (!res.ok) {
-            const err = await res.json().catch(() => ({}));
-            throw new Error(err.detail || `Server returned ${res.status}`);
-          }
-
-          modalAlert.style.display = "block";
-          modalAlert.style.background = "rgba(16, 185, 129, 0.15)";
-          modalAlert.style.border = "1px solid rgba(16, 185, 129, 0.3)";
-          modalAlert.style.color = "var(--accent-emerald)";
-          modalAlert.textContent = `✅ Successfully updated ticket ${activeComplaint.ticket_id}! Reflected on public portal.`;
-
-          await loadStats();
-          await loadComplaints();
-
-          setTimeout(() => {
-            closeModal();
-          }, 900);
-
-        } catch (err) {
-          modalAlert.style.display = "block";
-          modalAlert.style.background = "rgba(239, 68, 68, 0.15)";
-          modalAlert.style.border = "1px solid rgba(239, 68, 68, 0.3)";
-          modalAlert.style.color = "#f87171";
-          modalAlert.textContent = `❌ Update failed: ${err.message}`;
-        } finally {
-          submitBtn.disabled = false;
-          submitBtn.textContent = "Save & Publish Update";
         }
-      };
 
-      // Filter events
-      searchInput.addEventListener("input", () => { clearTimeout(searchInput._timer); searchInput._timer = setTimeout(loadComplaints, 300); });
-      statusFilter.addEventListener("change", loadComplaints);
-      priorityFilter.addEventListener("change", loadComplaints);
-      deptFilter.addEventListener("change", loadComplaints);
-      refreshBtn.addEventListener("click", () => { loadStats(); loadComplaints(); });
+        async function openModalForTicket(ticketId) {
+          // If complaint in currentComplaints, use it, otherwise fetch
+          let c = currentComplaints.find(item => item.ticket_id === ticketId);
+          if (!c) {
+            try {
+              const res = await fetch(`${apiBase}/complaints/${ticketId}`, {
+                headers: { "Authorization": `Bearer ${token}` }
+              });
+              if (res.ok) c = await res.json();
+            } catch (e) {
+              console.error("Could not fetch complaint:", e);
+            }
+          }
+          if (!c) return;
 
-      // Initial load
-      loadStats();
-      loadComplaints();
-    }
+          activeComplaint = c;
+          modalTicketId.textContent = c.ticket_id;
+          modalCategory.textContent = c.category;
+          modalLocation.textContent = c.ward ? `${c.ward} (${c.location || "Bengaluru"})` : (c.location || "Bengaluru");
+          modalCitizen.textContent = c.name || "Anonymous Citizen";
+          modalDesc.textContent = c.description;
+
+          revStatus.value = c.status || "SUBMITTED";
+          revDept.value = c.department || "BBMP Roads Infrastructure";
+          revSeverity.value = c.severity_level || 2;
+          revArea.value = c.affected_area_impact || 2;
+          revSafety.checked = Boolean(c.public_safety_impact);
+          revPriorityOverride.value = "";
+          revNotes.value = c.admin_notes || "";
+
+          updateScorePreview();
+          modalAlert.style.display = "none";
+          modal.style.display = "block";
+
+          // Load Audit Events Timeline
+          loadTicketEvents(c.ticket_id);
+        }
+
+        openReviewModalForTicket = openModalForTicket;
+
+        async function loadTicketEvents(ticketId) {
+          modalEventsTimeline.innerHTML = `<span class="spinner" style="width: 16px; height: 16px; border-width: 2px;"></span> Loading audit timeline...`;
+          try {
+            const res = await fetch(`${apiBase}/complaints/${ticketId}/events`, {
+              headers: { "Authorization": `Bearer ${token}` }
+            });
+            if (!res.ok) throw new Error("Failed to load events");
+            const events = await res.json();
+            if (events.length === 0) {
+              modalEventsTimeline.innerHTML = `<div style="font-size: 12px; color: var(--text-muted);">No lifecycle events recorded.</div>`;
+              return;
+            }
+            modalEventsTimeline.innerHTML = events.map(e => {
+              const dt = new Date(e.created_at).toLocaleString("en-IN", { dateStyle: "short", timeStyle: "short" });
+              const actorBadge = e.actor ? `<span style="font-size: 11px; color: #38bdf8; background: rgba(56,189,248,0.1); padding: 1px 6px; border-radius: 4px;">👤 ${e.actor}</span>` : `<span style="font-size: 11px; color: var(--text-muted);">Citizen</span>`;
+              return `
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 12px;">
+                  <div>
+                    <span style="color: #94a3b8; font-family: monospace;">${dt}</span> &bull; 
+                    <b style="color: #fff;">${e.from_status} → ${e.to_status}</b>
+                    ${e.note ? `<div style="color: var(--text-secondary); margin-top: 2px; font-style: italic;">"${e.note}"</div>` : ""}
+                  </div>
+                  <div>${actorBadge}</div>
+                </div>
+              `;
+            }).join("");
+          } catch (err) {
+            modalEventsTimeline.innerHTML = `<div style="color: #f87171; font-size: 12px;">Error loading audit events: ${err.message}</div>`;
+          }
+        }
+
+        function closeModal() {
+          modal.style.display = "none";
+          activeComplaint = null;
+        }
+
+        modalClose.onclick = closeModal;
+        modalCancel.onclick = closeModal;
+        window.onclick = (e) => { if (e.target === modal) closeModal(); };
+
+        // Review Form Submission
+        reviewForm.onsubmit = async (e) => {
+          e.preventDefault();
+          if (!activeComplaint) return;
+
+          submitBtn.disabled = true;
+          submitBtn.textContent = "Publishing Update…";
+          modalAlert.style.display = "none";
+
+          try {
+            const payload = {
+              status: revStatus.value,
+              department: revDept.value,
+              severity_level: parseInt(revSeverity.value, 10),
+              affected_area_impact: parseInt(revArea.value, 10),
+              public_safety_impact: revSafety.checked,
+              admin_notes: revNotes.value.trim() || null
+            };
+
+            if (revPriorityOverride.value) {
+              payload.priority = revPriorityOverride.value;
+            }
+
+            const res = await fetch(`${apiBase}/complaints/${activeComplaint.ticket_id}/admin-review`, {
+              method: "PATCH",
+              headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) {
+              const err = await res.json().catch(() => ({}));
+              throw new Error(err.detail || `Server returned ${res.status}`);
+            }
+
+            modalAlert.style.display = "block";
+            modalAlert.style.background = "rgba(16, 185, 129, 0.15)";
+            modalAlert.style.border = "1px solid rgba(16, 185, 129, 0.3)";
+            modalAlert.style.color = "var(--accent-emerald)";
+            modalAlert.textContent = `✅ Successfully updated ticket ${activeComplaint.ticket_id}! Reflected on public portal and audit logs.`;
+
+            // Refresh both views
+            if (window.UrbanPulseAdminDashboard) {
+              window.UrbanPulseAdminDashboard.loadDashboard(token, openModalForTicket);
+            }
+            await loadComplaints();
+
+            setTimeout(() => {
+              closeModal();
+            }, 900);
+
+          } catch (err) {
+            modalAlert.style.display = "block";
+            modalAlert.style.background = "rgba(239, 68, 68, 0.15)";
+            modalAlert.style.border = "1px solid rgba(239, 68, 68, 0.3)";
+            modalAlert.style.color = "#f87171";
+            modalAlert.textContent = `❌ Update failed: ${err.message}`;
+          } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Save & Publish Update";
+          }
+        };
+
+        // Filter events
+        searchInput.addEventListener("input", () => { clearTimeout(searchInput._timer); searchInput._timer = setTimeout(loadComplaints, 300); });
+        statusFilter.addEventListener("change", loadComplaints);
+        priorityFilter.addEventListener("change", loadComplaints);
+        deptFilter.addEventListener("change", loadComplaints);
+        if (overdueFilter) overdueFilter.addEventListener("change", loadComplaints);
+        refreshBtn.addEventListener("click", () => {
+          if (window.UrbanPulseAdminDashboard) window.UrbanPulseAdminDashboard.loadDashboard(token, openModalForTicket);
+          loadComplaints();
+        });
+
+        // Initial Load
+        if (window.UrbanPulseAdminDashboard) {
+          window.UrbanPulseAdminDashboard.loadDashboard(token, openModalForTicket);
+        }
+        loadComplaints();
+      }
+    });
   </script>
 
 </body>
 </html>
-

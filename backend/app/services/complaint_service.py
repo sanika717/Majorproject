@@ -4,14 +4,59 @@ import io
 import os
 import secrets
 import string
-from datetime import datetime
+import csv
+from datetime import datetime, timezone, timedelta
 from typing import List, Optional, Dict, Any
 from PIL import Image
 from sqlalchemy.orm import Session
-from sqlalchemy import desc, or_
+from sqlalchemy import desc, asc, or_, and_, not_, func, case
 
-from backend.app.models.complaint import Complaint, ComplaintContact, ComplaintStatus, ComplaintPriority
+from backend.app.models.complaint import Complaint, ComplaintContact, ComplaintStatus, ComplaintPriority, ComplaintEvent
 from backend.app.schemas.complaint import ComplaintSubmit, ComplaintStatusUpdate, ComplaintAdminUpdate
+
+SLA_HOURS: Dict[str, int] = {
+    "CRITICAL": 24,
+    "HIGH": 72,
+    "MEDIUM": 168,
+    "LOW": 336
+}
+
+def compute_sla_status(
+    priority: Optional[str],
+    status: Any,
+    created_at: Optional[datetime],
+    ref_time: Optional[datetime] = None
+) -> tuple[bool, Optional[float]]:
+    """
+    SLA (hours): CRITICAL 24, HIGH 72, MEDIUM 168, LOW 336.
+    Overdue = status not in (RESOLVED, REJECTED) and now > created_at + SLA hours for the current priority.
+    Returns (is_overdue: bool, hours_overdue: Optional[float]).
+    """
+    if not created_at:
+        return False, 0.0
+
+    st = status.value if hasattr(status, "value") else str(status or "")
+    if st in ("RESOLVED", "REJECTED"):
+        return False, 0.0
+
+    pri = (priority or "MEDIUM").upper()
+    sla_h = SLA_HOURS.get(pri, 168)
+
+    now = ref_time or datetime.utcnow()
+    # Normalize created_at naive/aware
+    if created_at.tzinfo is not None and now.tzinfo is None:
+        created_naive = created_at.astimezone(timezone.utc).replace(tzinfo=None)
+    elif created_at.tzinfo is None and now.tzinfo is not None:
+        created_naive = created_at
+        now = now.astimezone(timezone.utc).replace(tzinfo=None)
+    else:
+        created_naive = created_at
+
+    deadline = created_naive + timedelta(hours=sla_h)
+    if now > deadline:
+        diff_hours = round((now - deadline).total_seconds() / 3600.0, 1)
+        return True, max(0.0, diff_hours)
+    return False, 0.0
 
 DEFAULT_DEPARTMENT_BY_CATEGORY = {
     "Roads & Potholes": "BBMP Roads Infrastructure",
@@ -161,6 +206,17 @@ class ComplaintService:
         db.add(complaint)
         db.flush()
 
+        # Write initial event
+        init_event = ComplaintEvent(
+            complaint_id=complaint.id,
+            actor=None,
+            from_status=ComplaintStatus.SUBMITTED.value,
+            to_status=ComplaintStatus.SUBMITTED.value,
+            note="Complaint submitted",
+            created_at=complaint.created_at
+        )
+        db.add(init_event)
+
         # Store contact data separately for strict privacy protection
         if data.name or data.contact:
             contact_entry = ComplaintContact(
@@ -225,19 +281,20 @@ class ComplaintService:
         priority: Optional[str] = None,
         department: Optional[str] = None,
         search: Optional[str] = None,
+        overdue: Optional[bool] = None,
         limit: int = 50,
         offset: int = 0
     ) -> List[Complaint]:
-        """Authority/Admin listing of all complaints with comprehensive filtering."""
+        """Authority/Admin listing of all complaints with comprehensive filtering and default sort by priority_score then age."""
         q = db.query(Complaint)
         if status:
             try:
-                status_enum = ComplaintStatus(status.upper())
+                status_enum = ComplaintStatus(status.upper().strip())
                 q = q.filter(Complaint.status == status_enum)
             except ValueError:
                 pass
         if priority:
-            clean_pri = priority.upper()
+            clean_pri = priority.upper().strip()
             q = q.filter(Complaint.priority == clean_pri)
         if department:
             q = q.filter(Complaint.department.ilike(f"%{department.strip()}%"))
@@ -250,26 +307,65 @@ class ComplaintService:
                 Complaint.location.ilike(s),
                 Complaint.ward.ilike(s)
             ))
-        return q.order_by(desc(Complaint.created_at)).offset(offset).limit(limit).all()
+        if overdue is not None:
+            now = datetime.utcnow()
+            overdue_cond = and_(
+                Complaint.status.notin_([ComplaintStatus.RESOLVED, ComplaintStatus.REJECTED]),
+                or_(*(and_(Complaint.priority == p, Complaint.created_at < now - timedelta(hours=h)) for p, h in SLA_HOURS.items()))
+            )
+            if overdue:
+                q = q.filter(overdue_cond)
+            else:
+                q = q.filter(not_(overdue_cond))
+
+        # Default sort by priority_score then age (oldest first)
+        return q.order_by(desc(Complaint.priority_score), Complaint.created_at.asc()).offset(offset).limit(limit).all()
 
     @staticmethod
-    def update_status(db: Session, ticket_id: str, update: ComplaintStatusUpdate) -> Optional[Complaint]:
+    def update_status(
+        db: Session,
+        ticket_id: str,
+        update: ComplaintStatusUpdate,
+        actor: Optional[str] = None
+    ) -> Optional[Complaint]:
         complaint = ComplaintService.get_by_ticket(db, ticket_id)
         if not complaint:
             return None
+        old_status = complaint.status
+        status_changed = (update.status != old_status)
         complaint.status = update.status
         if update.admin_notes is not None:
             complaint.admin_notes = update.admin_notes
         complaint.updated_at = datetime.utcnow()
+
+        if status_changed:
+            if update.status == ComplaintStatus.RESOLVED:
+                complaint.resolved_at = datetime.utcnow()
+            elif old_status == ComplaintStatus.RESOLVED:
+                complaint.resolved_at = None
+            db.add(ComplaintEvent(
+                complaint_id=complaint.id,
+                actor=actor,
+                from_status=old_status.value if hasattr(old_status, "value") else str(old_status),
+                to_status=update.status.value if hasattr(update.status, "value") else str(update.status),
+                note=update.admin_notes,
+                created_at=datetime.utcnow()
+            ))
+
         db.commit()
         db.refresh(complaint)
         return complaint
 
     @staticmethod
-    def admin_review_complaint(db: Session, ticket_id: str, update: ComplaintAdminUpdate) -> Optional[Complaint]:
+    def admin_review_complaint(
+        db: Session,
+        ticket_id: str,
+        update: ComplaintAdminUpdate,
+        actor: Optional[str] = None
+    ) -> Optional[Complaint]:
         """
         Complete authority review action:
-        - updates status
+        - updates status (sets/clears resolved_at, writes event)
         - assigns/reassigns department
         - updates severity, public safety impact, and area impact
         - recalculates or sets priority
@@ -279,6 +375,8 @@ class ComplaintService:
         if not complaint:
             return None
 
+        old_status = complaint.status
+        status_changed = (update.status is not None and update.status != old_status)
         if update.status is not None:
             complaint.status = update.status
         if update.department is not None:
@@ -310,9 +408,285 @@ class ComplaintService:
             complaint.priority = update.priority.value
 
         complaint.updated_at = datetime.utcnow()
+
+        if status_changed:
+            if update.status == ComplaintStatus.RESOLVED:
+                complaint.resolved_at = datetime.utcnow()
+            elif old_status == ComplaintStatus.RESOLVED:
+                complaint.resolved_at = None
+            db.add(ComplaintEvent(
+                complaint_id=complaint.id,
+                actor=actor,
+                from_status=old_status.value if hasattr(old_status, "value") else str(old_status),
+                to_status=update.status.value if hasattr(update.status, "value") else str(update.status),
+                note=update.admin_notes,
+                created_at=datetime.utcnow()
+            ))
+
         db.commit()
         db.refresh(complaint)
         return complaint
+
+    @staticmethod
+    def get_events(db: Session, ticket_id: str) -> List[ComplaintEvent]:
+        """Retrieve full event log for a complaint (Admin only)."""
+        complaint = ComplaintService.get_by_ticket(db, ticket_id)
+        if not complaint:
+            return []
+        return db.query(ComplaintEvent).filter(
+            ComplaintEvent.complaint_id == complaint.id
+        ).order_by(ComplaintEvent.created_at.asc()).all()
+
+    @staticmethod
+    def get_admin_dashboard(db: Session) -> Dict[str, Any]:
+        """
+        Computes dashboard metrics strictly using grouped SQL queries.
+        Returns:
+        {
+          totals: {total, submitted, under_review, in_progress, resolved, rejected, overdue, critical_open},
+          sla: {compliance_pct, avg_resolution_hours},
+          by_priority: {LOW, MEDIUM, HIGH, CRITICAL},
+          by_category: [{label, count}],
+          by_department: [{label, open, resolved}],
+          by_ward: top 10 [{label, count}],
+          trend: last 30 days [{date, submitted, resolved}],
+          most_overdue: top 10 [{ticket_id, category, ward, priority, status, hours_overdue}]
+        }
+        """
+        now = datetime.utcnow()
+
+        # 1. Totals
+        total = db.query(func.count(Complaint.id)).scalar() or 0
+        status_counts_rows = db.query(Complaint.status, func.count(Complaint.id)).group_by(Complaint.status).all()
+        status_counts = {s: cnt for s, cnt in status_counts_rows}
+
+        open_statuses = [ComplaintStatus.SUBMITTED, ComplaintStatus.UNDER_REVIEW, ComplaintStatus.IN_PROGRESS]
+        critical_open = db.query(func.count(Complaint.id)).filter(
+            Complaint.priority == "CRITICAL",
+            Complaint.status.in_(open_statuses)
+        ).scalar() or 0
+
+        overdue_filter = and_(
+            Complaint.status.notin_([ComplaintStatus.RESOLVED, ComplaintStatus.REJECTED]),
+            or_(*(and_(Complaint.priority == p, Complaint.created_at < now - timedelta(hours=h)) for p, h in SLA_HOURS.items()))
+        )
+        overdue_count = db.query(func.count(Complaint.id)).filter(overdue_filter).scalar() or 0
+
+        totals = {
+            "total": total,
+            "submitted": status_counts.get(ComplaintStatus.SUBMITTED, 0),
+            "under_review": status_counts.get(ComplaintStatus.UNDER_REVIEW, 0),
+            "in_progress": status_counts.get(ComplaintStatus.IN_PROGRESS, 0),
+            "resolved": status_counts.get(ComplaintStatus.RESOLVED, 0),
+            "rejected": status_counts.get(ComplaintStatus.REJECTED, 0),
+            "overdue": overdue_count,
+            "critical_open": critical_open
+        }
+
+        # 2. SLA Compliance & Average Resolution Hours
+        resolved_count = totals["resolved"]
+        if resolved_count > 0:
+            resolved_rows = db.query(Complaint.priority, Complaint.created_at, Complaint.resolved_at).filter(
+                Complaint.status == ComplaintStatus.RESOLVED
+            ).all()
+            compliant_count = 0
+            total_res_hours = 0.0
+            valid_res_count = 0
+            for pri, cat_at, res_at in resolved_rows:
+                sla_h = SLA_HOURS.get((pri or "MEDIUM").upper(), 168)
+                if res_at and cat_at:
+                    c_at = cat_at.replace(tzinfo=None) if cat_at.tzinfo else cat_at
+                    r_at = res_at.replace(tzinfo=None) if res_at.tzinfo else res_at
+                    diff_h = max(0.0, (r_at - c_at).total_seconds() / 3600.0)
+                    if diff_h <= sla_h:
+                        compliant_count += 1
+                    total_res_hours += diff_h
+                    valid_res_count += 1
+            compliance_pct = round((compliant_count / len(resolved_rows)) * 100.0, 1) if resolved_rows else None
+            avg_res_hours = round(total_res_hours / valid_res_count, 1) if valid_res_count > 0 else None
+            sla = {
+                "compliance_pct": compliance_pct,
+                "avg_resolution_hours": avg_res_hours
+            }
+        else:
+            sla = {
+                "compliance_pct": None,
+                "avg_resolution_hours": None
+            }
+
+        # 3. By Priority
+        pri_rows = db.query(Complaint.priority, func.count(Complaint.id)).group_by(Complaint.priority).all()
+        by_priority = {p: 0 for p in ["LOW", "MEDIUM", "HIGH", "CRITICAL"]}
+        for p, cnt in pri_rows:
+            if p and p.upper() in by_priority:
+                by_priority[p.upper()] = cnt
+
+        # 4. By Category
+        cat_rows = db.query(
+            Complaint.category,
+            func.count(Complaint.id)
+        ).group_by(Complaint.category).order_by(func.count(Complaint.id).desc()).all()
+        by_category = [{"label": cat, "count": cnt} for cat, cnt in cat_rows if cat]
+
+        # 5. By Department (open vs resolved)
+        dept_rows = db.query(
+            Complaint.department,
+            func.sum(case((Complaint.status.in_(open_statuses), 1), else_=0)).label("open_cnt"),
+            func.sum(case((Complaint.status == ComplaintStatus.RESOLVED, 1), else_=0)).label("res_cnt")
+        ).filter(Complaint.department.isnot(None), Complaint.department != "").group_by(Complaint.department).all()
+        by_department = [
+            {"label": dept, "open": int(o or 0), "resolved": int(r or 0)}
+            for dept, o, r in dept_rows if dept
+        ]
+
+        # 6. By Ward (Top 10)
+        ward_rows = db.query(
+            Complaint.ward,
+            func.count(Complaint.id)
+        ).filter(Complaint.ward.isnot(None), Complaint.ward != "").group_by(Complaint.ward).order_by(func.count(Complaint.id).desc()).limit(10).all()
+        by_ward = [{"label": ward, "count": cnt} for ward, cnt in ward_rows]
+
+        # 7. Trend (Last 30 days: submitted vs resolved)
+        today = now.date()
+        start_30 = today - timedelta(days=29)
+        start_dt = datetime.combine(start_30, datetime.min.time())
+
+        sub_rows = db.query(
+            func.date(Complaint.created_at),
+            func.count(Complaint.id)
+        ).filter(Complaint.created_at >= start_dt).group_by(func.date(Complaint.created_at)).all()
+        sub_map = {str(d): c for d, c in sub_rows}
+
+        res_rows = db.query(
+            func.date(Complaint.resolved_at),
+            func.count(Complaint.id)
+        ).filter(
+            Complaint.status == ComplaintStatus.RESOLVED,
+            Complaint.resolved_at.isnot(None),
+            Complaint.resolved_at >= start_dt
+        ).group_by(func.date(Complaint.resolved_at)).all()
+        res_map = {str(d): c for d, c in res_rows}
+
+        trend = []
+        for i in range(30):
+            cur_str = (start_30 + timedelta(days=i)).isoformat()
+            trend.append({
+                "date": cur_str,
+                "submitted": sub_map.get(cur_str, 0),
+                "resolved": res_map.get(cur_str, 0)
+            })
+
+        # 8. Most Overdue (Top 10)
+        overdue_complaints = db.query(Complaint).filter(overdue_filter).all()
+        overdue_list = []
+        for c in overdue_complaints:
+            is_ov, h_ov = compute_sla_status(c.priority, c.status, c.created_at, ref_time=now)
+            if is_ov and h_ov is not None and h_ov > 0:
+                overdue_list.append({
+                    "ticket_id": c.ticket_id,
+                    "category": c.category,
+                    "ward": c.ward,
+                    "priority": c.priority,
+                    "status": c.status.value if hasattr(c.status, "value") else str(c.status),
+                    "hours_overdue": h_ov
+                })
+        overdue_list.sort(key=lambda x: x["hours_overdue"], reverse=True)
+        most_overdue = overdue_list[:10]
+
+        return {
+            "totals": totals,
+            "sla": sla,
+            "by_priority": by_priority,
+            "by_category": by_category,
+            "by_department": by_department,
+            "by_ward": by_ward,
+            "trend": trend,
+            "most_overdue": most_overdue
+        }
+
+    @staticmethod
+    def export_complaints_csv(
+        db: Session,
+        ticket_id: Optional[str] = None,
+        category: Optional[str] = None,
+        ward: Optional[str] = None,
+        department: Optional[str] = None,
+        priority: Optional[str] = None,
+        status: Optional[str] = None,
+        created_at: Optional[str] = None,
+        resolved_at: Optional[str] = None,
+        is_overdue: Optional[bool] = None,
+        search: Optional[str] = None
+    ) -> str:
+        """
+        Exports complaints to CSV format honoring the same filters as the admin list.
+        Strict privacy: Excludes name, contact, user_id, pseudonym and secret_hash.
+        """
+        q = db.query(Complaint)
+        if ticket_id:
+            q = q.filter(Complaint.ticket_id.ilike(f"%{ticket_id.strip()}%"))
+        if category:
+            q = q.filter(Complaint.category.ilike(f"%{category.strip()}%"))
+        if ward:
+            q = q.filter(Complaint.ward.ilike(f"%{ward.strip()}%"))
+        if department:
+            q = q.filter(Complaint.department.ilike(f"%{department.strip()}%"))
+        if priority:
+            q = q.filter(Complaint.priority == priority.upper().strip())
+        if status:
+            try:
+                status_enum = ComplaintStatus(status.upper().strip())
+                q = q.filter(Complaint.status == status_enum)
+            except ValueError:
+                pass
+        if search:
+            s = f"%{search.strip()}%"
+            q = q.filter(or_(
+                Complaint.ticket_id.ilike(s),
+                Complaint.category.ilike(s),
+                Complaint.description.ilike(s),
+                Complaint.location.ilike(s),
+                Complaint.ward.ilike(s)
+            ))
+        if is_overdue is not None:
+            now = datetime.utcnow()
+            overdue_cond = and_(
+                Complaint.status.notin_([ComplaintStatus.RESOLVED, ComplaintStatus.REJECTED]),
+                or_(*(and_(Complaint.priority == p, Complaint.created_at < now - timedelta(hours=h)) for p, h in SLA_HOURS.items()))
+            )
+            if is_overdue:
+                q = q.filter(overdue_cond)
+            else:
+                q = q.filter(not_(overdue_cond))
+
+        complaints = q.order_by(desc(Complaint.priority_score), Complaint.created_at.asc()).all()
+
+        output = io.StringIO()
+        writer = csv.writer(output, lineterminator="\n")
+        writer.writerow([
+            "ticket_id", "category", "ward", "department", "priority",
+            "status", "created_at", "resolved_at", "is_overdue"
+        ])
+
+        now = datetime.utcnow()
+        for c in complaints:
+            c_overdue, _ = compute_sla_status(c.priority, c.status, c.created_at, ref_time=now)
+            st_val = c.status.value if hasattr(c.status, "value") else str(c.status)
+            c_at = c.created_at.isoformat() if c.created_at else ""
+            r_at = c.resolved_at.isoformat() if c.resolved_at else ""
+            writer.writerow([
+                c.ticket_id,
+                c.category or "",
+                c.ward or "",
+                c.department or "",
+                c.priority or "",
+                st_val,
+                c_at,
+                r_at,
+                "true" if c_overdue else "false"
+            ])
+
+        return output.getvalue()
 
     @staticmethod
     def get_stats(db: Session) -> Dict[str, Any]:
@@ -330,15 +704,16 @@ class ComplaintService:
             by_priority[p.value] = db.query(Complaint).filter(Complaint.priority == p.value).count()
 
         by_category = {}
-        rows = db.query(Complaint.category).all()
-        for (cat,) in rows:
-            by_category[cat] = by_category.get(cat, 0) + 1
+        cat_rows = db.query(Complaint.category, func.count(Complaint.id)).group_by(Complaint.category).all()
+        for cat, cnt in cat_rows:
+            if cat:
+                by_category[cat] = cnt
 
         by_department = {}
-        dept_rows = db.query(Complaint.department).filter(Complaint.department.isnot(None)).all()
-        for (dept,) in dept_rows:
+        dept_rows = db.query(Complaint.department, func.count(Complaint.id)).filter(Complaint.department.isnot(None)).group_by(Complaint.department).all()
+        for dept, cnt in dept_rows:
             if dept:
-                by_department[dept] = by_department.get(dept, 0) + 1
+                by_department[dept] = cnt
 
         return {
             "total": total,
@@ -376,15 +751,21 @@ class ComplaintService:
                 "status":               c.status.value if hasattr(c.status, "value") else str(c.status),
                 "created_at":           c.created_at.isoformat() if c.created_at else None,
                 "updated_at":           c.updated_at.isoformat() if c.updated_at else None,
+                "resolved_at":          c.resolved_at.isoformat() if c.resolved_at else None,
                 "admin_notes":          c.admin_notes,
             })
         return result
 
     @staticmethod
-    def format_for_viewer(complaint: Complaint, viewer_user: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def format_for_viewer(
+        complaint: Complaint,
+        viewer_user: Optional[Dict[str, Any]] = None,
+        include_timeline: bool = False
+    ) -> Dict[str, Any]:
         """
         Formats complaint ensuring anonymity & pseudonymity rules.
         Complainant contact info is NEVER exposed.
+        Computes SLA overdue state dynamically.
         """
         is_admin = viewer_user and (viewer_user.get("role") or "").lower() == "admin"
         viewer_id = viewer_user.get("sub") if viewer_user else None
@@ -400,6 +781,19 @@ class ComplaintService:
                 display_name = viewer_user.get("email")
             else:
                 display_name = "Anonymous Citizen"
+
+        is_overdue, hours_overdue = compute_sla_status(
+            complaint.priority,
+            complaint.status,
+            complaint.created_at
+        )
+
+        timeline_items = None
+        if include_timeline and hasattr(complaint, "events") and complaint.events:
+            timeline_items = [
+                {"status": e.to_status, "at": e.created_at}
+                for e in complaint.events
+            ]
 
         return {
             "id":                   complaint.id,
@@ -418,6 +812,11 @@ class ComplaintService:
             "status":               complaint.status,
             "created_at":           complaint.created_at,
             "updated_at":           complaint.updated_at,
+            "resolved_at":          complaint.resolved_at,
+            "is_overdue":           is_overdue,
+            "hours_overdue":        hours_overdue,
             "admin_notes":          complaint.admin_notes,
-            "image_url":            complaint.image_url
+            "image_url":            complaint.image_url,
+            "timeline":             timeline_items
         }
+

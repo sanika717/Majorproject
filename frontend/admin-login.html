@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UrbanPulse Grievance Administration Portal</title>
+  <meta name="description" content="UrbanPulse Grievance Administration Portal - Authority Sign In">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+
+  <!-- Google Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- App Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="page-auth">
+
+  <!-- Minimal Brand Header -->
+  <header class="app-header" style="border-bottom: 1px solid rgba(244, 63, 94, 0.25);">
+    <div class="container header-inner" style="justify-content: space-between;">
+      <a href="dashboard.html" class="brand">
+        <div class="brand-icon" style="background: rgba(244, 63, 94, 0.15); border-color: rgba(244, 63, 94, 0.3); color: #f43f5e;">🛡️</div>
+        <div class="brand-text">
+          <h1>URBANPULSE <span style="font-size: 13px; font-weight: 700; color: #f43f5e; margin-left: 4px; padding: 2px 8px; border-radius: 4px; background: rgba(244,63,94,0.15); border: 1px solid rgba(244,63,94,0.3);">ADMIN</span></h1>
+          <p>Grievance Administration Portal</p>
+        </div>
+      </a>
+
+      <div class="header-status">
+        <a href="dashboard.html" style="color: var(--text-secondary); text-decoration: none; font-size: 13px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; transition: var(--transition-fast);">
+          <span>← Back to Public Dashboard</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Auth Container -->
+  <main class="auth-page-wrapper">
+    <div class="auth-card admin-mode" id="auth-card" style="border-color: rgba(244, 63, 94, 0.35); box-shadow: 0 16px 40px rgba(0,0,0,0.4), 0 0 30px rgba(244, 63, 94, 0.1);">
+
+      <div class="auth-header">
+        <div class="auth-brand-badge" style="background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.3); color: #f43f5e;">
+          <span>🛡️</span>
+          <span>Verified Authority Access</span>
+        </div>
+        <h2 class="auth-title" style="font-size: 24px; margin-top: 12px; font-family: var(--font-display);">UrbanPulse Grievance Administration Portal</h2>
+        <p class="auth-subtitle">Authorized civic governance, grievance triage, and SLA enforcement console.</p>
+      </div>
+
+      <!-- Dynamic Alert Container -->
+      <div id="auth-alert" class="auth-alert" style="display: none;" role="alert">
+        <span id="auth-alert-icon">⚠️</span>
+        <span id="auth-alert-msg"></span>
+      </div>
+
+      <!-- Login Form (No Signup Link) -->
+      <form id="login-form" autocomplete="on" novalidate>
+        <!-- Email Field -->
+        <div class="form-field">
+          <label for="login-email">Administrator Email</label>
+          <div class="auth-input-wrap">
+            <span class="auth-input-icon">✉️</span>
+            <input 
+              type="email" 
+              id="login-email" 
+              name="email" 
+              class="auth-input" 
+              placeholder="admin@urbanpulse.org" 
+              required 
+              autocomplete="email"
+            >
+          </div>
+        </div>
+
+        <!-- Password Field -->
+        <div class="form-field">
+          <label for="login-password">Password</label>
+          <div class="auth-input-wrap">
+            <span class="auth-input-icon">🔒</span>
+            <input 
+              type="password" 
+              id="login-password" 
+              name="password" 
+              class="auth-input" 
+              placeholder="••••••••" 
+              required 
+              autocomplete="current-password"
+            >
+            <button type="button" class="password-toggle-btn" id="toggle-password-btn" aria-label="Toggle password visibility">
+              👁️
+            </button>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="auth-submit-btn" id="login-submit-btn" style="background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%); margin-top: 20px;">
+          <span class="spinner" id="login-spinner" style="display: none;"></span>
+          <span id="login-btn-text">Authenticate as Administrator</span>
+        </button>
+      </form>
+
+      <!-- Access Security Note (Strictly No Signup Link) -->
+      <div class="auth-footer" style="margin-top: 24px; border-top: 1px solid var(--border-subtle); padding-top: 16px; text-align: center;">
+        <p style="font-size: 12px; color: var(--text-muted); line-height: 1.5; margin: 0;">
+          🔒 Authorized personnel only. Role claims are verified against server-side permissions on sign in.
+        </p>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="app-footer" style="margin-top: 40px; padding: 24px 0; border-top: 1px solid var(--border-subtle); text-align: center;">
+    <div class="container">
+      <div style="font-size: 12px; color: var(--text-muted);">
+        Academic project, not an official government portal
+      </div>
+    </div>
+  </footer>
+
+  <!-- Supabase JS CDN (UMD bundle) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Application Configuration & API -->
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+
+  <!-- Admin Login Controller -->
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const emailInput = document.getElementById("login-email");
+      const passwordInput = document.getElementById("login-password");
+      const togglePassBtn = document.getElementById("toggle-password-btn");
+      const submitBtn = document.getElementById("login-submit-btn");
+      const loginSpinner = document.getElementById("login-spinner");
+      const loginBtnText = document.getElementById("login-btn-text");
+      const alertBox = document.getElementById("auth-alert");
+      const alertIcon = document.getElementById("auth-alert-icon");
+      const alertMsg = document.getElementById("auth-alert-msg");
+
+      // Password toggle
+      togglePassBtn.addEventListener("click", () => {
+        const isPass = passwordInput.type === "password";
+        passwordInput.type = isPass ? "text" : "password";
+        togglePassBtn.textContent = isPass ? "🙈" : "👁️";
+      });
+
+      function showAlert(message, type = "error") {
+        alertBox.className = `auth-alert auth-alert-${type}`;
+        alertIcon.textContent = type === "error" ? "❌" : (type === "success" ? "✅" : "⚠️");
+        alertMsg.textContent = message;
+        alertBox.style.display = "flex";
+      }
+
+      function hideAlert() {
+        alertBox.style.display = "none";
+      }
+
+      // Check if already authenticated as admin
+      try {
+        const session = await UrbanPulseAuth.getSession();
+        if (session && session.access_token) {
+          const check = await UrbanPulseAuth.verifyAdminRole(session.access_token);
+          if (check && check.is_admin) {
+            window.location.href = "admin.html";
+            return;
+          }
+        }
+      } catch (e) {
+        // Continue to sign in form
+      }
+
+      document.getElementById("login-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        hideAlert();
+
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+
+        if (!email || !password) {
+          showAlert("Please enter both email and password.");
+          return;
+        }
+
+        submitBtn.disabled = true;
+        loginSpinner.style.display = "inline-block";
+        loginBtnText.textContent = "Authenticating Administrator...";
+
+        try {
+          const res = await UrbanPulseAuth.signIn({
+            email,
+            password,
+            loginType: "admin"
+          });
+
+          showAlert("Verified administrator session active! Redirecting to dashboard...", "success");
+          setTimeout(() => {
+            window.location.href = "admin.html";
+          }, 600);
+
+        } catch (err) {
+          showAlert(err.message || "Failed to authenticate administrator account.", "error");
+          submitBtn.disabled = false;
+          loginSpinner.style.display = "none";
+          loginBtnText.textContent = "Authenticate as Administrator";
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>

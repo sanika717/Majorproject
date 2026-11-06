@@ -1,5 +1,5 @@
 from typing import Optional, List, Dict, Any
-from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Request, Response
 from sqlalchemy.orm import Session
 
 from backend.app.db.session import get_db
@@ -9,7 +9,8 @@ from backend.app.schemas.complaint import (
     ComplaintResponse,
     ComplaintTrackRequest,
     ComplaintStatusUpdate,
-    ComplaintAdminUpdate
+    ComplaintAdminUpdate,
+    ComplaintEventResponse
 )
 from backend.app.services.complaint_service import ComplaintService
 from backend.app.services.auth_service import (
@@ -44,6 +45,7 @@ def track_complaint(
     Tracking a complaint requires BOTH tracking ID and secret code.
     Verifies SHA-256 hash. SQL-safe parameterized query.
     Never reveals complainant contact details.
+    Includes optional lifecycle status timeline.
     """
     complaint = ComplaintService.get_by_ticket_and_secret(db, payload.ticket_id, payload.secret)
     if not complaint:
@@ -51,7 +53,7 @@ def track_complaint(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Complaint not found or invalid tracking secret."
         )
-    return ComplaintService.format_for_viewer(complaint, viewer_user=current_user)
+    return ComplaintService.format_for_viewer(complaint, viewer_user=current_user, include_timeline=True)
 
 @router.get("/my", response_model=List[ComplaintResponse])
 def get_my_complaints(
@@ -67,12 +69,64 @@ def get_my_complaints(
     complaints = ComplaintService.get_user_complaints(db, user_id, limit=limit, offset=offset)
     return [ComplaintService.format_for_viewer(c, viewer_user=current_user) for c in complaints]
 
+@router.get("/admin/dashboard", dependencies=[Depends(require_role("admin"))])
+def get_admin_dashboard(
+    db: Session = Depends(get_db),
+    current_user: Dict[str, Any] = Depends(get_current_user)
+):
+    """
+    Admin Dashboard metrics:
+    Grouped SQL aggregations of totals, SLA compliance %, resolution times, priority counts,
+    category distribution, department open/resolved, top-10 wards, 30-day trends, and most overdue list.
+    """
+    return ComplaintService.get_admin_dashboard(db)
+
+@router.get("/admin/export.csv", dependencies=[Depends(require_role("admin"))])
+def export_complaints_csv(
+    ticket_id: Optional[str] = Query(None),
+    category: Optional[str] = Query(None),
+    ward: Optional[str] = Query(None),
+    department: Optional[str] = Query(None),
+    priority: Optional[str] = Query(None),
+    status_filter: Optional[str] = Query(None, alias="status"),
+    created_at: Optional[str] = Query(None),
+    resolved_at: Optional[str] = Query(None),
+    is_overdue: Optional[bool] = Query(None, alias="is_overdue"),
+    search: Optional[str] = Query(None, alias="search"),
+    db: Session = Depends(get_db),
+    current_user: Dict[str, Any] = Depends(get_current_user)
+):
+    """
+    Export complaints to CSV (Admin only).
+    Honors identical filters to the admin complaints list.
+    Excludes name, contact, email, and any citizen identity fields.
+    """
+    csv_data = ComplaintService.export_complaints_csv(
+        db,
+        ticket_id=ticket_id,
+        category=category,
+        ward=ward,
+        department=department,
+        priority=priority,
+        status=status_filter,
+        created_at=created_at,
+        resolved_at=resolved_at,
+        is_overdue=is_overdue,
+        search=search
+    )
+    return Response(
+        content=csv_data,
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=complaints_export.csv"}
+    )
+
 @router.get("/", response_model=List[ComplaintResponse], dependencies=[Depends(require_role("admin"))])
 def list_all_complaints_admin(
     status_filter: Optional[str] = Query(None, alias="status"),
     priority_filter: Optional[str] = Query(None, alias="priority"),
     department_filter: Optional[str] = Query(None, alias="department"),
     search: Optional[str] = Query(None, alias="search"),
+    overdue_filter: Optional[bool] = Query(None, alias="overdue"),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     db: Session = Depends(get_db),
@@ -80,8 +134,8 @@ def list_all_complaints_admin(
 ):
     """
     List all complaints (Admin/Authority only).
-    Supports filtering by status, priority, department, and search term.
-    Admins see pseudonyms for users who chose to hide their identity.
+    Supports filtering by status, priority, department, search term, and overdue status.
+    Default sorted by priority_score desc then age (oldest first).
     """
     complaints = ComplaintService.get_all_admin(
         db,
@@ -89,6 +143,7 @@ def list_all_complaints_admin(
         priority=priority_filter,
         department=department_filter,
         search=search,
+        overdue=overdue_filter,
         limit=limit,
         offset=offset
     )
@@ -142,7 +197,24 @@ def get_complaint(
             detail="Access forbidden: you can only view your own complaints or track with a secret."
         )
 
-    return ComplaintService.format_for_viewer(complaint, viewer_user=current_user)
+    return ComplaintService.format_for_viewer(complaint, viewer_user=current_user, include_timeline=True)
+
+@router.get("/{ticket_id}/events", response_model=List[ComplaintEventResponse], dependencies=[Depends(require_role("admin"))])
+def get_complaint_events(
+    ticket_id: str,
+    db: Session = Depends(get_db),
+    current_user: Dict[str, Any] = Depends(get_current_user)
+):
+    """
+    Retrieve audit lifecycle events for a specific complaint (Admin only).
+    """
+    complaint = ComplaintService.get_by_ticket(db, ticket_id)
+    if not complaint:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Complaint with ticket ID '{ticket_id}' not found."
+        )
+    return ComplaintService.get_events(db, ticket_id)
 
 @router.patch("/{ticket_id}/admin-review", response_model=ComplaintResponse, dependencies=[Depends(require_role("admin"))])
 def review_complaint_admin(
@@ -158,8 +230,10 @@ def review_complaint_admin(
     - Adjust severity, public safety impact, and affected-area impact
     - Set or recalculate priority
     - Add administrative remarks/updates
+    - Records ComplaintEvent with admin actor
     """
-    complaint = ComplaintService.admin_review_complaint(db, ticket_id, review)
+    actor = current_user.get("email") or current_user.get("username")
+    complaint = ComplaintService.admin_review_complaint(db, ticket_id, review, actor=actor)
     if not complaint:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -176,11 +250,14 @@ def update_complaint_status(
 ):
     """
     Legacy/simple status update and admin notes (Admin only).
+    Records ComplaintEvent with admin actor.
     """
-    complaint = ComplaintService.update_status(db, ticket_id, update)
+    actor = current_user.get("email") or current_user.get("username")
+    complaint = ComplaintService.update_status(db, ticket_id, update, actor=actor)
     if not complaint:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Complaint '{ticket_id}' not found."
         )
     return ComplaintService.format_for_viewer(complaint, viewer_user=current_user)
+
